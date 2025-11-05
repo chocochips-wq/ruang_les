@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
-import '../halaman/halaman_splash.dart';
-import '../halaman/halaman_pengenalan_1.dart';
-import '../halaman/halaman_pengenalan_2.dart';
-import '../halaman/halaman_pengenalan_3.dart';
-import '../halaman/halaman_pengenalan_4.dart';
-import '../halaman/halaman_pengenalan_5.dart';
-import '../halaman/halaman_pilih_role.dart';
-import '../halaman/halaman_login.dart';
+import '../awal/halaman_splash.dart';
+import '../awal/halaman_pengenalan_1.dart';
+import '../awal/halaman_pengenalan_2.dart';
+import '../awal/halaman_pengenalan_3.dart';
+import '../awal/halaman_pengenalan_4.dart';
+import '../awal/halaman_pengenalan_5.dart';
+import '../awal/halaman_pilih_role.dart';
+import '../awal/halaman_login.dart';
 import '../halaman/halaman_daftar.dart';
-import '../halaman/halaman_lupa_password.dart';
+import '../awal/halaman_lupa_password.dart';
 import '../halaman/halaman_beranda.dart';
 
 class AppRoutes {
