@@ -17,6 +17,7 @@ class _HalamanDaftarState extends State<HalamanDaftar> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _obscurePassword = true;
+  String _selectedRole = 'Murid'; // Role default
 
   @override
   void dispose() {
@@ -24,6 +25,26 @@ class _HalamanDaftarState extends State<HalamanDaftar> {
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
+  }
+
+  void _handleDaftar() {
+    if (_formKey.currentState!.validate()) {
+      // Simulasi registrasi berhasil
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Pendaftaran berhasil! Silakan login'),
+          backgroundColor: Colors.green,
+          duration: Duration(seconds: 2),
+        ),
+      );
+
+      // Navigasi ke halaman login dengan role yang dipilih
+      Navigator.pushReplacementNamed(
+        context,
+        AppRoutes.login,
+        arguments: _selectedRole.toLowerCase(),
+      );
+    }
   }
 
   @override
@@ -94,6 +115,43 @@ class _HalamanDaftarState extends State<HalamanDaftar> {
                   ),
                 ),
                 const SizedBox(height: 24),
+                
+                // Pilih Role
+                const Text(
+                  'Daftar Sebagai',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.textDark,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  decoration: BoxDecoration(
+                    border: Border.all(color: AppColors.textLight.withOpacity(0.3)),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: DropdownButtonHideUnderline(
+                    child: DropdownButton<String>(
+                      value: _selectedRole,
+                      isExpanded: true,
+                      icon: const Icon(Icons.arrow_drop_down, color: AppColors.primary),
+                      items: const [
+                        DropdownMenuItem(value: 'Murid', child: Text('Murid')),
+                        DropdownMenuItem(value: 'Pengajar', child: Text('Pengajar')),
+                        DropdownMenuItem(value: 'Orangtua', child: Text('Orang Tua')),
+                      ],
+                      onChanged: (value) {
+                        setState(() {
+                          _selectedRole = value!;
+                        });
+                      },
+                    ),
+                  ),
+                ),
+                
+                const SizedBox(height: 20),
                 
                 // Nama Input
                 InputText(
@@ -166,15 +224,7 @@ class _HalamanDaftarState extends State<HalamanDaftar> {
                 // Button Daftar
                 TombolCustom(
                   teks: 'Daftar',
-                  onPressed: () {
-                    if (_formKey.currentState!.validate()) {
-                      // Navigasi ke beranda
-                      Navigator.pushReplacementNamed(
-                        context,
-                        AppRoutes.beranda,
-                      );
-                    }
-                  },
+                  onPressed: _handleDaftar,
                 ),
                 
                 const SizedBox(height: 24),

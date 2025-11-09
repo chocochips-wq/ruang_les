@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../pengaturan/warna.dart';
-import '../komponen/app_drawer.dart'; // Import drawer yang baru
+import 'drawer/drawer.dart';
+import 'drawer/footer.dart';
 
 class HalamanBeranda extends StatefulWidget {
   const HalamanBeranda({super.key});
@@ -18,8 +19,8 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
     return Scaffold(
       key: _scaffoldKey,
       backgroundColor: AppColors.background,
-      // Gunakan AppDrawer yang sudah dipisah
-      drawer: AppDrawer(
+      // Gunakan PengajarDrawer yang sudah dipisah
+      drawer: PengajarDrawer(
         selectedMenuIndex: _selectedMenuIndex,
         onMenuSelected: (index) {
           setState(() {
@@ -79,7 +80,7 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
                   ),
                   const SizedBox(width: 8),
                   const Text(
-                    'Ningsih',
+                    'Ismaturrohmah',
                     style: TextStyle(
                       color: AppColors.textWhite,
                       fontSize: 14,
@@ -203,30 +204,10 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
           ),
         ],
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        type: BottomNavigationBarType.fixed,
-        selectedItemColor: AppColors.primary,
-        unselectedItemColor: AppColors.textLight,
-        currentIndex: 1,
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.menu_book),
-            label: 'Materi',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Beranda',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: 'Profil',
-          ),
-        ],
-      ),
+      // Gunakan PengajarFooter yang sudah dipisah
+      bottomNavigationBar: const PengajarFooter(currentIndex: 1),
     );
   }
-
-  // Method _buildDrawer() dihapus karena sudah pakai AppDrawer
 
   Widget _buildStatCard(String title, String value, IconData icon) {
     return Container(
@@ -484,7 +465,7 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
       child: Column(
         children: [
           _buildReportItem(
-            'Agustian Mengumpulkan Tugas Matematika',
+            'Alfito Mengumpulkan Tugas Matematika',
             '1 Menit lalu',
             Icons.assignment_turned_in,
             Colors.green,

@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
 
 class AppColors {
-  // Warna Utama - disesuaikan dengan gambar
   static const Color primary =
-      Color(0xFF8BA888); // Hijau sage (warna hijau di gambar)
+      Color(0xFF8BA888); 
   static const Color primaryDark =
-      Color(0xFF6B8B6E); // Hijau lebih gelap untuk header
-  static const Color secondary = Color(0xFFA4C3B2); // Hijau muda
-  static const Color accent = Color(0xFFEAF4F4); // Putih kehijauan
+      Color(0xFF6B8B6E); 
+  static const Color secondary = Color(0xFFA4C3B2);
+  static const Color accent = Color(0xFFEAF4F4);
 
   // Warna Teks
   static const Color textDark = Color(0xFF2C3E50);
@@ -18,7 +17,7 @@ class AppColors {
   static const Color background = Color(0xFFF5F5F5);
   static const Color cardBackground = Color(0xFFFFFFFF);
   static const Color sidebarBackground =
-      Color(0xFFF8F4EF); // Warna krem untuk sidebar
+      Color(0xFFF8F4EF); 
   static const Color sidebarActive =
       Color(0xFFD4E4D4); // Hijau muda untuk menu aktif
 

@@ -1,53 +1,104 @@
 import 'package:flutter/material.dart';
-import '../awal/halaman_splash.dart';
-import '../awal/halaman_pengenalan_1.dart';
-import '../awal/halaman_pengenalan_2.dart';
-import '../awal/halaman_pengenalan_3.dart';
-import '../awal/halaman_pengenalan_4.dart';
-import '../awal/halaman_pengenalan_5.dart';
+import '../awal/halaman_pengenalan.dart';
 import '../awal/halaman_pilih_role.dart';
 import '../awal/halaman_login.dart';
-import '../halaman/halaman_daftar.dart';
+import '../awal/halaman_daftar.dart';
 import '../awal/halaman_lupa_password.dart';
-import '../halaman/halaman_beranda.dart';
+
+// Import Pengajar
+import '../pengajar/halaman_beranda.dart';
+import '../pengajar/quiz/halaman_quiz.dart';
+
+// Import Murid
+import '../murid/beranda_murid.dart';
+import '../murid/halaman_kelas.dart';
+import '../murid/halaman_profile.dart';
+import '../murid/halaman_pengaturan.dart';
+
+// Import Orang Tua
+import '../orangtua/beranda_orangtua.dart';
 
 class AppRoutes {
+  // ========== ROUTES UMUM ==========
   static const String splash = '/';
-  static const String pengenalan1 = '/pengenalan1';
-  static const String pengenalan2 = '/pengenalan2';
-  static const String pengenalan3 = '/pengenalan3';
-  static const String pengenalan4 = '/pengenalan4';
-  static const String pengenalan5 = '/pengenalan5';
+  static const String pengenalan = '/pengenalan';
   static const String pilihRole = '/pilih-role';
   static const String login = '/login';
   static const String daftar = '/daftar';
   static const String lupaPassword = '/lupa-password';
-  static const String beranda = '/beranda';
+
+  // ========== ROUTES PENGAJAR ==========
+  static const String pengajarBeranda = '/pengajar/beranda';
+  static const String pengajarQuiz = '/pengajar/quiz';
+  static const String pengajarKelas = '/pengajar/kelas';
+  static const String pengajarMateri = '/pengajar/materi';
+  static const String pengajarNilai = '/pengajar/nilai';
+  static const String pengajarProfil = '/pengajar/profil';
+
+  // ========== ROUTES MURID ==========
+  static const String muridBeranda = '/murid/beranda';
+  static const String muridKelas = '/murid/kelas';
+  static const String muridTugas = '/murid/tugas';
+  static const String muridNilai = '/murid/nilai';
+  static const String muridMateri = '/murid/materi';
+  static const String muridProfile = '/murid/profile';
+  static const String muridPengaturan = '/murid/pengaturan';
+
+  // ========== ROUTES ORANG TUA ==========
+  static const String orangtuaBeranda = '/orangtua/beranda';
+  static const String orangtuaAnak = '/orangtua/anak';
+  static const String orangtuaNilai = '/orangtua/nilai';
+  static const String orangtuaLaporan = '/orangtua/laporan';
+  static const String orangtuaProfil = '/orangtua/profil';
 
   static Route<dynamic> generateRoute(RouteSettings settings) {
     switch (settings.name) {
-      case splash:
-        return MaterialPageRoute(builder: (_) => const HalamanSplash());
-      case pengenalan1:
-        return MaterialPageRoute(builder: (_) => const HalamanPengenalan1());
-      case pengenalan2:
-        return MaterialPageRoute(builder: (_) => const HalamanPengenalan2());
-      case pengenalan3:
-        return MaterialPageRoute(builder: (_) => const HalamanPengenalan3());
-      case pengenalan4:
-        return MaterialPageRoute(builder: (_) => const HalamanPengenalan4());
-      case pengenalan5:
-        return MaterialPageRoute(builder: (_) => const HalamanPengenalan5());
+      // ========== ROUTES UMUM ==========
+      case splash:  // ✅ TAMBAHKAN INI
+        return MaterialPageRoute(builder: (_) => const HalamanPengenalan());
+      
+      case pengenalan:
+        return MaterialPageRoute(builder: (_) => const HalamanPengenalan());
+      
       case pilihRole:
         return MaterialPageRoute(builder: (_) => const HalamanPilihRole());
+      
       case login:
-        return MaterialPageRoute(builder: (_) => const HalamanLogin());
+        final role = settings.arguments as String?;
+        return MaterialPageRoute(
+            builder: (_) => HalamanLogin(selectedRole: role));
+      
       case daftar:
         return MaterialPageRoute(builder: (_) => const HalamanDaftar());
+      
       case lupaPassword:
         return MaterialPageRoute(builder: (_) => const HalamanLupaPassword());
-      case beranda:
+
+      // ========== ROUTES PENGAJAR ==========
+      case pengajarBeranda:
         return MaterialPageRoute(builder: (_) => const HalamanBeranda());
+      
+      case pengajarQuiz:
+        return MaterialPageRoute(builder: (_) => const HalamanQuiz());
+
+      // ========== ROUTES MURID ==========
+      case muridBeranda:
+        return MaterialPageRoute(builder: (_) => const BerandaMurid());
+      
+      case muridKelas:
+        return MaterialPageRoute(builder: (_) => const HalamanKelas());
+
+      case muridProfile:
+        return MaterialPageRoute(builder: (_) => const ProfileMurid());
+
+      case muridPengaturan:
+        return MaterialPageRoute(builder: (_) => const PengaturanMurid());
+
+      // ========== ROUTES ORANG TUA ==========
+      case orangtuaBeranda:
+        return MaterialPageRoute(builder: (_) => const BerandaOrangtua());
+
+      // ========== DEFAULT ==========
       default:
         return MaterialPageRoute(
           builder: (_) => Scaffold(

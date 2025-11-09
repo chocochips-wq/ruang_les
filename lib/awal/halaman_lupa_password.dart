@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../pengaturan/warna.dart';
+import '../pengaturan/rute.dart';
 import '../komponen/tombol_custom.dart';
 import '../komponen/input_text.dart';
 
@@ -40,7 +41,7 @@ class _HalamanLupaPasswordState extends State<HalamanLupaPassword> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const SizedBox(height: 20),
-                
+
                 // Icon & Title
                 Center(
                   child: Column(
@@ -83,9 +84,9 @@ class _HalamanLupaPasswordState extends State<HalamanLupaPassword> {
                     ],
                   ),
                 ),
-                
+
                 const SizedBox(height: 40),
-                
+
                 // Email Input
                 InputText(
                   label: 'Email',
@@ -103,9 +104,9 @@ class _HalamanLupaPasswordState extends State<HalamanLupaPassword> {
                     return null;
                   },
                 ),
-                
+
                 const SizedBox(height: 32),
-                
+
                 // Button Kirim
                 TombolCustom(
                   teks: 'Kirim Link Reset',
@@ -141,9 +142,9 @@ class _HalamanLupaPasswordState extends State<HalamanLupaPassword> {
                     }
                   },
                 ),
-                
+
                 const SizedBox(height: 24),
-                
+
                 // Back to Login
                 Center(
                   child: GestureDetector(

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import '../pengaturan/warna.dart';
-import '../komponen/app_drawer.dart';
+import '../../pengaturan/warna.dart';
+import '../drawer/drawer.dart';  // ✅ Import drawer
+import '../drawer/footer.dart';  // ✅ Import footer
 import 'halaman_buat_quiz.dart';
 import 'halaman_hasil_quiz.dart';
 
@@ -16,7 +17,7 @@ class _HalamanQuizState extends State<HalamanQuiz>
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final TextEditingController _searchController = TextEditingController();
   String _selectedFilter = 'Semua pelajaran';
-  int _selectedMenuIndex = 2;
+  int _selectedMenuIndex = 3; // ✅ Index 3 untuk Quiz di drawer
   late AnimationController _animationController;
 
   final List<Map<String, dynamic>> _quizList = [
@@ -72,7 +73,8 @@ class _HalamanQuizState extends State<HalamanQuiz>
     return Scaffold(
       key: _scaffoldKey,
       backgroundColor: AppColors.background,
-      drawer: AppDrawer(
+      // ✅ Gunakan PengajarDrawer
+      drawer: PengajarDrawer(
         selectedMenuIndex: _selectedMenuIndex,
         onMenuSelected: (index) {
           setState(() {
@@ -102,26 +104,8 @@ class _HalamanQuizState extends State<HalamanQuiz>
           ),
         ],
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        type: BottomNavigationBarType.fixed,
-        selectedItemColor: AppColors.primary,
-        unselectedItemColor: AppColors.textLight,
-        currentIndex: 0,
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.menu_book),
-            label: 'Materi',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Beranda',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: 'Profil',
-          ),
-        ],
-      ),
+      // ✅ Gunakan PengajarFooter (currentIndex 0 = Materi)
+      bottomNavigationBar: const PengajarFooter(currentIndex: 0),
     );
   }
 
@@ -400,7 +384,6 @@ class _HalamanQuizState extends State<HalamanQuiz>
   }
 
   Widget _buildQuizCard(Map<String, dynamic> quiz, int index) {
-    // FIX: Pastikan konversi ke double dengan aman
     int submittedCount = quiz['submittedCount'] as int;
     int totalStudents = quiz['totalStudents'] as int;
     double progress = totalStudents > 0

@@ -5,7 +5,9 @@ import '../komponen/tombol_custom.dart';
 import '../komponen/input_text.dart';
 
 class HalamanLogin extends StatefulWidget {
-  const HalamanLogin({super.key});
+  final String? selectedRole;
+  
+  const HalamanLogin({super.key, this.selectedRole});
 
   @override
   State<HalamanLogin> createState() => _HalamanLoginState();
@@ -16,6 +18,119 @@ class _HalamanLoginState extends State<HalamanLogin> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _obscurePassword = true;
+
+  // Dummy data untuk login
+  final Map<String, Map<String, String>> _dummyUsers = {
+    'pengajar@gmail.com': {
+      'password': '123456',
+      'role': 'pengajar',
+      'nama': 'Ibu Ismaturrohmah'
+    },
+    'murid@gmail.com': {
+      'password': '123456',
+      'role': 'murid',
+      'nama': 'Alfito'
+    },
+    'orangtua@gmail.com': {
+      'password': '123456',
+      'role': 'orangtua',
+      'nama': 'Ibu Ningsih'
+    },
+  };
+
+  @override
+  void initState() {
+    super.initState();
+    // Otomatis isi email berdasarkan role yang dipilih
+    if (widget.selectedRole != null) {
+      switch (widget.selectedRole) {
+        case 'pengajar':
+          _emailController.text = 'pengajar@gmail.com';
+          break;
+        case 'murid':
+          _emailController.text = 'murid@gmail.com';
+          break;
+        case 'orangtua':
+          _emailController.text = 'orangtua@gmail.com';
+          break;
+      }
+    }
+  }
+
+  void _handleLogin() {
+    if (_formKey.currentState!.validate()) {
+      final email = _emailController.text.trim();
+      final password = _passwordController.text;
+
+      // Cek apakah email ada di dummy data
+      if (_dummyUsers.containsKey(email)) {
+        final userData = _dummyUsers[email]!;
+        
+        // Cek password
+        if (userData['password'] == password) {
+          final role = userData['role']!;
+          
+          // Validasi role sesuai yang dipilih
+          if (widget.selectedRole != null && role != widget.selectedRole) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Akun ini bukan untuk role ${widget.selectedRole}'),
+                backgroundColor: Colors.red,
+                duration: const Duration(seconds: 2),
+              ),
+            );
+            return;
+          }
+          
+          // Navigasi berdasarkan role (DIPERBAIKI)
+          String route;
+          switch (role) {
+            case 'pengajar':
+              route = AppRoutes.pengajarBeranda; // ✅ Diperbaiki
+              break;
+            case 'murid':
+              route = AppRoutes.muridBeranda; // ✅ Diperbaiki
+              break;
+            case 'orangtua':
+              route = AppRoutes.orangtuaBeranda; // ✅ Diperbaiki
+              break;
+            default:
+              route = AppRoutes.pengajarBeranda; // ✅ Diperbaiki
+          }
+          
+          // Navigasi ke halaman sesuai role
+          Navigator.pushReplacementNamed(context, route);
+          
+          // Tampilkan snackbar sukses
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Selamat datang, ${userData['nama']}!'),
+              backgroundColor: Colors.green,
+              duration: const Duration(seconds: 2),
+            ),
+          );
+        } else {
+          // Password salah
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Password salah!'),
+              backgroundColor: Colors.red,
+              duration: Duration(seconds: 2),
+            ),
+          );
+        }
+      } else {
+        // Email tidak ditemukan
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Email tidak terdaftar!'),
+            backgroundColor: Colors.red,
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+    }
+  }
 
   @override
   void dispose() {
@@ -71,6 +186,25 @@ class _HalamanLoginState extends State<HalamanLogin> {
                           color: AppColors.textLight,
                         ),
                       ),
+                      // Tampilkan role yang dipilih
+                      if (widget.selectedRole != null) ...[
+                        const SizedBox(height: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: AppColors.accent,
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Text(
+                            'Login sebagai ${widget.selectedRole}',
+                            style: const TextStyle(
+                              fontSize: 12,
+                              color: AppColors.primary,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ],
                     ],
                   ),
                 ),
@@ -161,15 +295,7 @@ class _HalamanLoginState extends State<HalamanLogin> {
                 // Button Masuk
                 TombolCustom(
                   teks: 'Masuk',
-                  onPressed: () {
-                    if (_formKey.currentState!.validate()) {
-                      // Navigasi ke beranda
-                      Navigator.pushReplacementNamed(
-                        context,
-                        AppRoutes.beranda,
-                      );
-                    }
-                  },
+                  onPressed: _handleLogin,
                 ),
                 
                 const SizedBox(height: 24),
