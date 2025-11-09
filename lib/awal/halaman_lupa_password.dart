@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../pengaturan/warna.dart';
-import '../pengaturan/rute.dart';
 import '../komponen/tombol_custom.dart';
 import '../komponen/input_text.dart';
 
