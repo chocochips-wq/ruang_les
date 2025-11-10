@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../pengaturan/warna.dart';
-import '../drawer/drawer.dart';  // ✅ Import drawer
-import '../drawer/footer.dart';  // ✅ Import footer
+import '../drawer/drawer.dart';
+import '../drawer/buttomnav.dart';
 import 'halaman_buat_quiz.dart';
 import 'halaman_hasil_quiz.dart';
 
@@ -16,8 +16,8 @@ class _HalamanQuizState extends State<HalamanQuiz>
     with TickerProviderStateMixin {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final TextEditingController _searchController = TextEditingController();
-  String _selectedFilter = 'Semua pelajaran';
-  int _selectedMenuIndex = 3; // ✅ Index 3 untuk Quiz di drawer
+  final String _selectedFilter = 'Semua pelajaran';
+  int _selectedMenuIndex = 3;
   late AnimationController _animationController;
 
   final List<Map<String, dynamic>> _quizList = [

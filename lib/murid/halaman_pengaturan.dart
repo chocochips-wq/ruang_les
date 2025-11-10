@@ -1,15 +1,29 @@
 import 'package:flutter/material.dart';
 import '../../pengaturan/warna.dart';
-import 'drawer/drawer.dart';
+import 'drawer/drawer.dart';        // DrawerMurid
+import 'drawer/buttomnav.dart';     // FooterMurid
 
-class PengaturanMurid extends StatelessWidget {
+class PengaturanMurid extends StatefulWidget {
   const PengaturanMurid({super.key});
+
+  @override
+  State<PengaturanMurid> createState() => _PengaturanMuridState();
+}
+
+class _PengaturanMuridState extends State<PengaturanMurid> {
+  int _selectedIndex = 0;
+
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: AppColors.primary, // Sesuaikan dengan warna utama
+        backgroundColor: AppColors.primary,
         elevation: 0,
         title: const Text(
           'Pengaturan',
@@ -19,15 +33,19 @@ class PengaturanMurid extends StatelessWidget {
             fontWeight: FontWeight.bold,
           ),
         ),
+        iconTheme: const IconThemeData(
+          color: Colors.white, // burger (menu drawer) putih
+        ),
       ),
+
       drawer: const DrawerMurid(),
+
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Judul Pengaturan Akun
               const Text(
                 'Pengaturan Akun',
                 style: TextStyle(
@@ -46,53 +64,49 @@ class PengaturanMurid extends StatelessWidget {
               ),
               const SizedBox(height: 24),
 
-              // Menu Pengaturan
+              // Item pengaturan akun
               _buildSettingItem(
                 context,
                 icon: Icons.photo_camera,
                 title: 'Ubah Foto Profil',
-                onTap: () {
-                  // Logika untuk mengubah foto profil
-                },
+                onTap: () {},
               ),
               _buildSettingItem(
                 context,
                 icon: Icons.lock_outline,
                 title: 'Ubah Kata Sandi',
-                onTap: () {
-                  // Logika untuk mengubah kata sandi
-                },
+                onTap: () {},
               ),
               _buildSettingItem(
                 context,
                 icon: Icons.language,
                 title: 'Bahasa',
-                onTap: () {
-                  // Logika untuk mengubah bahasa
-                },
+                onTap: () {},
               ),
               _buildSettingItem(
                 context,
                 icon: Icons.notifications,
                 title: 'Notifikasi',
-                onTap: () {
-                  // Logika untuk pengaturan notifikasi
-                },
+                onTap: () {},
               ),
+
               const Divider(),
 
-              // Menu Lainnya
               _buildSettingItem(
                 context,
                 icon: Icons.help_outline,
                 title: 'Bantuan',
-                onTap: () {
-                  // Logika untuk bantuan
-                },
+                onTap: () {},
               ),
             ],
           ),
         ),
+      ),
+
+      // Footer dari bottomnav.dart
+      bottomNavigationBar: FooterMurid(
+        selectedIndex: _selectedIndex,
+        onItemTapped: _onItemTapped,
       ),
     );
   }

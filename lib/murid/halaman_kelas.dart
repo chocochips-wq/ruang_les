@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../pengaturan/warna.dart';
 import 'drawer/drawer.dart';
-import 'drawer/footer.dart';
+import 'drawer/buttomnav.dart';
 
 class HalamanKelas extends StatefulWidget {
   const HalamanKelas({super.key});

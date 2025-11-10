@@ -18,7 +18,7 @@ class _HalamanBuatQuizState extends State<HalamanBuatQuiz> {
   String _selectedDifficulty = 'Mudah';
   DateTime _selectedDeadline = DateTime.now().add(const Duration(days: 7));
   
-  List<Map<String, dynamic>> _questions = [];
+  final List<Map<String, dynamic>> _questions = [];
 
   final List<String> _subjects = [
     'Matematika',
@@ -232,7 +232,7 @@ class _HalamanBuatQuizState extends State<HalamanBuatQuiz> {
                     ),
                     const SizedBox(height: 8),
                     DropdownButtonFormField<String>(
-                      value: _selectedSubject,
+                      initialValue: _selectedSubject,
                       decoration: InputDecoration(
                         filled: true,
                         fillColor: Colors.grey.shade50,
@@ -279,7 +279,7 @@ class _HalamanBuatQuizState extends State<HalamanBuatQuiz> {
                     ),
                     const SizedBox(height: 8),
                     DropdownButtonFormField<String>(
-                      value: _selectedClass,
+                      initialValue: _selectedClass,
                       decoration: InputDecoration(
                         filled: true,
                         fillColor: Colors.grey.shade50,
@@ -377,7 +377,7 @@ class _HalamanBuatQuizState extends State<HalamanBuatQuiz> {
                     ),
                     const SizedBox(height: 8),
                     DropdownButtonFormField<String>(
-                      value: _selectedDifficulty,
+                      initialValue: _selectedDifficulty,
                       decoration: InputDecoration(
                         filled: true,
                         fillColor: Colors.grey.shade50,
@@ -757,7 +757,7 @@ class _HalamanBuatQuizState extends State<HalamanBuatQuiz> {
               ),
               const SizedBox(height: 8),
               DropdownButtonFormField<String>(
-                value: correctAnswer,
+                initialValue: correctAnswer,
                 decoration: InputDecoration(
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),

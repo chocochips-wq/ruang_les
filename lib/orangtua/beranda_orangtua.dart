@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../pengaturan/warna.dart';
-import '../pengaturan/rute.dart';
+import 'drawer/drawer.dart';        // Mengimpor DrawerOrangtua
+import 'drawer/buttomnav.dart';     // Mengimpor FooterOrangtua
 
 class BerandaOrangtua extends StatefulWidget {
   const BerandaOrangtua({super.key});
@@ -78,10 +79,6 @@ class _BerandaOrangtuaState extends State<BerandaOrangtua> {
         backgroundColor: AppColors.primary,
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.white),
-        title: const Text(
-          'Dashboard Orang Tua',
-          style: TextStyle(color: Colors.white),
-        ),
         actions: [
           IconButton(
             icon: const Icon(Icons.notifications, color: Colors.white),
@@ -89,7 +86,7 @@ class _BerandaOrangtuaState extends State<BerandaOrangtua> {
           ),
         ],
       ),
-      drawer: _buildDrawer(context),
+      drawer: const DrawerOrangtua(),  // Menggunakan DrawerOrangtua yang sudah dibuat
       body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -131,9 +128,9 @@ class _BerandaOrangtuaState extends State<BerandaOrangtua> {
             const SizedBox(height: 24),
 
             // Data Anak
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
-              child: const Text(
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 24),
+              child: Text(
                 'Anak Saya',
                 style: TextStyle(
                   fontSize: 18,
@@ -236,9 +233,9 @@ class _BerandaOrangtuaState extends State<BerandaOrangtua> {
             const SizedBox(height: 32),
 
             // Aktivitas Terkini
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
-              child: const Text(
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 24),
+              child: Text(
                 'Aktivitas Terkini',
                 style: TextStyle(
                   fontSize: 18,
@@ -265,194 +262,18 @@ class _BerandaOrangtuaState extends State<BerandaOrangtua> {
           ],
         ),
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _selectedIndex,
-        onTap: _onItemTapped,
-        type: BottomNavigationBarType.fixed,
-        selectedItemColor: AppColors.primary,
-        unselectedItemColor: AppColors.textLight,
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Beranda',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.child_care),
-            label: 'Anak',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.assessment),
-            label: 'Laporan',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: 'Profil',
-          ),
-        ],
+      bottomNavigationBar: FooterOrangtua(  // Menggunakan FooterOrangtua yang sudah dibuat
+        selectedIndex: _selectedIndex,
+        onItemTapped: (index) {
+          setState(() {
+            _selectedIndex = index;
+          });
+        },
       ),
     );
   }
 
-  // Drawer untuk Orang Tua
-  Widget _buildDrawer(BuildContext context) {
-    return Drawer(
-      child: Column(
-        children: [
-          // Header Drawer
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(24),
-            decoration: const BoxDecoration(
-              color: AppColors.primary,
-            ),
-            child: SafeArea(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
-                    width: 70,
-                    height: 70,
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      shape: BoxShape.circle,
-                      border: Border.all(color: Colors.white, width: 3),
-                    ),
-                    child: const Icon(
-                      Icons.person,
-                      size: 40,
-                      color: AppColors.primary,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  const Text(
-                    'Ibu Ningsih',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'orangtua@gmail.com',
-                    style: TextStyle(
-                      color: Colors.white.withOpacity(0.9),
-                      fontSize: 14,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-
-          // Menu Items
-          Expanded(
-            child: ListView(
-              padding: EdgeInsets.zero,
-              children: [
-                _buildDrawerItem(
-                  icon: Icons.dashboard,
-                  title: 'Dashboard',
-                  onTap: () {
-                    Navigator.pop(context);
-                  },
-                ),
-                _buildDrawerItem(
-                  icon: Icons.person,
-                  title: 'Profile',
-                  onTap: () {
-                    Navigator.pop(context);
-                    // Navigate ke halaman profile
-                  },
-                ),
-                _buildDrawerItem(
-                  icon: Icons.forum,
-                  title: 'Forum',
-                  onTap: () {
-                    Navigator.pop(context);
-                    // Navigate ke halaman forum
-                  },
-                ),
-                _buildDrawerItem(
-                  icon: Icons.assessment,
-                  title: 'Laporan Belajar',
-                  onTap: () {
-                    Navigator.pop(context);
-                    // Navigate ke halaman laporan belajar
-                  },
-                ),
-                _buildDrawerItem(
-                  icon: Icons.payment,
-                  title: 'Pembayaran',
-                  onTap: () {
-                    Navigator.pop(context);
-                    // Navigate ke halaman pembayaran
-                  },
-                ),
-                _buildDrawerItem(
-                  icon: Icons.feedback,
-                  title: 'Feedback',
-                  onTap: () {
-                    Navigator.pop(context);
-                    // Navigate ke halaman feedback
-                  },
-                ),
-                _buildDrawerItem(
-                  icon: Icons.settings,
-                  title: 'Pengaturan',
-                  onTap: () {
-                    Navigator.pop(context);
-                    // Navigate ke halaman pengaturan
-                  },
-                ),
-                const Divider(),
-                _buildDrawerItem(
-                  icon: Icons.logout,
-                  title: 'Keluar',
-                  onTap: () {
-                    Navigator.pushReplacementNamed(context, AppRoutes.login);
-                  },
-                  color: Colors.red,
-                ),
-              ],
-            ),
-          ),
-
-          // Footer
-          Container(
-            padding: const EdgeInsets.all(16),
-            child: Text(
-              'Versi 1.0.0',
-              style: TextStyle(
-                color: Colors.grey.shade600,
-                fontSize: 12,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildDrawerItem({
-    required IconData icon,
-    required String title,
-    required VoidCallback onTap,
-    Color? color,
-  }) {
-    return ListTile(
-      leading: Icon(icon, color: color ?? AppColors.textDark),
-      title: Text(
-        title,
-        style: TextStyle(
-          color: color ?? AppColors.textDark,
-          fontSize: 16,
-        ),
-      ),
-      onTap: onTap,
-    );
-  }
-
+  // Fungsi untuk menampilkan kartu anak
   Widget _buildAnakCard(Map<String, dynamic> anak) {
     return Container(
       padding: const EdgeInsets.all(16),

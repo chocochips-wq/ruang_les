@@ -558,7 +558,7 @@ class _HalamanHasilQuizState extends State<HalamanHasilQuiz> with SingleTickerPr
               entry.value,
               totalSubmitted,
             );
-          }).toList(),
+          }),
         ],
       ),
     );

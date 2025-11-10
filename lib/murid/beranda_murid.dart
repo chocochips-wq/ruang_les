@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../pengaturan/warna.dart';
-import 'drawer/drawer.dart';
-import 'drawer/footer.dart';
+import 'drawer/drawer.dart'; // Import DrawerMurid dari file drawer.dart
+import 'drawer/buttomnav.dart';
 
 class BerandaMurid extends StatefulWidget {
   const BerandaMurid({super.key});
@@ -67,7 +67,7 @@ class _BerandaMuridState extends State<BerandaMurid> {
           ),
         ],
       ),
-      drawer: const DrawerMurid(),
+      drawer: const DrawerMurid(), // Menggunakan DrawerMurid dari file drawer.dart
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(16),
@@ -84,17 +84,17 @@ class _BerandaMuridState extends State<BerandaMurid> {
                   border:
                       Border.all(color: AppColors.secondary.withOpacity(0.5)),
                 ),
-                child: Column(
+                child: const Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Row(
                       children: [
-                        const Text(
+                        Text(
                           '👋',
                           style: TextStyle(fontSize: 24),
                         ),
-                        const SizedBox(width: 8),
-                        const Text(
+                        SizedBox(width: 8),
+                        Text(
                           'Halo, Alfito!',
                           style: TextStyle(
                             fontSize: 18,
@@ -104,16 +104,16 @@ class _BerandaMuridState extends State<BerandaMurid> {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 8),
-                    const Text(
+                    SizedBox(height: 8),
+                    Text(
                       'Selamat datang kembali di Ruang Les',
                       style: TextStyle(
                         fontSize: 14,
                         color: AppColors.textLight,
                       ),
                     ),
-                    const SizedBox(height: 4),
-                    const Text(
+                    SizedBox(height: 4),
+                    Text(
                       'by Ismaturrohmah',
                       style: TextStyle(
                         fontSize: 14,
@@ -138,14 +138,14 @@ class _BerandaMuridState extends State<BerandaMurid> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
+                    const Row(
                       children: [
-                        const Text(
+                        Text(
                           '🎓',
                           style: TextStyle(fontSize: 20),
                         ),
-                        const SizedBox(width: 8),
-                        const Text(
+                        SizedBox(width: 8),
+                        Text(
                           'Kelas Aktif',
                           style: TextStyle(
                             fontSize: 16,
@@ -199,14 +199,14 @@ class _BerandaMuridState extends State<BerandaMurid> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
+                    const Row(
                       children: [
-                        const Text(
+                        Text(
                           '📊',
                           style: TextStyle(fontSize: 20),
                         ),
-                        const SizedBox(width: 8),
-                        const Text(
+                        SizedBox(width: 8),
+                        Text(
                           'Progres Belajarmu',
                           style: TextStyle(
                             fontSize: 16,
@@ -258,7 +258,7 @@ class _BerandaMuridState extends State<BerandaMurid> {
                           ],
                         ),
                       );
-                    }).toList(),
+                    }),
                   ],
                 ),
               ),
@@ -268,7 +268,7 @@ class _BerandaMuridState extends State<BerandaMurid> {
           ),
         ),
       ),
-        bottomNavigationBar: FooterMurid(
+      bottomNavigationBar: FooterMurid(
         selectedIndex: _selectedIndex,
         onItemTapped: _onItemTapped,
       ),

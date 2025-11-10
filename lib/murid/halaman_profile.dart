@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import '../../pengaturan/warna.dart'; 
+import '../../pengaturan/warna.dart';
 import 'drawer/drawer.dart';
-import 'drawer/footer.dart'; 
+import 'drawer/buttomnav.dart'; 
 
 class ProfileMurid extends StatefulWidget {
   const ProfileMurid({super.key});
@@ -23,7 +23,7 @@ class _ProfileMuridState extends State<ProfileMurid> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: AppColors.primary, // Sesuaikan dengan warna utama
+        backgroundColor: AppColors.primary,
         elevation: 0,
         title: const Text(
           'Profile',
@@ -32,6 +32,9 @@ class _ProfileMuridState extends State<ProfileMurid> {
             fontSize: 18,
             fontWeight: FontWeight.bold,
           ),
+        ),
+        iconTheme: const IconThemeData(
+          color: Colors.white, // Mengatur warna ikon burger menjadi putih
         ),
       ),
       drawer: const DrawerMurid(),
@@ -45,7 +48,7 @@ class _ProfileMuridState extends State<ProfileMurid> {
               Center(
                 child: Column(
                   children: [
-                    CircleAvatar(
+                    const CircleAvatar(
                       radius: 50,
                       backgroundImage: AssetImage('../assets/gambar/profile.png'), // Ganti dengan foto profil pengguna
                     ),
@@ -70,22 +73,22 @@ class _ProfileMuridState extends State<ProfileMurid> {
               const SizedBox(height: 24),
 
               // Detail Profil
-              _buildProfileDetail('Nama Lengkap', 'Agustian'),
-              _buildProfileDetail('Email', 'agustian@email.com'),
-              _buildProfileDetail('Alamat', 'Gang Senggol RT:01 RW:02'),
+              _buildProfileDetail('Nama Lengkap', 'Alfito'),
+              _buildProfileDetail('Email', 'alfito@email.com'),
+              _buildProfileDetail('Alamat', 'Jalan kelapa 2 Depok'),
               _buildProfileDetail('No. HP', '0812-3456-7890'),
               const SizedBox(height: 24),
 
               // Sekolah & Kelas
-              _buildProfileDetail('Sekolah', 'SMPN 5 Jambi'),
+              _buildProfileDetail('Sekolah', 'SMPN 1 DEPOK'),
               _buildProfileDetail('Kelas', '8'),
               _buildProfileDetail('Bergabung Sejak', '12 Januari 2025'),
               const SizedBox(height: 24),
 
               // Status Akun
-              Row(
+              const Row(
                 children: [
-                  const Text(
+                  Text(
                     'Status Akun : ',
                     style: TextStyle(
                       fontSize: 14,
@@ -93,13 +96,13 @@ class _ProfileMuridState extends State<ProfileMurid> {
                       color: AppColors.textDark,
                     ),
                   ),
-                  const Icon(
+                  Icon(
                     Icons.check_circle,
                     color: Colors.green,
                     size: 18,
                   ),
-                  const SizedBox(width: 4),
-                  const Text(
+                  SizedBox(width: 4),
+                  Text(
                     'Aktif',
                     style: TextStyle(
                       fontSize: 14,
@@ -112,7 +115,7 @@ class _ProfileMuridState extends State<ProfileMurid> {
           ),
         ),
       ),
-        bottomNavigationBar: FooterMurid(
+      bottomNavigationBar: FooterMurid(
         selectedIndex: _selectedIndex,
         onItemTapped: _onItemTapped,
       ),

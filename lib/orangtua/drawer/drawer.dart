@@ -1,9 +1,15 @@
 import 'package:flutter/material.dart';
-import '../../pengaturan/warna.dart';
-import '../../pengaturan/rute.dart';
+import '../../pengaturan/warna.dart';  // Sesuaikan dengan path warna yang benar
 
-class DrawerMurid extends StatelessWidget {
-  const DrawerMurid({super.key});
+class DrawerOrangtua extends StatefulWidget {
+  const DrawerOrangtua({super.key});
+
+  @override
+  State<DrawerOrangtua> createState() => _DrawerOrangtuaState();
+}
+
+class _DrawerOrangtuaState extends State<DrawerOrangtua> {
+  int _selectedIndex = 0;
 
   @override
   Widget build(BuildContext context) {
@@ -15,7 +21,7 @@ class DrawerMurid extends StatelessWidget {
             width: double.infinity,
             padding: const EdgeInsets.all(24),
             decoration: const BoxDecoration(
-              color: AppColors.primary, // Menggunakan warna primary dari AppColors
+              color: AppColors.primary,
             ),
             child: SafeArea(
               child: Column(
@@ -37,7 +43,7 @@ class DrawerMurid extends StatelessWidget {
                   ),
                   const SizedBox(height: 12),
                   const Text(
-                    'Alfito',
+                    'Ibu Ningsih',  // Nama orangtua
                     style: TextStyle(
                       color: Colors.white,
                       fontSize: 20,
@@ -46,7 +52,7 @@ class DrawerMurid extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    'murid@gmail.com',
+                    'orangtua@gmail.com',  // Email orangtua
                     style: TextStyle(
                       color: Colors.white.withOpacity(0.9),
                       fontSize: 14,
@@ -63,51 +69,89 @@ class DrawerMurid extends StatelessWidget {
               padding: EdgeInsets.zero,
               children: [
                 _buildDrawerItem(
-                  context,
                   icon: Icons.dashboard,
                   title: 'Dashboard',
+                  index: 0, 
                   onTap: () {
-                    Navigator.pop(context); 
-                    // Navigasi ke halaman Dashboard Murid
-                    Navigator.pushReplacementNamed(context, AppRoutes.muridBeranda);
+                    setState(() {
+                      _selectedIndex = 0;
+                    });
+                    Navigator.pop(context);
                   },
                 ),
                 _buildDrawerItem(
-                  context,
                   icon: Icons.person,
                   title: 'Profile',
+                  index: 1, 
                   onTap: () {
-                    Navigator.pop(context); // Menutup drawer
-                    // Navigasi ke halaman Profile Murid
-                    Navigator.pushReplacementNamed(context, AppRoutes.muridProfile);
+                    setState(() {
+                      _selectedIndex = 1;
+                    });
+                    Navigator.pop(context);
                   },
                 ),
                 _buildDrawerItem(
-                  context,
-                  icon: Icons.school,
-                  title: 'Kelas',
+                  icon: Icons.forum,
+                  title: 'Forum',
+                  index: 2, 
                   onTap: () {
-                    Navigator.pop(context); // Menutup drawer
-                    // Navigasi ke halaman Kelas Murid
-                    Navigator.pushReplacementNamed(context, AppRoutes.muridKelas);
+                    setState(() {
+                      _selectedIndex = 2;
+                    });
+                    Navigator.pop(context);
                   },
                 ),
                 _buildDrawerItem(
-                  context,
+                  icon: Icons.assignment,
+                  title: 'Laporan Belajar',
+                  index: 3, 
+                  onTap: () {
+                    setState(() {
+                      _selectedIndex = 3;
+                    });
+                    Navigator.pop(context);
+                  },
+                ),
+                _buildDrawerItem(
+                  icon: Icons.payment,
+                  title: 'Pembayaran',
+                  index: 4, 
+                  onTap: () {
+                    setState(() {
+                      _selectedIndex = 4;
+                    });
+                    Navigator.pop(context);
+                  },
+                ),
+                _buildDrawerItem(
+                  icon: Icons.feedback,
+                  title: 'Feedback',
+                  index: 4, 
+                  onTap: () {
+                    setState(() {
+                      _selectedIndex = 4;
+                    });
+                    Navigator.pop(context);
+                  },
+                ),
+                _buildDrawerItem(
                   icon: Icons.settings,
                   title: 'Pengaturan',
+                  index: 5, 
                   onTap: () {
+                    setState(() {
+                      _selectedIndex = 5;
+                    });
                     Navigator.pop(context);
-                    Navigator.pushReplacementNamed(context, AppRoutes.muridPengaturan);
                   },
                 ),
                 const Divider(),
                 _buildDrawerItem(
-                  context,
                   icon: Icons.logout,
                   title: 'Keluar',
+                  index: -1, // Tombol logout tanpa index aktif
                   onTap: () {
-                    Navigator.pushReplacementNamed(context, AppRoutes.login);
+                    Navigator.pushReplacementNamed(context, '/login');
                   },
                   color: Colors.red,
                 ),
@@ -131,22 +175,24 @@ class DrawerMurid extends StatelessWidget {
     );
   }
 
-  Widget _buildDrawerItem(
-    BuildContext context, {
+  Widget _buildDrawerItem({
     required IconData icon,
     required String title,
+    required int index,
     required VoidCallback onTap,
     Color? color,
   }) {
     return ListTile(
-      leading: Icon(icon, color: color ?? AppColors.textDark), // Warna ikon
+      leading: Icon(icon, color: color ?? AppColors.textDark),
       title: Text(
         title,
         style: TextStyle(
-          color: color ?? AppColors.textDark, // Warna teks
+          color: color ?? AppColors.textDark,
           fontSize: 16,
         ),
       ),
+      tileColor: _selectedIndex == index ? Colors.green.shade100 : null, // Highlight selected item
+      selected: _selectedIndex == index,
       onTap: onTap,
     );
   }
