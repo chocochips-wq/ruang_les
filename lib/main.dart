@@ -1,9 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:device_preview/device_preview.dart';
 import 'pengaturan/rute.dart';
 import 'pengaturan/warna.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(
+    DevicePreview(
+      enabled: true, // ⬅️ Aktifkan mode HP
+      builder: (context) => const MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -14,11 +20,17 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Ruang Les',
       debugShowCheckedModeBanner: false,
+
+      // ⬅️ Tambahkan ini supaya DevicePreview bisa ganti ukuran layar
+      useInheritedMediaQuery: true,
+      builder: DevicePreview.appBuilder,
+
       theme: ThemeData(
         primaryColor: AppColors.primary,
         scaffoldBackgroundColor: AppColors.background,
         fontFamily: 'Poppins',
       ),
+
       initialRoute: AppRoutes.splash,
       onGenerateRoute: AppRoutes.generateRoute,
     );

@@ -8,6 +8,7 @@ import '../awal/halaman_lupa_password.dart';
 // Import Pengajar
 import '../pengajar/halaman_beranda.dart';
 import '../pengajar/quiz/halaman_quiz.dart';
+import '../pengajar/halaman_kelas.dart'; // 👈 TAMBAHKAN INI
 
 // Import Murid
 import '../murid/beranda_murid.dart';
@@ -54,7 +55,7 @@ class AppRoutes {
   static Route<dynamic> generateRoute(RouteSettings settings) {
     switch (settings.name) {
       // ========== ROUTES UMUM ==========
-      case splash:  // ✅ TAMBAHKAN INI
+      case splash:
         return MaterialPageRoute(builder: (_) => const HalamanPengenalan());
       
       case pengenalan:
@@ -80,6 +81,10 @@ class AppRoutes {
       
       case pengajarQuiz:
         return MaterialPageRoute(builder: (_) => const HalamanQuiz());
+      
+      // 👇 TAMBAHKAN CASE INI
+      case pengajarKelas:
+        return MaterialPageRoute(builder: (_) => const PengajarKelasPage());
 
       // ========== ROUTES MURID ==========
       case muridBeranda:

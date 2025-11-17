@@ -80,17 +80,17 @@ class PengajarDrawer extends StatelessWidget {
                 ),
                 _buildMenuItem(
                   context,
-                  icon: Icons.class_,
-                  title: 'Kelas',
+                  icon: Icons.person,
+                  title: 'Profile',
                   index: 1,
-                  route: AppRoutes.pengajarKelas,
+                  route: AppRoutes.pengajarProfil,
                 ),
                 _buildMenuItem(
                   context,
-                  icon: Icons.menu_book,
-                  title: 'Materi',
+                  icon: Icons.class_,
+                  title: 'Kelas Saya',
                   index: 2,
-                  route: AppRoutes.pengajarMateri,
+                  route: AppRoutes.pengajarKelas,
                 ),
                 _buildMenuItem(
                   context,
@@ -101,19 +101,26 @@ class PengajarDrawer extends StatelessWidget {
                 ),
                 _buildMenuItem(
                   context,
-                  icon: Icons.grade,
-                  title: 'Nilai',
+                  icon: Icons.assignment,
+                  title: 'Laporan Anak',
                   index: 4,
                   route: AppRoutes.pengajarNilai,
                 ),
                 _buildMenuItem(
                   context,
-                  icon: Icons.person,
-                  title: 'Profil',
+                  icon: Icons.payments,
+                  title: 'Pembayaran',
                   index: 5,
-                  route: AppRoutes.pengajarProfil,
+                  route: null,
                 ),
-                const Divider(),
+
+                // ===== GARIS PEMISAH =====
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 16),
+                  child: Divider(thickness: 1),
+                ),
+
+                // ===== PENGATURAN (di bawah garis) =====
                 _buildMenuItem(
                   context,
                   icon: Icons.settings,
@@ -121,32 +128,22 @@ class PengajarDrawer extends StatelessWidget {
                   index: 6,
                   route: null,
                 ),
-                _buildMenuItem(
-                  context,
-                  icon: Icons.help_outline,
-                  title: 'Bantuan',
-                  index: 7,
-                  route: null,
+
+                // ===== LOGOUT (di bawah pengaturan) =====
+                ListTile(
+                  leading: const Icon(Icons.logout, color: Colors.red),
+                  title: const Text(
+                    'Keluar',
+                    style: TextStyle(
+                      color: Colors.red,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  onTap: () {
+                    _showLogoutDialog(context);
+                  },
                 ),
               ],
-            ),
-          ),
-
-          // Logout Button
-          Container(
-            padding: const EdgeInsets.all(16),
-            child: ListTile(
-              leading: const Icon(Icons.logout, color: Colors.red),
-              title: const Text(
-                'Keluar',
-                style: TextStyle(
-                  color: Colors.red,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              onTap: () {
-                _showLogoutDialog(context);
-              },
             ),
           ),
         ],
@@ -179,9 +176,8 @@ class PengajarDrawer extends StatelessWidget {
       selectedTileColor: AppColors.accent,
       onTap: () {
         onMenuSelected(index);
-        Navigator.pop(context); // Close drawer
+        Navigator.pop(context);
 
-        // Navigate jika route tersedia
         if (route != null) {
           Navigator.pushReplacementNamed(context, route);
         }
@@ -202,7 +198,7 @@ class PengajarDrawer extends StatelessWidget {
           ),
           TextButton(
             onPressed: () {
-              _logoutUser(context);  // Logout function
+              _logoutUser(context);
             },
             child: const Text(
               'Keluar',
@@ -215,14 +211,7 @@ class PengajarDrawer extends StatelessWidget {
   }
 
   void _logoutUser(BuildContext context) {
-    // 1. Clear user session (e.g., clear shared preferences or token)
-    // You can add a method to handle clearing user data, like SharedPreferences
-    // Example: SharedPreferences.getInstance().then((prefs) {
-    //   prefs.remove('userToken');
-    // });
-
-    // 2. Navigate to login screen
-    Navigator.pop(context); // Close the dialog
-    Navigator.pushReplacementNamed(context, AppRoutes.login); // Navigate to login screen
+    Navigator.pop(context);
+    Navigator.pushReplacementNamed(context, AppRoutes.login);
   }
 }

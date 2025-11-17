@@ -64,30 +64,6 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
                     color: AppColors.textWhite,
                     onPressed: () {},
                   ),
-                  const SizedBox(width: 8),
-                  Container(
-                    width: 32,
-                    height: 32,
-                    decoration: const BoxDecoration(
-                      color: AppColors.textWhite,
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(
-                      Icons.person,
-                      color: AppColors.primaryDark,
-                      size: 20,
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  const Text(
-                    'Ismaturrohmah',
-                    style: TextStyle(
-                      color: AppColors.textWhite,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  const SizedBox(width: 8),
                 ],
               ),
             ),
