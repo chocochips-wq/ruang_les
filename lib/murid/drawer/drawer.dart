@@ -15,7 +15,7 @@ class DrawerMurid extends StatelessWidget {
             width: double.infinity,
             padding: const EdgeInsets.all(24),
             decoration: const BoxDecoration(
-              color: AppColors.primary, // Menggunakan warna primary dari AppColors
+              color: AppColors.primary,
             ),
             child: SafeArea(
               child: Column(
@@ -68,7 +68,6 @@ class DrawerMurid extends StatelessWidget {
                   title: 'Dashboard',
                   onTap: () {
                     Navigator.pop(context); 
-                    // Navigasi ke halaman Dashboard Murid
                     Navigator.pushReplacementNamed(context, AppRoutes.muridBeranda);
                   },
                 ),
@@ -77,8 +76,7 @@ class DrawerMurid extends StatelessWidget {
                   icon: Icons.person,
                   title: 'Profile',
                   onTap: () {
-                    Navigator.pop(context); // Menutup drawer
-                    // Navigasi ke halaman Profile Murid
+                    Navigator.pop(context);
                     Navigator.pushReplacementNamed(context, AppRoutes.muridProfile);
                   },
                 ),
@@ -87,8 +85,7 @@ class DrawerMurid extends StatelessWidget {
                   icon: Icons.school,
                   title: 'Kelas',
                   onTap: () {
-                    Navigator.pop(context); // Menutup drawer
-                    // Navigasi ke halaman Kelas Murid
+                    Navigator.pop(context);
                     Navigator.pushReplacementNamed(context, AppRoutes.muridKelas);
                   },
                 ),
@@ -107,7 +104,7 @@ class DrawerMurid extends StatelessWidget {
                   icon: Icons.logout,
                   title: 'Keluar',
                   onTap: () {
-                    Navigator.pushReplacementNamed(context, AppRoutes.login);
+                    _showLogoutDialog(context);
                   },
                   color: Colors.red,
                 ),
@@ -139,15 +136,73 @@ class DrawerMurid extends StatelessWidget {
     Color? color,
   }) {
     return ListTile(
-      leading: Icon(icon, color: color ?? AppColors.textDark), // Warna ikon
+      leading: Icon(icon, color: color ?? AppColors.textDark),
       title: Text(
         title,
         style: TextStyle(
-          color: color ?? AppColors.textDark, // Warna teks
+          color: color ?? AppColors.textDark,
           fontSize: 16,
         ),
       ),
       onTap: onTap,
+    );
+  }
+
+  void _showLogoutDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          title: Row(
+            children: [
+              Icon(Icons.warning_amber_rounded, color: Colors.orange, size: 28),
+              const SizedBox(width: 8),
+              const Text(
+                'Keluar',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+            ],
+          ),
+          content: const Text(
+            'Apakah kamu yakin ingin keluar dari aplikasi?',
+            style: TextStyle(fontSize: 15),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text(
+                'Batal',
+                style: TextStyle(
+                  color: Colors.grey.shade700,
+                  fontSize: 15,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pop(context); // Tutup dialog
+                Navigator.pushReplacementNamed(context, AppRoutes.login);
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+              ),
+              child: const Text(
+                'Keluar',
+                style: TextStyle(fontWeight: FontWeight.w600),
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 }

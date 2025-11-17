@@ -6,9 +6,14 @@ import '../awal/halaman_daftar.dart';
 import '../awal/halaman_lupa_password.dart';
 
 // Import Pengajar
-import '../pengajar/halaman_beranda.dart';
-import '../pengajar/quiz/halaman_quiz.dart';
-import '../pengajar/halaman_kelas.dart'; // 👈 TAMBAHKAN INI
+import '../pengajar/pengajar_beranda.dart';
+import '../pengajar/quiz/pengajar_quiz.dart';
+import '../pengajar/kelas/pengajar_kelas.dart';
+import '../pengajar/pengajar_profile.dart';
+import '../pengajar/pengajar_laporan_anak.dart';
+import '../pengajar/pengajar_pembayaran.dart';
+import '../pengajar/pengajar_pengaturan.dart';
+import '../pengajar/pengajar_materi.dart';
 
 // Import Murid
 import '../murid/beranda_murid.dart';
@@ -17,7 +22,13 @@ import '../murid/halaman_profile.dart';
 import '../murid/halaman_pengaturan.dart';
 
 // Import Orang Tua
-import '../orangtua/beranda_orangtua.dart';
+import '../orangtua/orangtua_beranda.dart';
+import '../orangtua/orangtua_laporan_belajar.dart';
+import '../orangtua/orangtua_profile.dart';
+import '../orangtua/orangtua_forum.dart';
+import '../orangtua/orangtua_pembayaran.dart';
+import '../orangtua/orangtua_feedback.dart';
+import '../orangtua/orangtua_pengaturan.dart';
 
 class AppRoutes {
   // ========== ROUTES UMUM ==========
@@ -35,6 +46,8 @@ class AppRoutes {
   static const String pengajarMateri = '/pengajar/materi';
   static const String pengajarNilai = '/pengajar/nilai';
   static const String pengajarProfil = '/pengajar/profil';
+  static const String pengajarPembayaran = '/pengajar/pembayaran';
+  static const String pengajarPengaturan = '/pengajar/pengaturan';
 
   // ========== ROUTES MURID ==========
   static const String muridBeranda = '/murid/beranda';
@@ -47,10 +60,12 @@ class AppRoutes {
 
   // ========== ROUTES ORANG TUA ==========
   static const String orangtuaBeranda = '/orangtua/beranda';
-  static const String orangtuaAnak = '/orangtua/anak';
-  static const String orangtuaNilai = '/orangtua/nilai';
+  static const String orangtuaProfile = '/orangtua/profile';
+  static const String orangtuaForum = '/orangtua/forum';
   static const String orangtuaLaporan = '/orangtua/laporan';
-  static const String orangtuaProfil = '/orangtua/profil';
+  static const String orangtuaPembayaran = '/orangtua/pembayaran';
+  static const String orangtuaFeedback = '/orangtua/feedback';
+  static const String orangtuaPengaturan = '/orangtua/pengaturan';
 
   static Route<dynamic> generateRoute(RouteSettings settings) {
     switch (settings.name) {
@@ -82,9 +97,23 @@ class AppRoutes {
       case pengajarQuiz:
         return MaterialPageRoute(builder: (_) => const HalamanQuiz());
       
-      // 👇 TAMBAHKAN CASE INI
       case pengajarKelas:
         return MaterialPageRoute(builder: (_) => const PengajarKelasPage());
+
+      case pengajarMateri:
+        return MaterialPageRoute(builder: (_) => const PengajarMateri());
+
+      case pengajarProfil:
+        return MaterialPageRoute(builder: (_) => const PengajarProfil());
+
+      case pengajarNilai:
+        return MaterialPageRoute(builder: (_) => const PengajarNilai());
+
+      case pengajarPembayaran:
+        return MaterialPageRoute(builder: (_) => const PengajarPembayaran());
+
+      case pengajarPengaturan:
+        return MaterialPageRoute(builder: (_) => const PengajarPengaturan());
 
       // ========== ROUTES MURID ==========
       case muridBeranda:
@@ -102,6 +131,24 @@ class AppRoutes {
       // ========== ROUTES ORANG TUA ==========
       case orangtuaBeranda:
         return MaterialPageRoute(builder: (_) => const BerandaOrangtua());
+
+      case orangtuaProfile:
+        return MaterialPageRoute(builder: (_) => const ProfileOrangtua());
+
+      case orangtuaForum:
+        return MaterialPageRoute(builder: (_) => const ForumOrangtua());
+
+      case orangtuaLaporan:
+        return MaterialPageRoute(builder: (_) => const LaporanBelajarOrangtua());
+
+      case orangtuaPembayaran:
+        return MaterialPageRoute(builder: (_) => const PembayaranOrangtua());
+
+      case orangtuaFeedback:
+        return MaterialPageRoute(builder: (_) => const FeedbackOrangtua());
+
+      case orangtuaPengaturan:
+        return MaterialPageRoute(builder: (_) => const PengaturanOrangtua());
 
       // ========== DEFAULT ==========
       default:

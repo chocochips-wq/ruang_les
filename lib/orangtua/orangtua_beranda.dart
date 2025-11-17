@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../pengaturan/warna.dart';
 import 'drawer/drawer.dart';        // Mengimpor DrawerOrangtua
-import 'drawer/buttomnav.dart';     // Mengimpor FooterOrangtua
+import 'drawer/bottomnav.dart';     // Mengimpor FooterOrangtua
 
 class BerandaOrangtua extends StatefulWidget {
   const BerandaOrangtua({super.key});
@@ -15,8 +15,8 @@ class _BerandaOrangtuaState extends State<BerandaOrangtua> {
 
   final List<Map<String, dynamic>> _dataAnak = [
     {
-      'nama': 'Andi Prasetyo',
-      'kelas': 'Kelas 10 A',
+      'nama': 'Agustian',
+      'kelas': 'Kelas 5 SD',
       'foto': Icons.person,
     },
   ];
@@ -106,7 +106,7 @@ class _BerandaOrangtuaState extends State<BerandaOrangtua> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text(
-                    'Halo, Ibu Ningsih!',
+                    'Halo, Agustina Suraisa',
                     style: TextStyle(
                       color: Colors.white,
                       fontSize: 24,

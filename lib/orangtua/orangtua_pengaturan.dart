@@ -1,23 +1,16 @@
 import 'package:flutter/material.dart';
 import '../../pengaturan/warna.dart';
 import 'drawer/drawer.dart';
-import 'drawer/bottomnav.dart';
 
-class PengaturanMurid extends StatefulWidget {
-  const PengaturanMurid({super.key});
+class PengaturanOrangtua extends StatefulWidget {
+  const PengaturanOrangtua({super.key});
 
   @override
-  State<PengaturanMurid> createState() => _PengaturanMuridState();
+  State<PengaturanOrangtua> createState() => _PengaturanOrangtuaState();
 }
 
-class _PengaturanMuridState extends State<PengaturanMurid> {
-  int _selectedIndex = 0;
-
-  void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
-  }
+class _PengaturanOrangtuaState extends State<PengaturanOrangtua> {
+  bool _isDarkMode = false;
 
   @override
   Widget build(BuildContext context) {
@@ -36,9 +29,7 @@ class _PengaturanMuridState extends State<PengaturanMurid> {
         ),
         iconTheme: const IconThemeData(color: Colors.white),
       ),
-
-      drawer: const DrawerMurid(),
-
+      drawer: const DrawerOrangtua(),
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(16),
@@ -56,7 +47,7 @@ class _PengaturanMuridState extends State<PengaturanMurid> {
               ),
               const SizedBox(height: 4),
               const Text(
-                'Atur profil dan aplikasi kamu',
+                'Perbarui foto, sandi, bahasa, dan lainnya',
                 style: TextStyle(
                   fontSize: 14,
                   color: AppColors.textLight,
@@ -67,7 +58,7 @@ class _PengaturanMuridState extends State<PengaturanMurid> {
 
               // Akun Section
               _buildSectionCard(
-                title: 'Profil Saya',
+                title: 'Pengaturan Akun',
                 icon: Icons.person_outline,
                 items: [
                   _buildSettingItem(
@@ -75,6 +66,7 @@ class _PengaturanMuridState extends State<PengaturanMurid> {
                     icon: Icons.photo_camera,
                     iconColor: Colors.blue,
                     title: 'Ubah Foto Profil',
+                    subtitle: 'Perbarui foto profil Anda',
                     onTap: () {},
                   ),
                   _buildSettingItem(
@@ -82,6 +74,7 @@ class _PengaturanMuridState extends State<PengaturanMurid> {
                     icon: Icons.lock_outline,
                     iconColor: Colors.orange,
                     title: 'Ubah Kata Sandi',
+                    subtitle: 'Amankan akun Anda',
                     onTap: () {},
                   ),
                 ],
@@ -89,30 +82,36 @@ class _PengaturanMuridState extends State<PengaturanMurid> {
 
               const SizedBox(height: 16),
 
-              // Aplikasi Section
+              // Pilih Tema Section
               _buildSectionCard(
-                title: 'Pengaturan Aplikasi',
+                title: 'Pilih Tema',
+                icon: Icons.palette_outlined,
+                items: [
+                  _buildThemeToggle(),
+                ],
+              ),
+
+              const SizedBox(height: 16),
+
+              // Preferensi Section
+              _buildSectionCard(
+                title: 'Preferensi',
                 icon: Icons.settings_outlined,
                 items: [
-                  _buildSettingItem(
-                    context,
-                    icon: Icons.notifications_outlined,
-                    iconColor: Colors.red,
-                    title: 'Notifikasi',
-                    onTap: () {},
-                  ),
                   _buildSettingItem(
                     context,
                     icon: Icons.language,
                     iconColor: Colors.green,
                     title: 'Bahasa',
+                    subtitle: 'Indonesia',
                     onTap: () {},
                   ),
                   _buildSettingItem(
                     context,
-                    icon: Icons.volume_up_outlined,
-                    iconColor: Colors.purple,
-                    title: 'Suara',
+                    icon: Icons.notifications_outlined,
+                    iconColor: Colors.red,
+                    title: 'Notifikasi',
+                    subtitle: 'Kelola pemberitahuan',
                     onTap: () {},
                   ),
                 ],
@@ -122,21 +121,15 @@ class _PengaturanMuridState extends State<PengaturanMurid> {
 
               // Bantuan Section
               _buildSectionCard(
-                title: 'Bantuan',
+                title: 'Bantuan & Dukungan',
                 icon: Icons.help_outline,
                 items: [
                   _buildSettingItem(
                     context,
-                    icon: Icons.chat_bubble_outline,
-                    iconColor: Colors.cyan,
-                    title: 'Hubungi Guru',
-                    onTap: () {},
-                  ),
-                  _buildSettingItem(
-                    context,
-                    icon: Icons.star_outline,
-                    iconColor: Colors.amber,
-                    title: 'Beri Rating',
+                    icon: Icons.support_agent,
+                    iconColor: Colors.purple,
+                    title: 'Pusat Bantuan',
+                    subtitle: 'FAQ dan panduan',
                     onTap: () {},
                   ),
                   _buildSettingItem(
@@ -144,6 +137,7 @@ class _PengaturanMuridState extends State<PengaturanMurid> {
                     icon: Icons.info_outline,
                     iconColor: Colors.grey,
                     title: 'Tentang Aplikasi',
+                    subtitle: 'Versi 1.0.0',
                     onTap: () {},
                   ),
                 ],
@@ -153,11 +147,6 @@ class _PengaturanMuridState extends State<PengaturanMurid> {
             ],
           ),
         ),
-      ),
-
-      bottomNavigationBar: FooterMurid(
-        selectedIndex: _selectedIndex,
-        onItemTapped: _onItemTapped,
       ),
     );
   }
@@ -212,6 +201,7 @@ class _PengaturanMuridState extends State<PengaturanMurid> {
     required IconData icon,
     required Color iconColor,
     required String title,
+    required String subtitle,
     required VoidCallback onTap,
   }) {
     return Material(
@@ -232,13 +222,26 @@ class _PengaturanMuridState extends State<PengaturanMurid> {
               ),
               const SizedBox(width: 14),
               Expanded(
-                child: Text(
-                  title,
-                  style: const TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w500,
-                    color: AppColors.textDark,
-                  ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: const TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w500,
+                        color: AppColors.textDark,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      subtitle,
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: Colors.grey.shade600,
+                      ),
+                    ),
+                  ],
                 ),
               ),
               Icon(
@@ -253,5 +256,58 @@ class _PengaturanMuridState extends State<PengaturanMurid> {
     );
   }
 
-
+  Widget _buildThemeToggle() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: Colors.indigo.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(
+              _isDarkMode ? Icons.dark_mode : Icons.light_mode,
+              color: Colors.indigo,
+              size: 24,
+            ),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Mode Gelap',
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w500,
+                    color: AppColors.textDark,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  _isDarkMode ? 'Aktif' : 'Nonaktif',
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: Colors.grey.shade600,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Switch(
+            value: _isDarkMode,
+            onChanged: (value) {
+              setState(() {
+                _isDarkMode = value;
+              });
+            },
+            activeColor: AppColors.primary,
+          ),
+        ],
+      ),
+    );
+  }
 }

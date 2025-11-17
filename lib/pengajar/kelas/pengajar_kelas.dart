@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import '../../pengaturan/warna.dart';
-import 'drawer/drawer.dart';
-import 'halaman_forum.dart'; // 👈 Tambahkan ini
+import '../../../pengaturan/warna.dart';
+import '../drawer/drawer.dart';
+import 'pengajar_forum.dart'; // 👈 Tambahkan ini
 
 class PengajarKelasPage extends StatefulWidget {
   const PengajarKelasPage({super.key});
@@ -25,21 +25,21 @@ class _PengajarKelasPageState extends State<PengajarKelasPage> {
     {
       'id': '2',
       'namaKelas': 'Kelas Bahasa Inggris',
-      'mapel': 'English - SMA',
+      'mapel': 'English - SD',
       'pengajar': 'Ismaturrohmah',
       'color': Color(0xFF5B9BD5),
     },
     {
       'id': '3',
-      'namaKelas': 'Fisika Dasar',
-      'mapel': 'Fisika - SMA',
+      'namaKelas': 'Bahasa Indonesia',
+      'mapel': 'B.indo - SD',
       'pengajar': 'Ismaturrohmah',
       'color': Color(0xFFE67E22),
     },
     {
       'id': '4',
-      'namaKelas': 'Kimia Organik',
-      'mapel': 'Kimia - SMA',
+      'namaKelas': 'Ilmu Pengetahuan Alam',
+      'mapel': 'IPA - SMP',
       'pengajar': 'Ismaturrohmah',
       'color': Color(0xFF9B59B6),
     },
@@ -142,7 +142,7 @@ class _PengajarKelasPageState extends State<PengajarKelasPage> {
                   ),
                 ),
               ),
-              
+
               // Content
               Padding(
                 padding: const EdgeInsets.all(20),
@@ -163,7 +163,7 @@ class _PengajarKelasPageState extends State<PengajarKelasPage> {
                       overflow: TextOverflow.ellipsis,
                     ),
                     const SizedBox(height: 8),
-                    
+
                     // Mata Pelajaran
                     Text(
                       kelas['mapel'],
@@ -176,7 +176,7 @@ class _PengajarKelasPageState extends State<PengajarKelasPage> {
                       overflow: TextOverflow.ellipsis,
                     ),
                     const SizedBox(height: 8),
-                    
+
                     // Nama Pengajar
                     Row(
                       children: [
@@ -198,7 +198,7 @@ class _PengajarKelasPageState extends State<PengajarKelasPage> {
                   ],
                 ),
               ),
-              
+
               // Menu button
               Positioned(
                 right: 8,
@@ -218,7 +218,8 @@ class _PengajarKelasPageState extends State<PengajarKelasPage> {
                       value: 'edit',
                       child: Row(
                         children: [
-                          Icon(Icons.edit_outlined, size: 20, color: Colors.black87),
+                          Icon(Icons.edit_outlined,
+                              size: 20, color: Colors.black87),
                           SizedBox(width: 12),
                           Text('Edit Kelas'),
                         ],
@@ -228,7 +229,8 @@ class _PengajarKelasPageState extends State<PengajarKelasPage> {
                       value: 'delete',
                       child: Row(
                         children: [
-                          Icon(Icons.delete_outline, size: 20, color: Colors.red),
+                          Icon(Icons.delete_outline,
+                              size: 20, color: Colors.red),
                           SizedBox(width: 12),
                           Text(
                             'Hapus Kelas',
@@ -292,13 +294,13 @@ class _PengajarKelasPageState extends State<PengajarKelasPage> {
   }
 
   void _navigateToKelasForum(Map<String, dynamic> kelas) {
-  Navigator.push(
-    context,
-    MaterialPageRoute(
-      builder: (context) => HalamanForumKelas(kelasData: kelas),
-    ),
-  );
-}
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => HalamanForumKelas(kelasData: kelas),
+      ),
+    );
+  }
 
   void _showAddKelasDialog() {
     showDialog(
@@ -333,7 +335,8 @@ class _PengajarKelasPageState extends State<PengajarKelasPage> {
           'Hapus Kelas',
           style: TextStyle(fontWeight: FontWeight.w600),
         ),
-        content: Text('Apakah Anda yakin ingin menghapus kelas "${kelas['namaKelas']}"?'),
+        content: Text(
+            'Apakah Anda yakin ingin menghapus kelas "${kelas['namaKelas']}"?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../pengaturan/warna.dart';
 import '../drawer/drawer.dart';
-import '../drawer/buttomnav.dart';
+import '../drawer/bottomnav.dart';
 import 'halaman_buat_quiz.dart';
 import 'halaman_hasil_quiz.dart';
 
@@ -473,25 +473,6 @@ class _HalamanQuizState extends State<HalamanQuiz> with TickerProviderStateMixin
                         label: Text(isActive ? 'Hasil' : 'Upload'),
                         style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary, foregroundColor: AppColors.textWhite),
                       ),
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
                     ),
                   ],
                 ),

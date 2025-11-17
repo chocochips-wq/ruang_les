@@ -34,7 +34,7 @@ class _HalamanLoginState extends State<HalamanLogin> {
     'orangtua@gmail.com': {
       'password': '123456',
       'role': 'orangtua',
-      'nama': 'Ibu Ningsih'
+      'nama': 'Agustina Suraisa'
     },
   };
 

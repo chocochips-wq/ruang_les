@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../pengaturan/warna.dart';
+import '../../pengaturan/warna.dart';
 
 class HalamanForumKelas extends StatefulWidget {
   final Map<String, dynamic> kelasData;
@@ -15,8 +15,6 @@ class HalamanForumKelas extends StatefulWidget {
 
 class _HalamanForumKelasState extends State<HalamanForumKelas> {
   final TextEditingController _diskusiController = TextEditingController();
-
-  // Data dummy diskusi
   final List<Map<String, dynamic>> _diskusiList = [
     {
       'id': '1',
@@ -32,7 +30,7 @@ class _HalamanForumKelasState extends State<HalamanForumKelas> {
       'id': '2',
       'namaKelas': 'Kelas Matematika',
       'pengirim': 'Siti Nurhaliza',
-      'pesan': 'Kapan jadwal ujian tengah semester Bu?',
+      'pesan': 'Kapan jadwal latihan bu?',
       'balasan': 5,
       'waktu': '5 jam yang lalu',
       'avatar': 'S',

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../pengaturan/warna.dart';
 import 'drawer/drawer.dart';
-import 'drawer/buttomnav.dart';
+import 'drawer/bottomnav.dart';
 
 class BerandaMurid extends StatefulWidget {
   const BerandaMurid({super.key});

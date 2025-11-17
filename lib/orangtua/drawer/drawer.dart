@@ -1,15 +1,9 @@
 import 'package:flutter/material.dart';
-import '../../pengaturan/warna.dart';  // Sesuaikan dengan path warna yang benar
+import '../../pengaturan/warna.dart';
+import '../../pengaturan/rute.dart';
 
-class DrawerOrangtua extends StatefulWidget {
+class DrawerOrangtua extends StatelessWidget {
   const DrawerOrangtua({super.key});
-
-  @override
-  State<DrawerOrangtua> createState() => _DrawerOrangtuaState();
-}
-
-class _DrawerOrangtuaState extends State<DrawerOrangtua> {
-  int _selectedIndex = 0;
 
   @override
   Widget build(BuildContext context) {
@@ -43,7 +37,7 @@ class _DrawerOrangtuaState extends State<DrawerOrangtua> {
                   ),
                   const SizedBox(height: 12),
                   const Text(
-                    'Ibu Ningsih',  // Nama orangtua
+                    'Agustina Suraisa',
                     style: TextStyle(
                       color: Colors.white,
                       fontSize: 20,
@@ -52,7 +46,7 @@ class _DrawerOrangtuaState extends State<DrawerOrangtua> {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    'orangtua@gmail.com',  // Email orangtua
+                    'orangtua@gmail.com',
                     style: TextStyle(
                       color: Colors.white.withOpacity(0.9),
                       fontSize: 14,
@@ -69,89 +63,75 @@ class _DrawerOrangtuaState extends State<DrawerOrangtua> {
               padding: EdgeInsets.zero,
               children: [
                 _buildDrawerItem(
+                  context,
                   icon: Icons.dashboard,
                   title: 'Dashboard',
-                  index: 0, 
                   onTap: () {
-                    setState(() {
-                      _selectedIndex = 0;
-                    });
                     Navigator.pop(context);
+                    Navigator.pushReplacementNamed(context, AppRoutes.orangtuaBeranda);
                   },
                 ),
                 _buildDrawerItem(
+                  context,
                   icon: Icons.person,
                   title: 'Profile',
-                  index: 1, 
                   onTap: () {
-                    setState(() {
-                      _selectedIndex = 1;
-                    });
                     Navigator.pop(context);
+                    Navigator.pushReplacementNamed(context, AppRoutes.orangtuaProfile);
                   },
                 ),
                 _buildDrawerItem(
+                  context,
                   icon: Icons.forum,
                   title: 'Forum',
-                  index: 2, 
                   onTap: () {
-                    setState(() {
-                      _selectedIndex = 2;
-                    });
                     Navigator.pop(context);
+                    Navigator.pushReplacementNamed(context, AppRoutes.orangtuaForum);
                   },
                 ),
                 _buildDrawerItem(
+                  context,
                   icon: Icons.assignment,
                   title: 'Laporan Belajar',
-                  index: 3, 
                   onTap: () {
-                    setState(() {
-                      _selectedIndex = 3;
-                    });
                     Navigator.pop(context);
+                    Navigator.pushReplacementNamed(context, AppRoutes.orangtuaLaporan);
                   },
                 ),
                 _buildDrawerItem(
+                  context,
                   icon: Icons.payment,
                   title: 'Pembayaran',
-                  index: 4, 
                   onTap: () {
-                    setState(() {
-                      _selectedIndex = 4;
-                    });
                     Navigator.pop(context);
+                    Navigator.pushReplacementNamed(context, AppRoutes.orangtuaPembayaran);
                   },
                 ),
                 _buildDrawerItem(
+                  context,
                   icon: Icons.feedback,
                   title: 'Feedback',
-                  index: 4, 
                   onTap: () {
-                    setState(() {
-                      _selectedIndex = 4;
-                    });
                     Navigator.pop(context);
+                    Navigator.pushReplacementNamed(context, AppRoutes.orangtuaFeedback);
                   },
                 ),
                 _buildDrawerItem(
+                  context,
                   icon: Icons.settings,
                   title: 'Pengaturan',
-                  index: 5, 
                   onTap: () {
-                    setState(() {
-                      _selectedIndex = 5;
-                    });
                     Navigator.pop(context);
+                    Navigator.pushReplacementNamed(context, AppRoutes.orangtuaPengaturan);
                   },
                 ),
                 const Divider(),
                 _buildDrawerItem(
+                  context,
                   icon: Icons.logout,
                   title: 'Keluar',
-                  index: -1, // Tombol logout tanpa index aktif
                   onTap: () {
-                    Navigator.pushReplacementNamed(context, '/login');
+                    _showLogoutDialog(context);
                   },
                   color: Colors.red,
                 ),
@@ -175,10 +155,10 @@ class _DrawerOrangtuaState extends State<DrawerOrangtua> {
     );
   }
 
-  Widget _buildDrawerItem({
+  Widget _buildDrawerItem(
+    BuildContext context, {
     required IconData icon,
     required String title,
-    required int index,
     required VoidCallback onTap,
     Color? color,
   }) {
@@ -191,9 +171,65 @@ class _DrawerOrangtuaState extends State<DrawerOrangtua> {
           fontSize: 16,
         ),
       ),
-      tileColor: _selectedIndex == index ? Colors.green.shade100 : null, // Highlight selected item
-      selected: _selectedIndex == index,
       onTap: onTap,
+    );
+  }
+
+  void _showLogoutDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          title: Row(
+            children: [
+              Icon(Icons.warning_amber_rounded, color: Colors.orange, size: 28),
+              const SizedBox(width: 8),
+              const Text(
+                'Keluar',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+            ],
+          ),
+          content: const Text(
+            'Apakah Anda yakin ingin keluar?',
+            style: TextStyle(fontSize: 15),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text(
+                'Batal',
+                style: TextStyle(
+                  color: Colors.grey.shade700,
+                  fontSize: 15,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pop(context); // Tutup dialog
+                Navigator.pushReplacementNamed(context, AppRoutes.login);
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+              ),
+              child: const Text(
+                'Keluar',
+                style: TextStyle(fontWeight: FontWeight.w600),
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 }

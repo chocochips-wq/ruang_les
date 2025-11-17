@@ -111,7 +111,7 @@ class PengajarDrawer extends StatelessWidget {
                   icon: Icons.payments,
                   title: 'Pembayaran',
                   index: 5,
-                  route: null,
+                  route: AppRoutes.pengajarPembayaran,
                 ),
 
                 // ===== GARIS PEMISAH =====
@@ -126,7 +126,7 @@ class PengajarDrawer extends StatelessWidget {
                   icon: Icons.settings,
                   title: 'Pengaturan',
                   index: 6,
-                  route: null,
+                  route: AppRoutes.pengajarPengaturan,
                 ),
 
                 // ===== LOGOUT (di bawah pengaturan) =====
