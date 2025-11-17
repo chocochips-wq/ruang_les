@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../pengaturan/warna.dart';
 import '../../pengaturan/rute.dart';
-import 'drawer/drawer.dart';
+import 'drawer/appbar.dart'; // Import scaffold baru
 
 class PengajarProfil extends StatefulWidget {
   const PengajarProfil({super.key});
@@ -11,8 +11,7 @@ class PengajarProfil extends StatefulWidget {
 }
 
 class _PengajarProfilState extends State<PengajarProfil> {
-  int _selectedMenuIndex = 1; // Untuk Drawer
-  int _bottomNavIndex = 2; // Untuk Bottom Navigation (Profil di posisi ke-3)
+  int _selectedMenuIndex = 1; // Untuk Drawer (Profile = index 1)
 
   // Data dummy yang bisa diedit
   String namaLengkap = 'Ismaturrohmah';
@@ -22,78 +21,76 @@ class _PengajarProfilState extends State<PengajarProfil> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
-        backgroundColor: AppColors.primaryDark,
-        elevation: 0,
-        title: const Text(
-          'Profile',
-          style: TextStyle(
-            color: AppColors.textWhite,
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        iconTheme: const IconThemeData(color: AppColors.textWhite),
-      ),
-      drawer: PengajarDrawer(
-        selectedMenuIndex: _selectedMenuIndex,
-        onMenuSelected: (index) {
-          setState(() => _selectedMenuIndex = index);
-        },
-      ),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            _buildProfileHeader(),
-            Padding(
-              padding: const EdgeInsets.all(16),
+    return PengajarScaffold(
+      // title: 'Profile', // Bisa dihapus biar otomatis dari index
+      selectedMenuIndex: _selectedMenuIndex,
+      onMenuSelected: (index) {
+        setState(() => _selectedMenuIndex = index);
+      },
+      onNotificationTap: () {
+        // Aksi ketika notif diklik
+        print('Notifikasi diklik');
+        // Navigator.pushNamed(context, AppRoutes.pengajarNotifikasi);
+      },
+      body: Column(
+        children: [
+          Expanded(
+            child: SingleChildScrollView(
               child: Column(
                 children: [
-                  _buildInfoCard(),
-                  const SizedBox(height: 16),
-                  _buildEditButton(),
+                  _buildProfileHeader(),
+                  Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      children: [
+                        _buildInfoCard(),
+                        const SizedBox(height: 16),
+                        _buildEditButton(),
+                      ],
+                    ),
+                  ),
                 ],
               ),
             ),
-          ],
-        ),
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        type: BottomNavigationBarType.fixed,
-        selectedItemColor: AppColors.primary,
-        unselectedItemColor: AppColors.textLight,
-        currentIndex: 2,
-        onTap: (index) {
-          String route;
-          switch (index) {
-            case 0:
-              route = AppRoutes.pengajarMateri;
-              break;
-            case 1:
-              route = AppRoutes.pengajarBeranda;
-              break;
-            case 2:
-              route = AppRoutes.pengajarProfil;
-              break;
-            default:
-              route = AppRoutes.pengajarBeranda;
-          }
-          Navigator.pushReplacementNamed(context, route);
-        },
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.menu_book),
-            label: 'Materi',
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Beranda',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: 'Profil',
+          
+          // Bottom Navigation
+          BottomNavigationBar(
+            type: BottomNavigationBarType.fixed,
+            selectedItemColor: AppColors.primary,
+            unselectedItemColor: AppColors.textLight,
+            currentIndex: 2,
+            onTap: (index) {
+              String route;
+              switch (index) {
+                case 0:
+                  route = AppRoutes.pengajarMateri;
+                  break;
+                case 1:
+                  route = AppRoutes.pengajarBeranda;
+                  break;
+                case 2:
+                  route = AppRoutes.pengajarProfil;
+                  break;
+                default:
+                  route = AppRoutes.pengajarBeranda;
+              }
+              Navigator.pushReplacementNamed(context, route);
+            },
+            items: const [
+              BottomNavigationBarItem(
+                icon: Icon(Icons.menu_book),
+                label: 'Materi',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.home),
+                label: 'Beranda',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.person),
+                label: 'Profil',
+              ),
+            ],
           ),
         ],
       ),

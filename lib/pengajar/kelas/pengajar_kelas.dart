@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../pengaturan/warna.dart';
-import '../drawer/drawer.dart';
-import 'pengajar_forum.dart'; // 👈 Tambahkan ini
+import '../drawer/appbar.dart'; // Import scaffold baru
+import 'pengajar_forum.dart';
 
 class PengajarKelasPage extends StatefulWidget {
   const PengajarKelasPage({super.key});
@@ -53,47 +53,43 @@ class _PengajarKelasPageState extends State<PengajarKelasPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.grey[50],
-      appBar: AppBar(
-        title: const Text(
-          'Kelas Saya',
-          style: TextStyle(
-            color: AppColors.textWhite,
-            fontWeight: FontWeight.w600,
-            fontSize: 20,
-          ),
-        ),
-        backgroundColor: AppColors.primary,
-        iconTheme: const IconThemeData(color: AppColors.textWhite),
-        elevation: 0,
-        centerTitle: false,
-      ),
-      drawer: PengajarDrawer(
-        selectedMenuIndex: _selectedMenuIndex,
-        onMenuSelected: _onMenuSelected,
-      ),
-      body: _kelasList.isEmpty
-          ? _buildEmptyState()
-          : GridView.builder(
-              padding: const EdgeInsets.all(16),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 1,
-                childAspectRatio: 2.5, // Membuat card landscape/persegi panjang
-                crossAxisSpacing: 16,
-                mainAxisSpacing: 16,
-              ),
-              itemCount: _kelasList.length,
-              itemBuilder: (context, index) {
-                return _buildKelasCard(_kelasList[index]);
-              },
+    return PengajarScaffold(
+      // title: 'Kelas Saya', // Bisa dihapus biar otomatis dari index
+      selectedMenuIndex: _selectedMenuIndex,
+      onMenuSelected: _onMenuSelected,
+      onNotificationTap: () {
+        print('Notifikasi diklik');
+        // Navigator.pushNamed(context, AppRoutes.pengajarNotifikasi);
+      },
+      body: Stack(
+        children: [
+          _kelasList.isEmpty
+              ? _buildEmptyState()
+              : GridView.builder(
+                  padding: const EdgeInsets.all(16),
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 1,
+                    childAspectRatio: 2.5,
+                    crossAxisSpacing: 16,
+                    mainAxisSpacing: 16,
+                  ),
+                  itemCount: _kelasList.length,
+                  itemBuilder: (context, index) {
+                    return _buildKelasCard(_kelasList[index]);
+                  },
+                ),
+          
+          // FloatingActionButton
+          Positioned(
+            right: 16,
+            bottom: 16,
+            child: FloatingActionButton(
+              onPressed: _showAddKelasDialog,
+              backgroundColor: AppColors.primary,
+              child: const Icon(Icons.add, color: AppColors.textWhite),
             ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          _showAddKelasDialog();
-        },
-        backgroundColor: AppColors.primary,
-        child: const Icon(Icons.add, color: AppColors.textWhite),
+          ),
+        ],
       ),
     );
   }

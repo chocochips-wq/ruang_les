@@ -474,7 +474,7 @@ class _HalamanQuizState extends State<HalamanQuiz> with TickerProviderStateMixin
                         style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary, foregroundColor: AppColors.textWhite),
                       ),
                     ),
-                  ],
+                  ],  
                 ),
               ],
             ),

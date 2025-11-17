@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../pengaturan/warna.dart';
-import 'drawer/drawer.dart';
+import 'drawer/appbar.dart';
 import 'drawer/bottomnav.dart';
 
 class HalamanBeranda extends StatefulWidget {
@@ -11,64 +11,26 @@ class HalamanBeranda extends StatefulWidget {
 }
 
 class _HalamanBerandaState extends State<HalamanBeranda> {
-  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   int _selectedMenuIndex = 0;
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      key: _scaffoldKey,
-      backgroundColor: AppColors.background,
-      // Gunakan PengajarDrawer yang sudah dipisah
-      drawer: PengajarDrawer(
-        selectedMenuIndex: _selectedMenuIndex,
-        onMenuSelected: (index) {
-          setState(() {
-            _selectedMenuIndex = index;
-          });
-        },
-      ),
+    // Pakai PengajarScaffold yang sudah include AppBar + Drawer + Notif
+    return PengajarScaffold(
+      title: 'Ruang Les', // Atau hapus ini biar otomatis jadi "Dashboard"
+      selectedMenuIndex: _selectedMenuIndex,
+      onMenuSelected: (index) {
+        setState(() {
+          _selectedMenuIndex = index;
+        });
+      },
+      onNotificationTap: () {
+        // Aksi ketika notif diklik
+        print('Notifikasi diklik');
+        // Navigator.pushNamed(context, AppRoutes.pengajarNotifikasi);
+      },
       body: Column(
         children: [
-          // Custom AppBar
-          Container(
-            padding: EdgeInsets.only(
-              top: MediaQuery.of(context).padding.top,
-            ),
-            decoration: const BoxDecoration(
-              color: AppColors.primaryDark,
-            ),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              child: Row(
-                children: [
-                  IconButton(
-                    icon: const Icon(Icons.menu),
-                    color: AppColors.textWhite,
-                    onPressed: () {
-                      _scaffoldKey.currentState?.openDrawer();
-                    },
-                  ),
-                  const Expanded(
-                    child: Text(
-                      'Ruang Les',
-                      style: TextStyle(
-                        color: AppColors.textWhite,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 18,
-                      ),
-                    ),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.notifications_outlined),
-                    color: AppColors.textWhite,
-                    onPressed: () {},
-                  ),
-                ],
-              ),
-            ),
-          ),
-
           // Main Content
           Expanded(
             child: OrientationBuilder(
@@ -178,10 +140,11 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
               },
             ),
           ),
+          
+          // Bottom Navigation
+          const PengajarFooter(currentIndex: 1),
         ],
       ),
-      // Gunakan PengajarFooter yang sudah dipisah
-      bottomNavigationBar: const PengajarFooter(currentIndex: 1),
     );
   }
 

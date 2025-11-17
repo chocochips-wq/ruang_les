@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../pengaturan/warna.dart';
-import 'drawer/drawer.dart';
-
+import '../pengajar/drawer/appbar.dart';         // <-- WAJIB
+    
 class PengajarNilai extends StatefulWidget {
   const PengajarNilai({super.key});
 
@@ -27,27 +27,14 @@ class _PengajarNilaiState extends State<PengajarNilai> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
-        backgroundColor: AppColors.primaryDark,
-        elevation: 0,
-        title: const Text(
-          'Laporan Anak',
-          style: TextStyle(
-            color: AppColors.textWhite,
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        iconTheme: const IconThemeData(color: AppColors.textWhite),
-      ),
-      drawer: PengajarDrawer(
-        selectedMenuIndex: _selectedMenuIndex,
-        onMenuSelected: (index) {
-          setState(() => _selectedMenuIndex = index);
-        },
-      ),
+    return PengajarScaffold(
+      title: 'Laporan Anak', // opsional → bisa dihapus karena otomatis
+      selectedMenuIndex: _selectedMenuIndex,
+
+      onMenuSelected: (index) {
+        setState(() => _selectedMenuIndex = index);
+      },
+
       body: ListView.builder(
         padding: const EdgeInsets.all(16),
         itemCount: _siswaList.length,
@@ -129,16 +116,16 @@ class _PengajarNilaiState extends State<PengajarNilai> {
           ),
           const SizedBox(height: 8),
           Text(
-            siswa['catatan'].isEmpty 
-                ? 'Belum ada catatan' 
+            siswa['catatan'].isEmpty
+                ? 'Belum ada catatan'
                 : siswa['catatan'],
             style: TextStyle(
               fontSize: 14,
-              color: siswa['catatan'].isEmpty 
-                  ? Colors.grey.shade400 
+              color: siswa['catatan'].isEmpty
+                  ? Colors.grey.shade400
                   : AppColors.textDark,
-              fontStyle: siswa['catatan'].isEmpty 
-                  ? FontStyle.italic 
+              fontStyle: siswa['catatan'].isEmpty
+                  ? FontStyle.italic
                   : FontStyle.normal,
             ),
           ),
@@ -163,7 +150,7 @@ class _PengajarNilaiState extends State<PengajarNilai> {
   }
 
   void _showInputCatatanDialog(Map<String, dynamic> siswa, int index) {
-    final TextEditingController catatanController = 
+    final TextEditingController catatanController =
         TextEditingController(text: siswa['catatan']);
 
     showDialog(
