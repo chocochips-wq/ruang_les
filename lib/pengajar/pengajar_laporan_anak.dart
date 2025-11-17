@@ -14,13 +14,18 @@ class _PengajarNilaiState extends State<PengajarNilai> {
 
   final List<Map<String, dynamic>> _siswaList = [
     {
-      'nama': 'Agustian',
-      'kelas': 'Matematika - SMP',
+      'nama': 'Rayne',
+      'kelas': 'Semi Private - SD',
       'catatan': '',
     },
     {
-      'nama': 'Tiyam',
-      'kelas': 'Matematika - SD',
+      'nama': 'Alfito',
+      'kelas': 'Reguler - PAUD',
+      'catatan': '',
+    },
+    {
+      'nama': 'Jonathan',
+      'kelas': 'Private - SD',
       'catatan': '',
     },
   ];
@@ -135,7 +140,7 @@ class _PengajarNilaiState extends State<PengajarNilai> {
             child: ElevatedButton.icon(
               onPressed: () => _showInputCatatanDialog(siswa, index),
               icon: const Icon(Icons.edit, size: 18),
-              label: const Text('Tambah/Edit Catatan'),
+              label: const Text('Edit Catatan'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primary,
                 shape: RoundedRectangleBorder(

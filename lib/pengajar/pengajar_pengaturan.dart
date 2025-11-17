@@ -34,12 +34,6 @@ class _PengajarPengaturanState extends State<PengajarPengaturan> {
               icon: Icons.account_circle,
               children: [
                 _buildListTile(
-                  icon: Icons.photo_camera,
-                  title: 'Perbarui Foto',
-                  subtitle: 'Ubah foto profile Anda',
-                  onTap: _showPhotoOptions,
-                ),
-                _buildListTile(
                   icon: Icons.lock,
                   title: 'Ubah Sandi',
                   subtitle: 'Perbarui kata sandi akun',
@@ -55,19 +49,6 @@ class _PengajarPengaturanState extends State<PengajarPengaturan> {
                     );
                   },
                 ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            _buildSection(
-              title: 'Tema',
-              icon: Icons.palette,
-              children: [
-                _buildRadioTile('Terang', _selectedTheme, (val) {
-                  setState(() => _selectedTheme = val!);
-                }),
-                _buildRadioTile('Gelap', _selectedTheme, (val) {
-                  setState(() => _selectedTheme = val!);
-                }),
               ],
             ),
           ],
@@ -146,48 +127,6 @@ class _PengajarPengaturanState extends State<PengajarPengaturan> {
       onChanged: onChanged,
       title: Text(value),
       activeColor: AppColors.primary,
-    );
-  }
-
-  void _showPhotoOptions() {
-    showModalBottomSheet(
-      context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (context) => Container(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text(
-              'Perbarui Foto Profile',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 20),
-            ListTile(
-              leading: const Icon(Icons.camera_alt, color: Colors.blue),
-              title: const Text('Ambil Foto'),
-              onTap: () {
-                Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Fitur kamera tersedia')),
-                );
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.photo_library, color: Colors.green),
-              title: const Text('Pilih dari Galeri'),
-              onTap: () {
-                Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Fitur galeri tersedia')),
-                );
-              },
-            ),
-          ],
-        ),
-      ),
     );
   }
 

@@ -14,14 +14,20 @@ class _PengajarPembayaranState extends State<PengajarPembayaran> {
 
   final List<Map<String, dynamic>> _pembayaranList = [
     {
-      'nama': 'Agustian',
-      'kelas': 'Matematika - SMP',
+      'nama': 'Rayne',
+      'kelas': 'Private - SD',
       'status': 'Belum Lunas',
       'lunas': false,
     },
     {
-      'nama': 'Tiyam',
-      'kelas': 'Matematika - SD',
+      'nama': 'Alfito',
+      'kelas': 'Reguler - PAUD',
+      'status': 'Lunas',
+      'lunas': true,
+    },
+    {
+      'nama': 'Jonathan',
+      'kelas': 'Semi Private - SD',
       'status': 'Lunas',
       'lunas': true,
     },

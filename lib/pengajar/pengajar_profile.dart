@@ -239,7 +239,7 @@ class _PengajarProfilState extends State<PengajarProfil> {
           const SizedBox(height: 12),
           _buildInfoRow(Icons.home, 'Alamat', alamat),
           const SizedBox(height: 12),
-          _buildInfoRow(Icons.phone, 'No. HP', noHp),
+          _buildInfoRow(Icons.phone, 'No. Telepon', noHp),
         ],
       ),
     );
@@ -324,7 +324,7 @@ class _PengajarProfilState extends State<PengajarProfil> {
               const SizedBox(height: 12),
               _buildTextField(alamatCtrl, 'Alamat', Icons.home, maxLines: 2),
               const SizedBox(height: 12),
-              _buildTextField(noHpCtrl, 'No. HP', Icons.phone),
+              _buildTextField(noHpCtrl, 'No. Telepon', Icons.phone),
             ],
           ),
         ),

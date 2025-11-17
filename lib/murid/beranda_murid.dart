@@ -121,9 +121,9 @@ class _BerandaMuridState extends State<BerandaMurid> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('Halo, Alfito! 👋', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white)),
+                const Text('Halo, Alfito 👋', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white)),
                 const SizedBox(height: 8),
-                Text('Selamat datang kembali!', style: TextStyle(fontSize: 14, color: Colors.white.withOpacity(0.9))),
+                Text('Selamat datang!', style: TextStyle(fontSize: 14, color: Colors.white.withOpacity(0.9))),
                 const SizedBox(height: 4),
                 Text('Mari lanjutkan belajarmu hari ini', style: TextStyle(fontSize: 13, color: Colors.white.withOpacity(0.8))),
               ],
