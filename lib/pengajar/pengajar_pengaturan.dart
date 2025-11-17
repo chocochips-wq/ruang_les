@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../pengaturan/warna.dart';
-import 'drawer/drawer.dart';
+import 'drawer/appbar.dart'; // Import PengajarScaffold
 
 class PengajarPengaturan extends StatefulWidget {
   const PengajarPengaturan({super.key});
@@ -15,72 +15,63 @@ class _PengajarPengaturanState extends State<PengajarPengaturan> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
-        backgroundColor: AppColors.primaryDark,
-        elevation: 0,
-        title: const Text(
-          'Pengaturan',
-          style: TextStyle(
-            color: AppColors.textWhite,
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-          ),
+    return PengajarScaffold(
+      // title: 'Pengaturan', // Opsional, akan auto pakai "Pengaturan" sesuai selectedMenuIndex
+      selectedMenuIndex: _selectedMenuIndex,
+      onMenuSelected: (index) => setState(() => _selectedMenuIndex = index),
+      onNotificationTap: () {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Anda memiliki 3 notifikasi baru')),
+        );
+      },
+      body: Container(
+        color: AppColors.background,
+        child: ListView(
+          padding: const EdgeInsets.all(16),
+          children: [
+            _buildSection(
+              title: 'Pengaturan Akun',
+              icon: Icons.account_circle,
+              children: [
+                _buildListTile(
+                  icon: Icons.photo_camera,
+                  title: 'Perbarui Foto',
+                  subtitle: 'Ubah foto profile Anda',
+                  onTap: _showPhotoOptions,
+                ),
+                _buildListTile(
+                  icon: Icons.lock,
+                  title: 'Ubah Sandi',
+                  subtitle: 'Perbarui kata sandi akun',
+                  onTap: _showChangePasswordDialog,
+                ),
+                _buildListTile(
+                  icon: Icons.language,
+                  title: 'Bahasa',
+                  subtitle: 'Indonesia',
+                  onTap: () {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Fitur bahasa tersedia')),
+                    );
+                  },
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            _buildSection(
+              title: 'Tema',
+              icon: Icons.palette,
+              children: [
+                _buildRadioTile('Terang', _selectedTheme, (val) {
+                  setState(() => _selectedTheme = val!);
+                }),
+                _buildRadioTile('Gelap', _selectedTheme, (val) {
+                  setState(() => _selectedTheme = val!);
+                }),
+              ],
+            ),
+          ],
         ),
-        iconTheme: const IconThemeData(color: AppColors.textWhite),
-      ),
-      drawer: PengajarDrawer(
-        selectedMenuIndex: _selectedMenuIndex,
-        onMenuSelected: (index) {
-          setState(() => _selectedMenuIndex = index);
-        },
-      ),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          _buildSection(
-            title: 'Pengaturan Akun',
-            icon: Icons.account_circle,
-            children: [
-              _buildListTile(
-                icon: Icons.photo_camera,
-                title: 'Perbarui Foto',
-                subtitle: 'Ubah foto profile Anda',
-                onTap: _showPhotoOptions,
-              ),
-              _buildListTile(
-                icon: Icons.lock,
-                title: 'Ubah Sandi',
-                subtitle: 'Perbarui kata sandi akun',
-                onTap: _showChangePasswordDialog,
-              ),
-              _buildListTile(
-                icon: Icons.language,
-                title: 'Bahasa',
-                subtitle: 'Indonesia',
-                onTap: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Fitur bahasa tersedia')),
-                  );
-                },
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          _buildSection(
-            title: 'Tema',
-            icon: Icons.palette,
-            children: [
-              _buildRadioTile('Terang', _selectedTheme, (val) {
-                setState(() => _selectedTheme = val!);
-              }),
-              _buildRadioTile('Gelap', _selectedTheme, (val) {
-                setState(() => _selectedTheme = val!);
-              }),
-            ],
-          ),
-        ],
       ),
     );
   }

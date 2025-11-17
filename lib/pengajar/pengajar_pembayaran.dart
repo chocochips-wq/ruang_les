@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../pengaturan/warna.dart';
-import 'drawer/drawer.dart';
+import 'drawer/appbar.dart'; // Import PengajarScaffold
 
 class PengajarPembayaran extends StatefulWidget {
   const PengajarPembayaran({super.key});
@@ -29,33 +29,24 @@ class _PengajarPembayaranState extends State<PengajarPembayaran> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
-        backgroundColor: AppColors.primaryDark,
-        elevation: 0,
-        title: const Text(
-          'Kelola Pembayaran',
-          style: TextStyle(
-            color: AppColors.textWhite,
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-          ),
+    return PengajarScaffold(
+      title: 'Kelola Pembayaran', // Atau hapus untuk pakai default "Pembayaran"
+      selectedMenuIndex: _selectedMenuIndex,
+      onMenuSelected: (index) => setState(() => _selectedMenuIndex = index),
+      onNotificationTap: () {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Anda memiliki 3 notifikasi baru')),
+        );
+      },
+      body: Container(
+        color: AppColors.background,
+        child: ListView.builder(
+          padding: const EdgeInsets.all(16),
+          itemCount: _pembayaranList.length,
+          itemBuilder: (context, index) {
+            return _buildPembayaranCard(_pembayaranList[index], index);
+          },
         ),
-        iconTheme: const IconThemeData(color: AppColors.textWhite),
-      ),
-      drawer: PengajarDrawer(
-        selectedMenuIndex: _selectedMenuIndex,
-        onMenuSelected: (index) {
-          setState(() => _selectedMenuIndex = index);
-        },
-      ),
-      body: ListView.builder(
-        padding: const EdgeInsets.all(16),
-        itemCount: _pembayaranList.length,
-        itemBuilder: (context, index) {
-          return _buildPembayaranCard(_pembayaranList[index], index);
-        },
       ),
     );
   }

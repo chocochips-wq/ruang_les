@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../pengaturan/warna.dart';
-import '../drawer/drawer.dart';
-import '../drawer/bottomnav.dart';
+import '../drawer/appbar.dart'; // Import PengajarScaffold
 import 'halaman_buat_quiz.dart';
 import 'halaman_hasil_quiz.dart';
 
@@ -13,7 +12,6 @@ class HalamanQuiz extends StatefulWidget {
 }
 
 class _HalamanQuizState extends State<HalamanQuiz> with TickerProviderStateMixin {
-  final _scaffoldKey = GlobalKey<ScaffoldState>();
   final _searchController = TextEditingController();
   final _selectedFilter = 'Semua pelajaran';
   int _selectedMenuIndex = 3;
@@ -82,16 +80,18 @@ class _HalamanQuizState extends State<HalamanQuiz> with TickerProviderStateMixin
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      key: _scaffoldKey,
-      backgroundColor: AppColors.background,
-      drawer: PengajarDrawer(
-        selectedMenuIndex: _selectedMenuIndex,
-        onMenuSelected: (index) => setState(() => _selectedMenuIndex = index),
-      ),
+    return PengajarScaffold(
+      title: 'Kelola Quiz', // Bisa pakai custom title atau hapus untuk pakai default
+      selectedMenuIndex: _selectedMenuIndex,
+      onMenuSelected: (index) => setState(() => _selectedMenuIndex = index),
+      onNotificationTap: () {
+        // Handler untuk notifikasi
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Anda memiliki 3 notifikasi baru')),
+        );
+      },
       body: Column(
         children: [
-          _buildAppBar(),
           Expanded(
             child: SingleChildScrollView(
               padding: const EdgeInsets.all(20),
@@ -108,50 +108,6 @@ class _HalamanQuizState extends State<HalamanQuiz> with TickerProviderStateMixin
             ),
           ),
         ],
-      ),
-      bottomNavigationBar: const PengajarFooter(currentIndex: 0),
-    );
-  }
-
-  Widget _buildAppBar() {
-    return Container(
-      padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top),
-      decoration: BoxDecoration(
-        color: AppColors.primary,
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.primary.withOpacity(0.3),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        child: Row(
-          children: [
-            IconButton(
-              icon: const Icon(Icons.menu),
-              color: AppColors.textWhite,
-              onPressed: () => _scaffoldKey.currentState?.openDrawer(),
-            ),
-            const Expanded(
-              child: Text(
-                'Kelola Quiz',
-                style: TextStyle(
-                  color: AppColors.textWhite,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 18,
-                ),
-              ),
-            ),
-            IconButton(
-              icon: const Icon(Icons.notifications_outlined),
-              color: AppColors.textWhite,
-              onPressed: () {},
-            ),
-          ],
-        ),
       ),
     );
   }
@@ -272,7 +228,6 @@ class _HalamanQuizState extends State<HalamanQuiz> with TickerProviderStateMixin
                   ),
                 );
                 
-                // Jika ada quiz baru yang dikembalikan
                 if (result != null && result is Map<String, dynamic>) {
                   _addNewQuiz(result);
                 }
@@ -320,7 +275,6 @@ class _HalamanQuizState extends State<HalamanQuiz> with TickerProviderStateMixin
       ),
       child: Column(
         children: [
-          // Header
           Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
@@ -368,7 +322,6 @@ class _HalamanQuizState extends State<HalamanQuiz> with TickerProviderStateMixin
               ],
             ),
           ),
-          // Content
           Padding(
             padding: const EdgeInsets.all(20),
             child: Column(
@@ -450,7 +403,6 @@ class _HalamanQuizState extends State<HalamanQuiz> with TickerProviderStateMixin
                                   },
                                   style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
                                   child: const Text('Hapus'),
-                                  
                                 ),
                               ],
                             ),
@@ -474,7 +426,7 @@ class _HalamanQuizState extends State<HalamanQuiz> with TickerProviderStateMixin
                         style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary, foregroundColor: AppColors.textWhite),
                       ),
                     ),
-                  ],  
+                  ],
                 ),
               ],
             ),

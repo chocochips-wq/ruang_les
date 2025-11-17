@@ -17,7 +17,6 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
   Widget build(BuildContext context) {
     // Pakai PengajarScaffold yang sudah include AppBar + Drawer + Notif
     return PengajarScaffold(
-      title: 'Ruang Les', // Atau hapus ini biar otomatis jadi "Dashboard"
       selectedMenuIndex: _selectedMenuIndex,
       onMenuSelected: (index) {
         setState(() {
@@ -42,16 +41,6 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Dashboard Title
-                        const Text(
-                          'dashboard',
-                          style: TextStyle(
-                            fontSize: 28,
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.textDark,
-                          ),
-                        ),
-
                         const SizedBox(height: 24),
 
                         // Stats Cards
