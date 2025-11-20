@@ -361,7 +361,7 @@ class _ProfileMuridState extends State<ProfileMurid> {
             ],
           ),
           const SizedBox(height: 16),
-          _buildSimpleInfoRow('📞', 'No. HP', _profileData['phone']!),
+          _buildSimpleInfoRow('📞', 'No. Telepon', _profileData['phone']!),
           const SizedBox(height: 12),
           _buildSimpleInfoRow('📍', 'Alamat', _profileData['alamat']!),
           const SizedBox(height: 12),

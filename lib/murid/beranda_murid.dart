@@ -64,6 +64,7 @@ class _BerandaMuridState extends State<BerandaMurid> {
                 child: Container(
                   width: 8,
                   height: 8,
+                  
                   decoration: BoxDecoration(
                     color: Colors.red,
                     shape: BoxShape.circle,
@@ -125,7 +126,7 @@ class _BerandaMuridState extends State<BerandaMurid> {
                 const SizedBox(height: 8),
                 Text('Selamat datang!', style: TextStyle(fontSize: 14, color: Colors.white.withOpacity(0.9))),
                 const SizedBox(height: 4),
-                Text('Mari lanjutkan belajarmu hari ini', style: TextStyle(fontSize: 13, color: Colors.white.withOpacity(0.8))),
+                Text('Mari tunjukkan semangat belajarmu hari ini', style: TextStyle(fontSize: 13, color: Colors.white.withOpacity(0.8))),
               ],
             ),
           ),

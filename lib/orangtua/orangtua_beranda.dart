@@ -15,7 +15,7 @@ class _BerandaOrangtuaState extends State<BerandaOrangtua> {
 
   final List<Map<String, dynamic>> _dataAnak = [
     {
-      'nama': 'Agustian',
+      'nama': 'Zayn Athallah',
       'kelas': 'Kelas 5 SD',
       'foto': Icons.person,
     },

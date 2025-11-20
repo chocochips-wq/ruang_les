@@ -19,7 +19,7 @@ class _HalamanForumKelasState extends State<HalamanForumKelas> {
     {
       'id': '1',
       'namaKelas': 'Kelas Matematika',
-      'pengirim': 'Agustian Rokhman',
+      'pengirim': 'Zayn Athallah',
       'pesan': 'Ada yang tahu cara menyelesaikan soal nomor 5 di latihan Matematika Dasar?',
       'balasan': 1,
       'waktu': '2 jam yang lalu',
@@ -29,7 +29,7 @@ class _HalamanForumKelasState extends State<HalamanForumKelas> {
     {
       'id': '2',
       'namaKelas': 'Kelas Matematika',
-      'pengirim': 'Siti Nurhaliza',
+      'pengirim': 'Max Mayfield',
       'pesan': 'Kapan jadwal latihan bu?',
       'balasan': 5,
       'waktu': '5 jam yang lalu',
@@ -39,7 +39,7 @@ class _HalamanForumKelasState extends State<HalamanForumKelas> {
     {
       'id': '3',
       'namaKelas': 'Kelas Matematika',
-      'pengirim': 'Budi Santoso',
+      'pengirim': 'Will Harrington',
       'pesan': 'Materi hari ini sangat menarik, terima kasih Bu guru!',
       'balasan': 0,
       'waktu': '1 hari yang lalu',

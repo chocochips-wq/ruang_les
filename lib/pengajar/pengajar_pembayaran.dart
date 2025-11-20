@@ -14,7 +14,7 @@ class _PengajarPembayaranState extends State<PengajarPembayaran> {
 
   final List<Map<String, dynamic>> _pembayaranList = [
     {
-      'nama': 'Rayne',
+      'nama': 'Zayn Athallah',
       'kelas': 'Private - SD',
       'status': 'Belum Lunas',
       'lunas': false,

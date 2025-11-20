@@ -21,7 +21,7 @@ class _HalamanBuatQuizState extends State<HalamanBuatQuiz> {
   final List<Map<String, dynamic>> _questions = [];
 
   final _subjects = ['Matematika', 'Bahasa Indonesia', 'Bahasa Inggris', 'IPA', 'IPS', 'PPKN'];
-  final _classes = ['SD', 'SMP', 'SMA'];
+  final _classes = ['SD', 'SMP'];
   final _difficulties = ['Mudah', 'Sedang', 'Sulit'];
 
   @override

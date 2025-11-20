@@ -190,14 +190,14 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
           ),
           const Divider(height: 24),
           _buildScheduleItem(
-            'Reguler - Kelas 7',
+            'Reguler - SMP',
             '13:00 - 15:00',
             '8 Murid',
             Colors.orange,
           ),
           const Divider(height: 24),
           _buildScheduleItem(
-            'Semi Private - Kelas 6',
+            'Semi Private - SD',
             '15:00 - 17:00',
             '5 Murid',
             Colors.green,
@@ -291,15 +291,15 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
       child: Column(
         children: [
           _buildSingleFeedback(
-            'Bunda Rayne',
+            'Bunda Zayn',
             '2 hari yang lalu',
             'Terima kasih atas pengajarannya yang luar biasa! Anak saya sangat menikmati les matematika dan nilainya meningkat drastis.',
           ),
           const Divider(height: 24),
           _buildSingleFeedback(
-            'Ayah Honey',
+            'Ayah Eleven',
             '5 hari yang lalu',
-            'Penjelasan materi sangat jelas dan mudah dipahami. Honey sekarang lebih percaya diri dalam belajar.',
+            'Penjelasan materi sangat jelas dan mudah dipahami. Eleven sekarang lebih percaya diri dalam belajar.',
           ),
         ],
       ),
@@ -393,14 +393,14 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
           ),
           const Divider(height: 24),
           _buildReportItem(
-            'Rayne Menyelesaikan Quiz Bahasa Indonesia',
+            'Zayn Menyelesaikan Quiz Bahasa Indonesia',
             '15 Menit lalu',
             Icons.quiz,
             Colors.blue,
           ),
           const Divider(height: 24),
           _buildReportItem(
-            'Raka Bergabung di Kelas Semi Private 5A',
+            'Raka Bergabung di Kelas Semi Private SD',
             '1 Jam lalu',
             Icons.person_add,
             Colors.orange,

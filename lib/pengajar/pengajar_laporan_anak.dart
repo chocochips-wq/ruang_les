@@ -14,8 +14,8 @@ class _PengajarNilaiState extends State<PengajarNilai> {
 
   final List<Map<String, dynamic>> _siswaList = [
     {
-      'nama': 'Rayne',
-      'kelas': 'Semi Private - SD',
+      'nama': 'Zayn Athallah',
+      'kelas': 'Private - SD',
       'catatan': '',
     },
     {
@@ -25,7 +25,7 @@ class _PengajarNilaiState extends State<PengajarNilai> {
     },
     {
       'nama': 'Jonathan',
-      'kelas': 'Private - SD',
+      'kelas': 'Semi Private - SD',
       'catatan': '',
     },
   ];
