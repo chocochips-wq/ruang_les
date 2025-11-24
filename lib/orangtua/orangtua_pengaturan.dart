@@ -304,7 +304,7 @@ class _PengaturanOrangtuaState extends State<PengaturanOrangtua> {
                 _isDarkMode = value;
               });
             },
-            activeColor: AppColors.primary,
+            activeThumbColor: AppColors.primary,
           ),
         ],
       ),

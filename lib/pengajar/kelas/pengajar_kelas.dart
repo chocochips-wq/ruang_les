@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../pengaturan/warna.dart';
-import '../drawer/appbar.dart'; // Import scaffold baru
+import '../drawer/appbar.dart';
 import 'pengajar_forum.dart';
 
 class PengajarKelasPage extends StatefulWidget {
@@ -14,34 +14,34 @@ class _PengajarKelasPageState extends State<PengajarKelasPage> {
   int _selectedMenuIndex = 2; // Index untuk Kelas Saya
 
   // Data dummy kelas
-  final List<Map<String, dynamic>> _kelasList = [
+  List<Map<String, dynamic>> get _kelasList => [
     {
       'id': '1',
       'namaKelas': 'Semi Private',
       'mapel': 'Matematika - Aljabar - SMP',
       'pengajar': 'Ismaturrohmah',
-      'color': Color(0xFF4D9B91),
+      'color': const Color(0xFF4D9B91),
     },
     {
       'id': '2',
       'namaKelas': 'Private',
       'mapel': 'English - Grammar - SD',
       'pengajar': 'Ismaturrohmah',
-      'color': Color(0xFF5B9BD5),
+      'color': const Color(0xFF5B9BD5),
     },
     {
       'id': '3',
       'namaKelas': 'Reguler',
       'mapel': 'Bahasa Indonesia - Menulis - SD',
       'pengajar': 'Ismaturrohmah',
-      'color': Color(0xFFE67E22),
+      'color': const Color(0xFFE67E22),
     },
     {
       'id': '4',
       'namaKelas': 'Semi Private',
       'mapel': 'Ilmu Pengetahuhan Alam - Kimia - SMP',
       'pengajar': 'Ismaturrohmah',
-      'color': Color(0xFF9B59B6),
+      'color': const Color(0xFF9B59B6),
     },
   ];
 

@@ -11,8 +11,6 @@ class PengajarPengaturan extends StatefulWidget {
 
 class _PengajarPengaturanState extends State<PengajarPengaturan> {
   int _selectedMenuIndex = 6;
-  String _selectedTheme = 'Terang';
-
   @override
   Widget build(BuildContext context) {
     return PengajarScaffold(

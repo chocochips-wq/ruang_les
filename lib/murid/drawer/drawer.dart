@@ -156,11 +156,11 @@ class DrawerMurid extends StatelessWidget {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
-          title: Row(
+          title: const Row(
             children: [
               Icon(Icons.warning_amber_rounded, color: Colors.orange, size: 28),
-              const SizedBox(width: 8),
-              const Text(
+              SizedBox(width: 8),
+              Text(
                 'Keluar',
                 style: TextStyle(fontWeight: FontWeight.bold),
               ),

@@ -51,6 +51,7 @@ class PengajarScaffold extends StatelessWidget {
           style: const TextStyle(
             color: AppColors.textWhite,
             fontWeight: FontWeight.bold,
+            fontSize: 19,
           ),
         ),
         backgroundColor: AppColors.primary,

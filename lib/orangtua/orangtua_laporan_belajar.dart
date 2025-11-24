@@ -69,9 +69,9 @@ class _LaporanBelajarOrangtuaState extends State<LaporanBelajarOrangtua> {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         color: AppColors.primary,
-        borderRadius: const BorderRadius.only(
+        borderRadius: BorderRadius.only(
           bottomLeft: Radius.circular(24),
           bottomRight: Radius.circular(24),
         ),
@@ -81,14 +81,14 @@ class _LaporanBelajarOrangtuaState extends State<LaporanBelajarOrangtua> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
+            const Row(
               children: [
-                const Text(
+                Text(
                   '👋',
                   style: TextStyle(fontSize: 24),
                 ),
-                const SizedBox(width: 8),
-                const Expanded(
+                SizedBox(width: 8),
+                Expanded(
                   child: Text(
                     'HALO, PAK AGUS!',
                     style: TextStyle(
@@ -199,11 +199,11 @@ class _LaporanBelajarOrangtuaState extends State<LaporanBelajarOrangtua> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
+          const Row(
             children: [
               Icon(Icons.analytics_outlined, size: 20, color: AppColors.primary),
-              const SizedBox(width: 8),
-              const Text(
+              SizedBox(width: 8),
+              Text(
                 'Statistik Belajar',
                 style: TextStyle(
                   fontSize: 16,
@@ -302,11 +302,11 @@ class _LaporanBelajarOrangtuaState extends State<LaporanBelajarOrangtua> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
+          const Row(
             children: [
               Icon(Icons.school_outlined, size: 20, color: AppColors.primary),
-              const SizedBox(width: 8),
-              const Text(
+              SizedBox(width: 8),
+              Text(
                 'Performa Per Mata Pelajaran',
                 style: TextStyle(
                   fontSize: 16,
@@ -437,11 +437,11 @@ class _LaporanBelajarOrangtuaState extends State<LaporanBelajarOrangtua> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
+          const Row(
             children: [
               Icon(Icons.note_alt_outlined, size: 20, color: AppColors.primary),
-              const SizedBox(width: 8),
-              const Text(
+              SizedBox(width: 8),
+              Text(
                 'Catatan Pengajar',
                 style: TextStyle(
                   fontSize: 16,

@@ -136,7 +136,7 @@ class _FeedbackOrangtuaState extends State<FeedbackOrangtua> {
                         controller: _namaGuruController,
                         decoration: InputDecoration(
                           hintText: 'Masukkan nama guru',
-                          prefixIcon: Icon(Icons.person_outline, color: AppColors.primary),
+                          prefixIcon: const Icon(Icons.person_outline, color: AppColors.primary),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(10),
                             borderSide: BorderSide(color: Colors.grey.shade300),
@@ -365,7 +365,7 @@ class _FeedbackOrangtuaState extends State<FeedbackOrangtua> {
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(Icons.check_circle, color: Colors.green, size: 60),
+              const Icon(Icons.check_circle, color: Colors.green, size: 60),
               const SizedBox(height: 16),
               const Text(
                 'Feedback Berhasil Dikirim!',

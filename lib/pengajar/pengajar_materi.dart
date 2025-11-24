@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../pengaturan/warna.dart';
-import 'drawer/drawer.dart';
+import 'drawer/appbar.dart';
 import 'drawer/bottomnav.dart';
 import 'pengajar_kelola_materi.dart';
 
@@ -47,27 +47,15 @@ class _PengajarMateriState extends State<PengajarMateri> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
-        backgroundColor: AppColors.primaryDark,
-        elevation: 0,
-        title: const Text(
-          'Kelola Materi',
-          style: TextStyle(
-            color: AppColors.textWhite,
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        iconTheme: const IconThemeData(color: AppColors.textWhite),
-      ),
-      drawer: PengajarDrawer(
-        selectedMenuIndex: _selectedMenuIndex,
-        onMenuSelected: (index) {
-          setState(() => _selectedMenuIndex = index);
-        },
-      ),
+    // ✅ GUNAKAN PengajarScaffold dari appbar.dart
+    return PengajarScaffold(
+      title: "Kelola Materi",
+      selectedMenuIndex: _selectedMenuIndex,
+      onMenuSelected: (index) {
+        setState(() {
+          _selectedMenuIndex = index;
+        });
+      },
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -81,29 +69,28 @@ class _PengajarMateriState extends State<PengajarMateri> {
               },
             ),
           ),
+          // ✅ GUNAKAN PengajarFooter dari bottomnav.dart (urutan: Materi, Home, Profile)
+          const PengajarFooter(
+            currentIndex: 0, // Index 0 = Materi (posisi pertama)
+          ),
         ],
       ),
-      bottomNavigationBar: const PengajarFooter(currentIndex: 0),
     );
   }
 
+  // ============================================================
+  // HEADER
+  // ============================================================
   Widget _buildHeader() {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         color: AppColors.primaryDark,
-        borderRadius: const BorderRadius.only(
+        borderRadius: BorderRadius.only(
           bottomLeft: Radius.circular(24),
           bottomRight: Radius.circular(24),
         ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 8,
-            offset: const Offset(0, 4),
-          ),
-        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -117,10 +104,10 @@ class _PengajarMateriState extends State<PengajarMateri> {
             ),
           ),
           const SizedBox(height: 8),
-          Text(
+          const Text(
             'Pilih mata pelajaran untuk mengelola materi',
             style: TextStyle(
-              color: Colors.white.withOpacity(0.9),
+              color: Colors.white70,
               fontSize: 14,
             ),
           ),
@@ -128,7 +115,7 @@ class _PengajarMateriState extends State<PengajarMateri> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.2),
+              color: Colors.white.withOpacity(0.25),
               borderRadius: BorderRadius.circular(20),
             ),
             child: Row(
@@ -141,7 +128,6 @@ class _PengajarMateriState extends State<PengajarMateri> {
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 13,
-                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ],
@@ -152,6 +138,9 @@ class _PengajarMateriState extends State<PengajarMateri> {
     );
   }
 
+  // ============================================================
+  // CARD MATERI
+  // ============================================================
   Widget _buildMateriCard(Map<String, dynamic> materi) {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
@@ -166,118 +155,113 @@ class _PengajarMateriState extends State<PengajarMateri> {
           ),
         ],
       ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(16),
-          onTap: () => _bukaKelolaMateri(materi),
-          child: Padding(
-            padding: const EdgeInsets.all(20),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(16),
+        onTap: () => _bukaKelolaMateri(materi),
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Row(
+            children: [
+              _buildIconBox(materi),
+              const SizedBox(width: 16),
+              _buildMateriInfo(materi),
+              _buildArrow(materi),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildIconBox(Map<String, dynamic> materi) {
+    return Container(
+      width: 70,
+      height: 70,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            materi['color'],
+            materi['color'].withOpacity(0.7),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: materi['color'].withOpacity(0.3),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Icon(
+        materi['icon'],
+        color: Colors.white,
+        size: 36,
+      ),
+    );
+  }
+
+  Widget _buildMateriInfo(Map<String, dynamic> materi) {
+    return Expanded(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            materi['mata_pelajaran'],
+            style: const TextStyle(
+              fontSize: 17,
+              fontWeight: FontWeight.bold,
+              color: AppColors.textDark,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            materi['deskripsi'],
+            style: const TextStyle(
+              fontSize: 13,
+              color: Colors.grey,
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          const SizedBox(height: 8),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+            decoration: BoxDecoration(
+              color: materi['color'].withOpacity(0.1),
+              borderRadius: BorderRadius.circular(12),
+            ),
             child: Row(
+              mainAxisSize: MainAxisSize.min,
               children: [
-                Container(
-                  width: 70,
-                  height: 70,
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        materi['color'],
-                        materi['color'].withOpacity(0.7),
-                      ],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: [
-                      BoxShadow(
-                        color: materi['color'].withOpacity(0.3),
-                        blurRadius: 8,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
-                  ),
-                  child: Icon(
-                    materi['icon'],
-                    color: Colors.white,
-                    size: 36,
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        materi['mata_pelajaran'],
-                        style: const TextStyle(
-                          fontSize: 17,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.textDark,
-                        ),
-                      ),
-                      const SizedBox(height: 6),
-                      Text(
-                        materi['deskripsi'],
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: Colors.grey.shade600,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: 8),
-                      Row(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 10,
-                              vertical: 4,
-                            ),
-                            decoration: BoxDecoration(
-                              color: materi['color'].withOpacity(0.1),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Row(
-                              children: [
-                                Icon(
-                                  Icons.file_copy_outlined,
-                                  size: 14,
-                                  color: materi['color'],
-                                ),
-                                const SizedBox(width: 4),
-                                Text(
-                                  '${materi['jumlah']} Materi',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w600,
-                                    color: materi['color'],
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: materi['color'].withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Icon(
-                    Icons.arrow_forward_ios,
-                    size: 18,
+                Icon(Icons.file_copy_outlined, size: 14, color: materi['color']),
+                const SizedBox(width: 4),
+                Text(
+                  '${materi['jumlah']} Materi',
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
                     color: materi['color'],
                   ),
                 ),
               ],
             ),
           ),
-        ),
+        ],
       ),
+    );
+  }
+
+  Widget _buildArrow(Map<String, dynamic> materi) {
+    return Container(
+      padding: const EdgeInsets.all(8),
+      decoration: BoxDecoration(
+        color: materi['color'].withOpacity(0.1),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Icon(Icons.arrow_forward_ios, size: 18, color: materi['color']),
     );
   }
 

@@ -23,7 +23,7 @@ class _PengajarKelolaMateriState extends State<PengajarKelolaMateri> {
   final _kelasController = TextEditingController();
   final _deskripsiController = TextEditingController();
 
-  List<Map<String, dynamic>> _materiList = [];
+  final List<Map<String, dynamic>> _materiList = [];
   String? _selectedFileName;
 
   @override
@@ -597,23 +597,23 @@ class _PengajarKelolaMateriState extends State<PengajarKelolaMateri> {
                     borderRadius: BorderRadius.circular(12),
                   ),
                   itemBuilder: (context) => [
-                    PopupMenuItem(
+                    const PopupMenuItem(
                       value: 'edit',
                       child: Row(
                         children: [
                           Icon(Icons.edit, size: 20, color: Colors.blue),
-                          const SizedBox(width: 12),
-                          const Text('Edit'),
+                          SizedBox(width: 12),
+                          Text('Edit'),
                         ],
                       ),
                     ),
-                    PopupMenuItem(
+                    const PopupMenuItem(
                       value: 'hapus',
                       child: Row(
                         children: [
                           Icon(Icons.delete, size: 20, color: Colors.red),
-                          const SizedBox(width: 12),
-                          const Text('Hapus'),
+                          SizedBox(width: 12),
+                          Text('Hapus'),
                         ],
                       ),
                     ),
@@ -657,11 +657,11 @@ class _PengajarKelolaMateriState extends State<PengajarKelolaMateri> {
     });
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Row(
+        content: const Row(
           children: [
             Icon(Icons.check_circle, color: Colors.white),
-            const SizedBox(width: 12),
-            const Text('File berhasil dipilih'),
+            SizedBox(width: 12),
+            Text('File berhasil dipilih'),
           ],
         ),
         backgroundColor: Colors.green,
@@ -676,11 +676,11 @@ class _PengajarKelolaMateriState extends State<PengajarKelolaMateri> {
       if (_selectedFileName == null) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Row(
+            content: const Row(
               children: [
                 Icon(Icons.error, color: Colors.white),
-                const SizedBox(width: 12),
-                const Text('Harap pilih file terlebih dahulu'),
+                SizedBox(width: 12),
+                Text('Harap pilih file terlebih dahulu'),
               ],
             ),
             backgroundColor: Colors.orange,
@@ -707,11 +707,11 @@ class _PengajarKelolaMateriState extends State<PengajarKelolaMateri> {
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Row(
+          content: const Row(
             children: [
               Icon(Icons.check_circle, color: Colors.white),
-              const SizedBox(width: 12),
-              const Text('Materi berhasil diunggah'),
+              SizedBox(width: 12),
+              Text('Materi berhasil diunggah'),
             ],
           ),
           backgroundColor: Colors.green,

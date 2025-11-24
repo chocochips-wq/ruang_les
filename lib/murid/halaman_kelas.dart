@@ -211,7 +211,7 @@ class _HalamanKelasState extends State<HalamanKelas> {
               color: AppColors.primary.withOpacity(0.1),
               borderRadius: BorderRadius.circular(8),
             ),
-            child: Icon(Icons.schedule, color: AppColors.primary, size: 22),
+            child: const Icon(Icons.schedule, color: AppColors.primary, size: 22),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -229,7 +229,7 @@ class _HalamanKelasState extends State<HalamanKelas> {
                 const SizedBox(height: 2),
                 Text(
                   time,
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 12,
                     color: AppColors.textLight,
                   ),
@@ -285,7 +285,7 @@ class _HalamanKelasState extends State<HalamanKelas> {
                   color: AppColors.primary.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: Icon(Icons.book, color: AppColors.primary, size: 20),
+                child: const Icon(Icons.book, color: AppColors.primary, size: 20),
               ),
               const SizedBox(width: 10),
               const Expanded(

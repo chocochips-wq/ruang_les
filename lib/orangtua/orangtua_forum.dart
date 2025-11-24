@@ -77,12 +77,12 @@ class _ForumOrangtuaState extends State<ForumOrangtua> {
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(color: AppColors.primary),
                   ),
-                  child: Row(
+                  child: const Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Icon(Icons.add_circle_outline, color: AppColors.primary, size: 22),
-                      const SizedBox(width: 10),
-                      const Text(
+                      SizedBox(width: 10),
+                      Text(
                         'Buat Diskusi Baru',
                         style: TextStyle(
                           fontSize: 15,
@@ -380,11 +380,11 @@ class _ForumOrangtuaState extends State<ForumOrangtua> {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
-          title: Row(
+          title: const Row(
             children: [
-              const Icon(Icons.warning_amber_rounded, color: Colors.red, size: 28),
-              const SizedBox(width: 8),
-              const Text(
+              Icon(Icons.warning_amber_rounded, color: Colors.red, size: 28),
+              SizedBox(width: 8),
+              Text(
                 'Hapus Diskusi',
                 style: TextStyle(fontWeight: FontWeight.bold),
               ),
@@ -459,11 +459,11 @@ class _ForumOrangtuaState extends State<ForumOrangtua> {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
-          title: Row(
+          title: const Row(
             children: [
-              const Icon(Icons.flag, color: Colors.orange, size: 26),
-              const SizedBox(width: 8),
-              const Text(
+              Icon(Icons.flag, color: Colors.orange, size: 26),
+              SizedBox(width: 8),
+              Text(
                 'Laporkan Diskusi',
                 style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
               ),

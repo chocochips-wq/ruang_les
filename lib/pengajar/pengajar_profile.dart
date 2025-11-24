@@ -218,11 +218,11 @@ class _PengajarProfilState extends State<PengajarProfil> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
+          const Row(
             children: [
               Icon(Icons.info_outline, size: 20, color: AppColors.primary),
-              const SizedBox(width: 8),
-              const Text(
+              SizedBox(width: 8),
+              Text(
                 'Informasi Pribadi',
                 style: TextStyle(
                   fontSize: 16,

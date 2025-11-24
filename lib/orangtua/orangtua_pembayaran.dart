@@ -90,11 +90,11 @@ class _PembayaranOrangtuaState extends State<PembayaranOrangtua> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
+          const Row(
             children: [
               Icon(Icons.payment, color: Colors.white, size: 28),
-              const SizedBox(width: 12),
-              const Text(
+              SizedBox(width: 12),
+              Text(
                 'Tagihan Aktif',
                 style: TextStyle(
                   color: Colors.white,
@@ -112,17 +112,17 @@ class _PembayaranOrangtuaState extends State<PembayaranOrangtua> {
               borderRadius: BorderRadius.circular(12),
               border: Border.all(color: Colors.white.withOpacity(0.3)),
             ),
-            child: Row(
+            child: const Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text(
+                Text(
                   'Total Tagihan:',
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 16,
                   ),
                 ),
-                const Text(
+                Text(
                   'Rp 250.000',
                   style: TextStyle(
                     color: Colors.white,
@@ -164,7 +164,7 @@ class _PembayaranOrangtuaState extends State<PembayaranOrangtua> {
                   color: AppColors.primary.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: Icon(
+                child: const Icon(
                   Icons.school,
                   color: AppColors.primary,
                   size: 24,
@@ -292,11 +292,11 @@ class _PembayaranOrangtuaState extends State<PembayaranOrangtua> {
                     account: method['account']!,
                     holder: method['holder']!,
                   );
-                }).toList(),
+                }),
                 const SizedBox(height: 8),
               ],
             );
-          }).toList(),
+          }),
         ],
       ),
     );
@@ -374,10 +374,10 @@ class _PembayaranOrangtuaState extends State<PembayaranOrangtua> {
                           onTap: () {
                             Clipboard.setData(ClipboardData(text: account));
                             ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: const Text('Nomor rekening disalin'),
+                              const SnackBar(
+                                content: Text('Nomor rekening disalin'),
                                 backgroundColor: Colors.green,
-                                duration: const Duration(seconds: 2),
+                                duration: Duration(seconds: 2),
                                 behavior: SnackBarBehavior.floating,
                               ),
                             );
@@ -391,7 +391,7 @@ class _PembayaranOrangtuaState extends State<PembayaranOrangtua> {
                               color: AppColors.primary.withOpacity(0.1),
                               borderRadius: BorderRadius.circular(6),
                             ),
-                            child: Row(
+                            child: const Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 Icon(
@@ -399,7 +399,7 @@ class _PembayaranOrangtuaState extends State<PembayaranOrangtua> {
                                   size: 14,
                                   color: AppColors.primary,
                                 ),
-                                const SizedBox(width: 4),
+                                SizedBox(width: 4),
                                 Text(
                                   'Salin',
                                   style: TextStyle(
