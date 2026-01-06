@@ -26,16 +26,18 @@ class PengajarScaffold extends StatelessWidget {
       case 0:
         return 'Dashboard';
       case 1:
+        return 'Kelola Murid';
+      case 2: 
         return 'Profile';
-      case 2:
-        return 'Kelas Saya';
       case 3:
-        return 'Quiz';
+        return 'Kelas Saya';
       case 4:
-        return 'Laporan Anak';
+        return 'Quiz';
       case 5:
-        return 'Pembayaran';
+        return 'Laporan Anak';
       case 6:
+        return 'Pembayaran';
+      case 7:
         return 'Pengaturan';
       default:
         return 'Ruang Les';

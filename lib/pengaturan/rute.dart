@@ -14,6 +14,7 @@ import '../pengajar/pengajar_laporan_anak.dart';
 import '../pengajar/pengajar_pembayaran.dart';
 import '../pengajar/pengajar_pengaturan.dart';
 import '../pengajar/pengajar_materi.dart';
+import '../pengajar/pengajar_kelola_murid.dart';
 
 // Import Murid
 import '../murid/beranda_murid.dart';
@@ -47,6 +48,7 @@ class AppRoutes {
   static const String pengajarProfil = '/pengajar/profil';
   static const String pengajarPembayaran = '/pengajar/pembayaran';
   static const String pengajarPengaturan = '/pengajar/pengaturan';
+  static const String pengajarLaporanAnak = '/pengajar/kelola-murid';
 
   // ========== ROUTES MURID ==========
   static const String muridBeranda = '/murid/beranda';
@@ -107,6 +109,9 @@ class AppRoutes {
 
       case pengajarNilai:
         return MaterialPageRoute(builder: (_) => const PengajarNilai());
+
+      case pengajarLaporanAnak:
+        return MaterialPageRoute(builder: (_) => const HalamanKelolaMurid());
 
       case pengajarPembayaran:
         return MaterialPageRoute(builder: (_) => const PengajarPembayaran());

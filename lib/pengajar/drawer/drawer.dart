@@ -101,6 +101,13 @@ class PengajarDrawer extends StatelessWidget {
                 ),
                 _buildMenuItem(
                   context,
+                  icon: Icons.group,
+                  title: 'Kelola Murid',
+                  index: 4,
+                  route: AppRoutes.pengajarLaporanAnak,
+                ),
+                _buildMenuItem(
+                  context,
                   icon: Icons.assignment,
                   title: 'Laporan Anak',
                   index: 4,
