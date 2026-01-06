@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "730508018952",
+    "project_id": "ruang-les-ismaturrohmah",
+    "storage_bucket": "ruang-les-ismaturrohmah.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:730508018952:android:5d55368876b4e108a958bd",
+        "android_client_info": {
+          "package_name": "com.example.proyek_ruangles"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDAN79Dk_aF55IRJPFf3jLmXyCFnJZgmvI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
