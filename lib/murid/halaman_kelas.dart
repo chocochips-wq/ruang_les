@@ -98,10 +98,7 @@ class _HalamanKelasState extends State<HalamanKelas> {
         ],
       ),
 
-      bottomNavigationBar: FooterMurid(
-        selectedIndex: _selectedIndex,
-        onItemTapped: _onItemTapped,
-      ),
+      bottomNavigationBar: FooterMurid(selectedIndex: 0) // Index 0 = Kelas
     );
   }
 

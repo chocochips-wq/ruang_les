@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../pengaturan/warna.dart';
 import 'drawer/drawer.dart';
+import 'drawer/bottomnav.dart';
 
 class LaporanBelajarOrangtua extends StatefulWidget {
   const LaporanBelajarOrangtua({super.key});
@@ -62,6 +63,7 @@ class _LaporanBelajarOrangtuaState extends State<LaporanBelajarOrangtua> {
           ],
         ),
       ),
+      bottomNavigationBar: const FooterOrangtua(selectedIndex: 1),
     );
   }
 

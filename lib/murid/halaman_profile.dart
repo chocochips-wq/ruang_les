@@ -61,10 +61,7 @@ class _ProfileMuridState extends State<ProfileMurid> {
           ],
         ),
       ),
-      bottomNavigationBar: FooterMurid(
-        selectedIndex: _selectedIndex,
-        onItemTapped: (i) => setState(() => _selectedIndex = i),
-      ),
+      bottomNavigationBar: FooterMurid(selectedIndex: 2)
     );
   }
 

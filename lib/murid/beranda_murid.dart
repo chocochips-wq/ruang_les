@@ -94,10 +94,7 @@ class _BerandaMuridState extends State<BerandaMurid> {
           ],
         ),
       ),
-      bottomNavigationBar: FooterMurid(
-        selectedIndex: _selectedIndex,
-        onItemTapped: (i) => setState(() => _selectedIndex = i),
-      ),
+      bottomNavigationBar: FooterMurid(selectedIndex: 1), // Index 1 = Beranda
     );
   }
 

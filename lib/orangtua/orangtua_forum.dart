@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../pengaturan/warna.dart';
 import 'drawer/drawer.dart';
+import 'drawer/bottomnav.dart';
 
 class ForumOrangtua extends StatefulWidget {
   const ForumOrangtua({super.key});
@@ -111,6 +112,7 @@ class _ForumOrangtuaState extends State<ForumOrangtua> {
           ),
         ],
       ),
+      bottomNavigationBar: const FooterOrangtua(selectedIndex: 2),
     );
   }
 

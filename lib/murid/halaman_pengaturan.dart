@@ -154,11 +154,6 @@ class _PengaturanMuridState extends State<PengaturanMurid> {
           ),
         ),
       ),
-
-      bottomNavigationBar: FooterMurid(
-        selectedIndex: _selectedIndex,
-        onItemTapped: _onItemTapped,
-      ),
     );
   }
 

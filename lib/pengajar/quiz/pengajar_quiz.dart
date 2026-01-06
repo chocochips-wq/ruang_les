@@ -90,8 +90,7 @@ class _HalamanQuizState extends State<HalamanQuiz>
   // Build UI utama halaman quiz
   Widget build(BuildContext context) {
     return PengajarScaffold(
-      title:
-          'Kelola Quiz',
+      title: 'Kelola Quiz',
       selectedMenuIndex: _selectedMenuIndex,
       onMenuSelected: (index) => setState(() => _selectedMenuIndex = index),
       onNotificationTap: () {

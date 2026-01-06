@@ -82,20 +82,20 @@ class _HalamanLoginState extends State<HalamanLogin> {
             return;
           }
           
-          // Navigasi berdasarkan role (DIPERBAIKI)
+          // Navigasi berdasarkan role
           String route;
           switch (role) {
             case 'pengajar':
-              route = AppRoutes.pengajarBeranda; // ✅ Diperbaiki
+              route = AppRoutes.pengajarBeranda;
               break;
             case 'murid':
-              route = AppRoutes.muridBeranda; // ✅ Diperbaiki
+              route = AppRoutes.muridBeranda;
               break;
             case 'orangtua':
-              route = AppRoutes.orangtuaBeranda; // ✅ Diperbaiki
+              route = AppRoutes.orangtuaBeranda;
               break;
             default:
-              route = AppRoutes.pengajarBeranda; // ✅ Diperbaiki
+              route = AppRoutes.pengajarBeranda;
           }
           
           // Navigasi ke halaman sesuai role

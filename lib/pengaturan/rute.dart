@@ -27,7 +27,6 @@ import '../orangtua/orangtua_laporan_belajar.dart';
 import '../orangtua/orangtua_profile.dart';
 import '../orangtua/orangtua_forum.dart';
 import '../orangtua/orangtua_pembayaran.dart';
-import '../orangtua/orangtua_feedback.dart';
 import '../orangtua/orangtua_pengaturan.dart';
 
 class AppRoutes {
@@ -143,9 +142,6 @@ class AppRoutes {
 
       case orangtuaPembayaran:
         return MaterialPageRoute(builder: (_) => const PembayaranOrangtua());
-
-      case orangtuaFeedback:
-        return MaterialPageRoute(builder: (_) => const FeedbackOrangtua());
 
       case orangtuaPengaturan:
         return MaterialPageRoute(builder: (_) => const PengaturanOrangtua());

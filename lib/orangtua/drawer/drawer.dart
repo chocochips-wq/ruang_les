@@ -109,15 +109,6 @@ class DrawerOrangtua extends StatelessWidget {
                 ),
                 _buildDrawerItem(
                   context,
-                  icon: Icons.feedback,
-                  title: 'Feedback',
-                  onTap: () {
-                    Navigator.pop(context);
-                    Navigator.pushReplacementNamed(context, AppRoutes.orangtuaFeedback);
-                  },
-                ),
-                _buildDrawerItem(
-                  context,
                   icon: Icons.settings,
                   title: 'Pengaturan',
                   onTap: () {

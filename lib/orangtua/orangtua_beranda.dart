@@ -262,14 +262,7 @@ class _BerandaOrangtuaState extends State<BerandaOrangtua> {
           ],
         ),
       ),
-      bottomNavigationBar: FooterOrangtua(  // Menggunakan FooterOrangtua yang sudah dibuat
-        selectedIndex: _selectedIndex,
-        onItemTapped: (index) {
-          setState(() {
-            _selectedIndex = index;
-          });
-        },
-      ),
+      bottomNavigationBar: const FooterOrangtua(selectedIndex: 0),
     );
   }
 
