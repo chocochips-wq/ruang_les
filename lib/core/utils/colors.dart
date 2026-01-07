@@ -19,7 +19,7 @@ class AppColors {
   static const Color sidebarBackground =
       Color(0xFFF8F4EF); 
   static const Color sidebarActive =
-      Color(0xFFD4E4D4); // Hijau muda untuk menu aktif
+      Color(0xFFD4E4D4); 
 
   // Warna Status
   static const Color success = Color(0xFF27AE60);

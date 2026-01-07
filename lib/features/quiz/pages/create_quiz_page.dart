@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../pengaturan/warna.dart';
+import '../../../core/utils/colors.dart';
 
 class HalamanBuatQuiz extends StatefulWidget {
   const HalamanBuatQuiz({super.key});

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import '../../pengaturan/warna.dart';
-import 'drawer/drawer.dart';
-import 'drawer/bottomnav.dart';
+import '../../../core/utils/colors.dart';
+import '../widgets/parent_drawer.dart';
+import '../widgets/parent_bottom_nav.dart';
 
 class ForumOrangtua extends StatefulWidget {
   const ForumOrangtua({super.key});
@@ -16,7 +16,8 @@ class _ForumOrangtuaState extends State<ForumOrangtua> {
       'nama': 'Ibu Siti',
       'waktu': '2 jam yang lalu',
       'judul': 'Tips Mendampingi Anak Belajar Matematika',
-      'isi': 'Halo parents! Saya mau share tips efektif mendampingi anak belajar matematika di rumah. Pertama, buat jadwal rutin...',
+      'isi':
+          'Halo parents! Saya mau share tips efektif mendampingi anak belajar matematika di rumah. Pertama, buat jadwal rutin...',
       'replies': 5,
       'likes': 12,
       'isOwner': false,
@@ -25,7 +26,8 @@ class _ForumOrangtuaState extends State<ForumOrangtua> {
       'nama': 'Pak Budi',
       'waktu': '5 jam yang lalu',
       'judul': 'Rekomendasi Buku Bacaan untuk Anak SD',
-      'isi': 'Ada yang punya rekomendasi buku bacaan yang bagus untuk anak kelas 4 SD? Anak saya mulai suka membaca nih...',
+      'isi':
+          'Ada yang punya rekomendasi buku bacaan yang bagus untuk anak kelas 4 SD? Anak saya mulai suka membaca nih...',
       'replies': 8,
       'likes': 15,
       'isOwner': false,
@@ -57,7 +59,7 @@ class _ForumOrangtuaState extends State<ForumOrangtua> {
           ),
         ],
       ),
-      drawer: const DrawerOrangtua(),
+      drawer: const ParentDrawer(),
       body: Column(
         children: [
           // Button Lihat Forum Diskusi
@@ -73,7 +75,8 @@ class _ForumOrangtuaState extends State<ForumOrangtua> {
                 },
                 borderRadius: BorderRadius.circular(12),
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(color: AppColors.primary),
@@ -81,7 +84,8 @@ class _ForumOrangtuaState extends State<ForumOrangtua> {
                   child: const Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.add_circle_outline, color: AppColors.primary, size: 22),
+                      Icon(Icons.add_circle_outline,
+                          color: AppColors.primary, size: 22),
                       SizedBox(width: 10),
                       Text(
                         'Buat Diskusi Baru',
@@ -112,7 +116,7 @@ class _ForumOrangtuaState extends State<ForumOrangtua> {
           ),
         ],
       ),
-      bottomNavigationBar: const FooterOrangtua(selectedIndex: 2),
+      bottomNavigationBar: const ParentBottomNav(selectedIndex: 2),
     );
   }
 
@@ -301,7 +305,8 @@ class _ForumOrangtuaState extends State<ForumOrangtua> {
     );
   }
 
-  void _showPostOptions(BuildContext context, Map<String, dynamic> post, int index) {
+  void _showPostOptions(
+      BuildContext context, Map<String, dynamic> post, int index) {
     showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(
@@ -323,11 +328,12 @@ class _ForumOrangtuaState extends State<ForumOrangtua> {
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
-              
+
               // Option: Laporkan (untuk post orang lain)
-              if (!post['isOwner']) 
+              if (!post['isOwner'])
                 ListTile(
-                  leading: const Icon(Icons.flag_outlined, color: Colors.orange),
+                  leading:
+                      const Icon(Icons.flag_outlined, color: Colors.orange),
                   title: const Text(
                     'Laporkan',
                     style: TextStyle(fontSize: 16),
@@ -337,9 +343,9 @@ class _ForumOrangtuaState extends State<ForumOrangtua> {
                     _showReportDialog(context);
                   },
                 ),
-              
+
               // Option: Edit (hanya untuk post sendiri)
-              if (post['isOwner']) 
+              if (post['isOwner'])
                 ListTile(
                   leading: const Icon(Icons.edit_outlined, color: Colors.blue),
                   title: const Text(
@@ -351,9 +357,9 @@ class _ForumOrangtuaState extends State<ForumOrangtua> {
                     _showEditPostDialog(post, index);
                   },
                 ),
-              
+
               // Option: Hapus (hanya untuk post sendiri)
-              if (post['isOwner']) 
+              if (post['isOwner'])
                 ListTile(
                   leading: const Icon(Icons.delete_outline, color: Colors.red),
                   title: const Text(
@@ -365,7 +371,7 @@ class _ForumOrangtuaState extends State<ForumOrangtua> {
                     _showDeleteConfirmation(context, index);
                   },
                 ),
-              
+
               const SizedBox(height: 10),
             ],
           ),
@@ -414,7 +420,7 @@ class _ForumOrangtuaState extends State<ForumOrangtua> {
                   _forumPosts.removeAt(index);
                 });
                 Navigator.pop(context);
-                
+
                 // Tampilkan snackbar konfirmasi
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
@@ -440,7 +446,8 @@ class _ForumOrangtuaState extends State<ForumOrangtua> {
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
               ),
               child: const Text(
                 'Hapus',
@@ -493,8 +500,10 @@ class _ForumOrangtuaState extends State<ForumOrangtua> {
   }
 
   void _showEditPostDialog(Map<String, dynamic> post, int index) {
-    final TextEditingController judulController = TextEditingController(text: post['judul']);
-    final TextEditingController isiController = TextEditingController(text: post['isi']);
+    final TextEditingController judulController =
+        TextEditingController(text: post['judul']);
+    final TextEditingController isiController =
+        TextEditingController(text: post['isi']);
 
     showDialog(
       context: context,
@@ -545,14 +554,15 @@ class _ForumOrangtuaState extends State<ForumOrangtua> {
             ),
             ElevatedButton(
               onPressed: () {
-                if (judulController.text.isNotEmpty && isiController.text.isNotEmpty) {
+                if (judulController.text.isNotEmpty &&
+                    isiController.text.isNotEmpty) {
                   setState(() {
                     _forumPosts[index]['judul'] = judulController.text;
                     _forumPosts[index]['isi'] = isiController.text;
                     _forumPosts[index]['waktu'] = 'Baru saja (diedit)';
                   });
                   Navigator.pop(context);
-                  
+
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: const Row(
@@ -639,7 +649,8 @@ class _ForumOrangtuaState extends State<ForumOrangtua> {
             ElevatedButton(
               onPressed: () {
                 // Logic untuk menambahkan post baru
-                if (judulController.text.isNotEmpty && isiController.text.isNotEmpty) {
+                if (judulController.text.isNotEmpty &&
+                    isiController.text.isNotEmpty) {
                   setState(() {
                     _forumPosts.insert(0, {
                       'nama': 'Agustina Suraisa',
@@ -652,7 +663,7 @@ class _ForumOrangtuaState extends State<ForumOrangtua> {
                     });
                   });
                   Navigator.pop(context);
-                  
+
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: const Row(

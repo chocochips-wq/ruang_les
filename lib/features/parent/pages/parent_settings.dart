@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import '../../pengaturan/warna.dart';
-import 'drawer/drawer.dart';
+import '../../../core/utils/colors.dart';
+import '../widgets/parent_drawer.dart';
+import '../widgets/parent_bottom_nav.dart';
 
 class PengaturanOrangtua extends StatefulWidget {
   const PengaturanOrangtua({super.key});
@@ -29,7 +30,7 @@ class _PengaturanOrangtuaState extends State<PengaturanOrangtua> {
         ),
         iconTheme: const IconThemeData(color: Colors.white),
       ),
-      drawer: const DrawerOrangtua(),
+      drawer: const ParentDrawer(),
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(16),

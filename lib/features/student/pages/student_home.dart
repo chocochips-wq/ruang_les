@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import '../pengaturan/warna.dart';
-import 'drawer/drawer.dart';
-import 'drawer/bottomnav.dart';
+import '../../../core/utils/colors.dart';
+import '../widgets/student_drawer.dart';
+import '../widgets/student_bottom_nav.dart';
 
 class BerandaMurid extends StatefulWidget {
   const BerandaMurid({super.key});
@@ -20,21 +20,69 @@ class _BerandaMuridState extends State<BerandaMurid> {
   ];
 
   final _progressBelajar = [
-    {'mataPelajaran': 'Matematika Dasar', 'progress': 0.75, 'color': Colors.blue, 'completed': 15, 'total': 20},
-    {'mataPelajaran': 'Bahasa Inggris', 'progress': 0.55, 'color': Colors.purple, 'completed': 11, 'total': 20},
-    {'mataPelajaran': 'IPA', 'progress': 0.85, 'color': Colors.green, 'completed': 17, 'total': 20},
+    {
+      'mataPelajaran': 'Matematika Dasar',
+      'progress': 0.75,
+      'color': Colors.blue,
+      'completed': 15,
+      'total': 20
+    },
+    {
+      'mataPelajaran': 'Bahasa Inggris',
+      'progress': 0.55,
+      'color': Colors.purple,
+      'completed': 11,
+      'total': 20
+    },
+    {
+      'mataPelajaran': 'IPA',
+      'progress': 0.85,
+      'color': Colors.green,
+      'completed': 17,
+      'total': 20
+    },
   ];
 
   final _aktivitasTerbaru = [
-    {'title': 'Quiz Matematika - Aljabar', 'time': '2 jam lalu', 'icon': Icons.quiz, 'color': Colors.orange},
-    {'title': 'Materi Bahasa Inggris - Tenses', 'time': '5 jam lalu', 'icon': Icons.book, 'color': Colors.blue},
-    {'title': 'Tugas IPA - Sistem Pencernaan', 'time': '1 hari lalu', 'icon': Icons.assignment, 'color': Colors.green},
+    {
+      'title': 'Quiz Matematika - Aljabar',
+      'time': '2 jam lalu',
+      'icon': Icons.quiz,
+      'color': Colors.orange
+    },
+    {
+      'title': 'Materi Bahasa Inggris - Tenses',
+      'time': '5 jam lalu',
+      'icon': Icons.book,
+      'color': Colors.blue
+    },
+    {
+      'title': 'Tugas IPA - Sistem Pencernaan',
+      'time': '1 hari lalu',
+      'icon': Icons.assignment,
+      'color': Colors.green
+    },
   ];
 
   final _statistik = [
-    {'label': 'Quiz Selesai', 'value': '12', 'icon': Icons.task_alt, 'color': Colors.green},
-    {'label': 'Tugas Aktif', 'value': '5', 'icon': Icons.pending_actions, 'color': Colors.orange},
-    {'label': 'Rata-rata Nilai', 'value': '85', 'icon': Icons.trending_up, 'color': Colors.blue},
+    {
+      'label': 'Quiz Selesai',
+      'value': '12',
+      'icon': Icons.task_alt,
+      'color': Colors.green
+    },
+    {
+      'label': 'Tugas Aktif',
+      'value': '5',
+      'icon': Icons.pending_actions,
+      'color': Colors.orange
+    },
+    {
+      'label': 'Rata-rata Nilai',
+      'value': '85',
+      'icon': Icons.trending_up,
+      'color': Colors.blue
+    },
   ];
 
   @override
@@ -50,12 +98,14 @@ class _BerandaMuridState extends State<BerandaMurid> {
             onPressed: () => Scaffold.of(context).openDrawer(),
           ),
         ),
-        title: const Text('Beranda', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        title: const Text('Beranda',
+            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
         actions: [
           Stack(
             children: [
               IconButton(
-                icon: const Icon(Icons.notifications_outlined, color: Colors.white),
+                icon: const Icon(Icons.notifications_outlined,
+                    color: Colors.white),
                 onPressed: () {},
               ),
               Positioned(
@@ -64,7 +114,6 @@ class _BerandaMuridState extends State<BerandaMurid> {
                 child: Container(
                   width: 8,
                   height: 8,
-                  
                   decoration: BoxDecoration(
                     color: Colors.red,
                     shape: BoxShape.circle,
@@ -94,7 +143,7 @@ class _BerandaMuridState extends State<BerandaMurid> {
           ],
         ),
       ),
-      bottomNavigationBar: FooterMurid(selectedIndex: 1), // Index 1 = Beranda
+      bottomNavigationBar: const FooterMurid(selectedIndex: 1), // 1 = Beranda
     );
   }
 
@@ -110,7 +159,10 @@ class _BerandaMuridState extends State<BerandaMurid> {
         ),
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
-          BoxShadow(color: AppColors.primary.withOpacity(0.3), blurRadius: 8, offset: const Offset(0, 4)),
+          BoxShadow(
+              color: AppColors.primary.withOpacity(0.3),
+              blurRadius: 8,
+              offset: const Offset(0, 4)),
         ],
       ),
       child: Row(
@@ -119,11 +171,19 @@ class _BerandaMuridState extends State<BerandaMurid> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('Halo, Alfito 👋', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white)),
+                const Text('Halo, Alfito 👋',
+                    style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white)),
                 const SizedBox(height: 8),
-                Text('Selamat datang!', style: TextStyle(fontSize: 14, color: Colors.white.withOpacity(0.9))),
+                Text('Selamat datang!',
+                    style: TextStyle(
+                        fontSize: 14, color: Colors.white.withOpacity(0.9))),
                 const SizedBox(height: 4),
-                Text('Mari tunjukkan semangat belajarmu hari ini', style: TextStyle(fontSize: 13, color: Colors.white.withOpacity(0.8))),
+                Text('Mari tunjukkan semangat belajarmu hari ini',
+                    style: TextStyle(
+                        fontSize: 13, color: Colors.white.withOpacity(0.8))),
               ],
             ),
           ),
@@ -151,15 +211,27 @@ class _BerandaMuridState extends State<BerandaMurid> {
               color: Colors.white,
               borderRadius: BorderRadius.circular(12),
               border: Border.all(color: Colors.grey.shade300),
-              boxShadow: [BoxShadow(color: Colors.grey.shade200, blurRadius: 4, offset: const Offset(0, 2))],
+              boxShadow: [
+                BoxShadow(
+                    color: Colors.grey.shade200,
+                    blurRadius: 4,
+                    offset: const Offset(0, 2))
+              ],
             ),
             child: Column(
               children: [
-                Icon(stat['icon'] as IconData, color: stat['color'] as Color, size: 24),
+                Icon(stat['icon'] as IconData,
+                    color: stat['color'] as Color, size: 24),
                 const SizedBox(height: 8),
-                Text(stat['value'] as String, style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: stat['color'] as Color)),
+                Text(stat['value'] as String,
+                    style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: stat['color'] as Color)),
                 const SizedBox(height: 4),
-                Text(stat['label'] as String, style: TextStyle(fontSize: 10, color: Colors.grey.shade600), textAlign: TextAlign.center),
+                Text(stat['label'] as String,
+                    style: TextStyle(fontSize: 10, color: Colors.grey.shade600),
+                    textAlign: TextAlign.center),
               ],
             ),
           ),
@@ -183,7 +255,8 @@ class _BerandaMuridState extends State<BerandaMurid> {
             children: [
               Icon(Icons.class_, color: AppColors.primary, size: 24),
               SizedBox(width: 8),
-              Text('Kelas Aktif', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              Text('Kelas Aktif',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
             ],
           ),
           const SizedBox(height: 16),
@@ -192,18 +265,25 @@ class _BerandaMuridState extends State<BerandaMurid> {
             runSpacing: 12,
             children: _kelasAktif.map((kelas) {
               return Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                 decoration: BoxDecoration(
                   color: (kelas['color'] as Color).withOpacity(0.1),
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: (kelas['color'] as Color).withOpacity(0.3)),
+                  border: Border.all(
+                      color: (kelas['color'] as Color).withOpacity(0.3)),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(kelas['icon'] as IconData, size: 18, color: kelas['color'] as Color),
+                    Icon(kelas['icon'] as IconData,
+                        size: 18, color: kelas['color'] as Color),
                     const SizedBox(width: 8),
-                    Text(kelas['nama'] as String, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: kelas['color'] as Color)),
+                    Text(kelas['nama'] as String,
+                        style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            color: kelas['color'] as Color)),
                   ],
                 ),
               );
@@ -229,7 +309,8 @@ class _BerandaMuridState extends State<BerandaMurid> {
             children: [
               Icon(Icons.insights, color: AppColors.primary, size: 24),
               SizedBox(width: 8),
-              Text('Progres Belajarmu', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              Text('Progres Belajarmu',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
             ],
           ),
           const SizedBox(height: 20),
@@ -242,8 +323,13 @@ class _BerandaMuridState extends State<BerandaMurid> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(progress['mataPelajaran'] as String, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
-                      Text('${progress['completed']}/${progress['total']} Materi', style: TextStyle(fontSize: 12, color: Colors.grey.shade600)),
+                      Text(progress['mataPelajaran'] as String,
+                          style: const TextStyle(
+                              fontSize: 14, fontWeight: FontWeight.w500)),
+                      Text(
+                          '${progress['completed']}/${progress['total']} Materi',
+                          style: TextStyle(
+                              fontSize: 12, color: Colors.grey.shade600)),
                     ],
                   ),
                   const SizedBox(height: 8),
@@ -255,13 +341,19 @@ class _BerandaMuridState extends State<BerandaMurid> {
                           child: LinearProgressIndicator(
                             value: progress['progress'] as double,
                             backgroundColor: Colors.grey.shade200,
-                            valueColor: AlwaysStoppedAnimation(progress['color'] as Color),
+                            valueColor: AlwaysStoppedAnimation(
+                                progress['color'] as Color),
                             minHeight: 8,
                           ),
                         ),
                       ),
                       const SizedBox(width: 12),
-                      Text('${((progress['progress'] as double) * 100).toInt()}%', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: progress['color'] as Color)),
+                      Text(
+                          '${((progress['progress'] as double) * 100).toInt()}%',
+                          style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.bold,
+                              color: progress['color'] as Color)),
                     ],
                   ),
                 ],
@@ -288,7 +380,8 @@ class _BerandaMuridState extends State<BerandaMurid> {
             children: [
               Icon(Icons.history, color: AppColors.primary, size: 24),
               SizedBox(width: 8),
-              Text('Aktivitas Terbaru', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              Text('Aktivitas Terbaru',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
             ],
           ),
           const SizedBox(height: 16),
@@ -309,20 +402,26 @@ class _BerandaMuridState extends State<BerandaMurid> {
                       color: (aktivitas['color'] as Color).withOpacity(0.1),
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: Icon(aktivitas['icon'] as IconData, size: 20, color: aktivitas['color'] as Color),
+                    child: Icon(aktivitas['icon'] as IconData,
+                        size: 20, color: aktivitas['color'] as Color),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(aktivitas['title'] as String, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
+                        Text(aktivitas['title'] as String,
+                            style: const TextStyle(
+                                fontSize: 13, fontWeight: FontWeight.w600)),
                         const SizedBox(height: 2),
-                        Text(aktivitas['time'] as String, style: TextStyle(fontSize: 11, color: Colors.grey.shade600)),
+                        Text(aktivitas['time'] as String,
+                            style: TextStyle(
+                                fontSize: 11, color: Colors.grey.shade600)),
                       ],
                     ),
                   ),
-                  Icon(Icons.chevron_right, color: Colors.grey.shade400, size: 20),
+                  Icon(Icons.chevron_right,
+                      color: Colors.grey.shade400, size: 20),
                 ],
               ),
             );

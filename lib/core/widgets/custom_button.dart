@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import '../pengaturan/warna.dart';
+import '../utils/colors.dart';
 
 class TombolCustom extends StatelessWidget {
   final String teks;
-  final VoidCallback onPressed;
+  final VoidCallback? onPressed;
   final Color? warna;
   final Color? warnaTeks;
   final double? lebar;
@@ -13,7 +13,7 @@ class TombolCustom extends StatelessWidget {
   const TombolCustom({
     super.key,
     required this.teks,
-    required this.onPressed,
+    this.onPressed,
     this.warna,
     this.warnaTeks,
     this.lebar,

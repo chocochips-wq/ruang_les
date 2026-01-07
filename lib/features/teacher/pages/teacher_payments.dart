@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../../pengaturan/warna.dart';
-import 'drawer/appbar.dart'; // Import PengajarScaffold
+import '../../../core/utils/colors.dart';
+import '../widgets/teacher_app_bar.dart';
 
 class PengajarPembayaran extends StatefulWidget {
   const PengajarPembayaran({super.key});
@@ -35,7 +35,7 @@ class _PengajarPembayaranState extends State<PengajarPembayaran> {
 
   @override
   Widget build(BuildContext context) {
-    return PengajarScaffold(
+    return TeacherScaffold(
       title: 'Kelola Pembayaran', // Atau hapus untuk pakai default "Pembayaran"
       selectedMenuIndex: _selectedMenuIndex,
       onMenuSelected: (index) => setState(() => _selectedMenuIndex = index),
@@ -118,10 +118,11 @@ class _PengajarPembayaranState extends State<PengajarPembayaran> {
                 ),
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
-                  color: data['lunas'] 
-                      ? Colors.green.withOpacity(0.1) 
+                  color: data['lunas']
+                      ? Colors.green.withOpacity(0.1)
                       : Colors.orange.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(

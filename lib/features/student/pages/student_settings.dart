@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import '../../pengaturan/warna.dart';
-import 'drawer/drawer.dart';
-import 'drawer/bottomnav.dart';
+import '../../../core/utils/colors.dart';
+import '../widgets/student_drawer.dart';
+import '../widgets/student_bottom_nav.dart';
 
 class PengaturanMurid extends StatefulWidget {
   const PengaturanMurid({super.key});
@@ -36,9 +36,7 @@ class _PengaturanMuridState extends State<PengaturanMurid> {
         ),
         iconTheme: const IconThemeData(color: Colors.white),
       ),
-
       drawer: const DrawerMurid(),
-
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(16),
@@ -247,6 +245,4 @@ class _PengaturanMuridState extends State<PengaturanMurid> {
       ),
     );
   }
-
-
 }

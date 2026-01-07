@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import '../../../core/utils/colors.dart';
 import '../../../core/utils/routes.dart';
 
-class DrawerMurid extends StatelessWidget {
-  const DrawerMurid({super.key});
+class ParentDrawer extends StatelessWidget {
+  const ParentDrawer({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -37,7 +37,7 @@ class DrawerMurid extends StatelessWidget {
                   ),
                   const SizedBox(height: 12),
                   const Text(
-                    'Alfito',
+                    'Agustina Suraisa',
                     style: TextStyle(
                       color: Colors.white,
                       fontSize: 20,
@@ -46,7 +46,7 @@ class DrawerMurid extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    'murid@gmail.com',
+                    'orangtua@gmail.com',
                     style: TextStyle(
                       color: Colors.white.withOpacity(0.9),
                       fontSize: 14,
@@ -69,7 +69,7 @@ class DrawerMurid extends StatelessWidget {
                   onTap: () {
                     Navigator.pop(context);
                     Navigator.pushReplacementNamed(
-                        context, AppRoutes.muridBeranda);
+                        context, AppRoutes.orangtuaBeranda);
                   },
                 ),
                 _buildDrawerItem(
@@ -79,17 +79,37 @@ class DrawerMurid extends StatelessWidget {
                   onTap: () {
                     Navigator.pop(context);
                     Navigator.pushReplacementNamed(
-                        context, AppRoutes.muridProfile);
+                        context, AppRoutes.orangtuaProfile);
                   },
                 ),
                 _buildDrawerItem(
                   context,
-                  icon: Icons.school,
-                  title: 'Kelas',
+                  icon: Icons.forum,
+                  title: 'Forum',
                   onTap: () {
                     Navigator.pop(context);
                     Navigator.pushReplacementNamed(
-                        context, AppRoutes.muridKelas);
+                        context, AppRoutes.orangtuaForum);
+                  },
+                ),
+                _buildDrawerItem(
+                  context,
+                  icon: Icons.assignment,
+                  title: 'Laporan Belajar',
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.pushReplacementNamed(
+                        context, AppRoutes.orangtuaLaporan);
+                  },
+                ),
+                _buildDrawerItem(
+                  context,
+                  icon: Icons.payment,
+                  title: 'Pembayaran',
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.pushReplacementNamed(
+                        context, AppRoutes.orangtuaPembayaran);
                   },
                 ),
                 _buildDrawerItem(
@@ -99,7 +119,7 @@ class DrawerMurid extends StatelessWidget {
                   onTap: () {
                     Navigator.pop(context);
                     Navigator.pushReplacementNamed(
-                        context, AppRoutes.muridPengaturan);
+                        context, AppRoutes.orangtuaPengaturan);
                   },
                 ),
                 const Divider(),
@@ -171,7 +191,7 @@ class DrawerMurid extends StatelessWidget {
             ],
           ),
           content: const Text(
-            'Apakah kamu yakin ingin keluar dari aplikasi?',
+            'Apakah Anda yakin ingin keluar?',
             style: TextStyle(fontSize: 15),
           ),
           actions: [

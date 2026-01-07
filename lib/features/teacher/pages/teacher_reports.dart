@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import '../../pengaturan/warna.dart';
-import '../pengajar/drawer/appbar.dart';         // <-- WAJIB
-    
+import '../../../core/utils/colors.dart';
+import '../widgets/teacher_app_bar.dart';
+
 class PengajarNilai extends StatefulWidget {
   const PengajarNilai({super.key});
 
@@ -32,7 +32,7 @@ class _PengajarNilaiState extends State<PengajarNilai> {
 
   @override
   Widget build(BuildContext context) {
-    return PengajarScaffold(
+    return TeacherScaffold(
       title: 'Laporan Anak', // opsional → bisa dihapus karena otomatis
       selectedMenuIndex: _selectedMenuIndex,
 
@@ -121,9 +121,7 @@ class _PengajarNilaiState extends State<PengajarNilai> {
           ),
           const SizedBox(height: 8),
           Text(
-            siswa['catatan'].isEmpty
-                ? 'Belum ada catatan'
-                : siswa['catatan'],
+            siswa['catatan'].isEmpty ? 'Belum ada catatan' : siswa['catatan'],
             style: TextStyle(
               fontSize: 14,
               color: siswa['catatan'].isEmpty

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import '../../pengaturan/warna.dart';
-import '../../pengaturan/rute.dart';
-import 'drawer/appbar.dart'; // Import scaffold baru
+import '../../../core/utils/colors.dart';
+import '../../../core/utils/routes.dart';
+import '../widgets/teacher_app_bar.dart';
 
 class PengajarProfil extends StatefulWidget {
   const PengajarProfil({super.key});
@@ -21,7 +21,7 @@ class _PengajarProfilState extends State<PengajarProfil> {
 
   @override
   Widget build(BuildContext context) {
-    return PengajarScaffold(
+    return TeacherScaffold(
       // title: 'Profile', // Bisa dihapus biar otomatis dari index
       selectedMenuIndex: _selectedMenuIndex,
       onMenuSelected: (index) {
@@ -53,7 +53,7 @@ class _PengajarProfilState extends State<PengajarProfil> {
               ),
             ),
           ),
-          
+
           // Bottom Navigation
           BottomNavigationBar(
             type: BottomNavigationBarType.fixed,
@@ -313,7 +313,8 @@ class _PengajarProfilState extends State<PengajarProfil> {
       context: context,
       builder: (context) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        title: const Text('Edit Profile', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: const Text('Edit Profile',
+            style: TextStyle(fontWeight: FontWeight.bold)),
         content: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,

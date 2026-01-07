@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../../pengaturan/warna.dart';
-import 'drawer/drawer.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import '../../../core/utils/colors.dart';
+import '../widgets/parent_drawer.dart';
+import '../widgets/parent_bottom_nav.dart';
 
 class PembayaranOrangtua extends StatefulWidget {
   const PembayaranOrangtua({super.key});
@@ -47,28 +49,28 @@ class _PembayaranOrangtuaState extends State<PembayaranOrangtua> {
         ),
         elevation: 0,
       ),
-      drawer: const DrawerOrangtua(),
+      drawer: const ParentDrawer(),
       body: SingleChildScrollView(
         child: Column(
           children: [
             // Header dengan informasi tagihan
             _buildBillingHeader(),
-            
+
             const SizedBox(height: 16),
-            
+
             // Card informasi paket
             _buildPackageInfo(),
-            
+
             const SizedBox(height: 20),
-            
+
             // Metode pembayaran
             _buildPaymentMethods(),
-            
+
             const SizedBox(height: 24),
-            
+
             // Tombol konfirmasi
             _buildConfirmButton(),
-            
+
             const SizedBox(height: 24),
           ],
         ),
@@ -309,7 +311,7 @@ class _PembayaranOrangtuaState extends State<PembayaranOrangtua> {
     required String holder,
   }) {
     final isSelected = selectedPaymentMethod == methodKey;
-    
+
     return GestureDetector(
       onTap: () {
         setState(() {
@@ -320,7 +322,9 @@ class _PembayaranOrangtuaState extends State<PembayaranOrangtua> {
         margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.primary.withOpacity(0.05) : Colors.grey[50],
+          color: isSelected
+              ? AppColors.primary.withOpacity(0.05)
+              : Colors.grey[50],
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: isSelected ? AppColors.primary : Colors.grey[300]!,
@@ -354,7 +358,8 @@ class _PembayaranOrangtuaState extends State<PembayaranOrangtua> {
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
-                      color: isSelected ? AppColors.primary : AppColors.textDark,
+                      color:
+                          isSelected ? AppColors.primary : AppColors.textDark,
                     ),
                   ),
                   const SizedBox(height: 4),

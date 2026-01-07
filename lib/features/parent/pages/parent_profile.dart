@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import '../../pengaturan/warna.dart';
-import 'drawer/drawer.dart';
-import 'drawer/bottomnav.dart';
+import '../../../core/utils/colors.dart';
+import '../widgets/parent_drawer.dart';
+import '../widgets/parent_bottom_nav.dart';
 
 class ProfileOrangtua extends StatefulWidget {
   const ProfileOrangtua({super.key});
@@ -34,7 +34,7 @@ class _ProfileOrangtuaState extends State<ProfileOrangtua> {
         ),
         iconTheme: const IconThemeData(color: Colors.white),
       ),
-      drawer: const DrawerOrangtua(),
+      drawer: const ParentDrawer(),
       body: SingleChildScrollView(
         child: Column(
           children: [
@@ -63,7 +63,7 @@ class _ProfileOrangtuaState extends State<ProfileOrangtua> {
           ],
         ),
       ),
-      bottomNavigationBar: const FooterOrangtua(selectedIndex: 3),
+      bottomNavigationBar: const ParentBottomNav(selectedIndex: 3),
     );
   }
 
@@ -415,10 +415,14 @@ class _ProfileOrangtuaState extends State<ProfileOrangtua> {
   }
 
   void _showEditProfileDialog() {
-    final TextEditingController namaController = TextEditingController(text: nama);
-    final TextEditingController emailController = TextEditingController(text: email);
-    final TextEditingController alamatController = TextEditingController(text: alamat);
-    final TextEditingController noHpController = TextEditingController(text: noHp);
+    final TextEditingController namaController =
+        TextEditingController(text: nama);
+    final TextEditingController emailController =
+        TextEditingController(text: email);
+    final TextEditingController alamatController =
+        TextEditingController(text: alamat);
+    final TextEditingController noHpController =
+        TextEditingController(text: noHp);
 
     showDialog(
       context: context,
@@ -509,7 +513,7 @@ class _ProfileOrangtuaState extends State<ProfileOrangtua> {
                     noHp = noHpController.text;
                   });
                   Navigator.pop(context);
-                  
+
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: const Row(
@@ -551,7 +555,8 @@ class _ProfileOrangtuaState extends State<ProfileOrangtua> {
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
               ),
               child: const Text(
                 'Simpan',
@@ -621,7 +626,7 @@ class _ProfileOrangtuaState extends State<ProfileOrangtua> {
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
-              
+
               const Padding(
                 padding: EdgeInsets.symmetric(horizontal: 20),
                 child: Text(
@@ -633,9 +638,9 @@ class _ProfileOrangtuaState extends State<ProfileOrangtua> {
                   ),
                 ),
               ),
-              
+
               const SizedBox(height: 20),
-              
+
               ListTile(
                 leading: Container(
                   padding: const EdgeInsets.all(8),
@@ -662,7 +667,7 @@ class _ProfileOrangtuaState extends State<ProfileOrangtua> {
                   );
                 },
               ),
-              
+
               ListTile(
                 leading: Container(
                   padding: const EdgeInsets.all(8),
@@ -689,7 +694,7 @@ class _ProfileOrangtuaState extends State<ProfileOrangtua> {
                   );
                 },
               ),
-              
+
               ListTile(
                 leading: Container(
                   padding: const EdgeInsets.all(8),
@@ -717,7 +722,7 @@ class _ProfileOrangtuaState extends State<ProfileOrangtua> {
                   );
                 },
               ),
-              
+
               const SizedBox(height: 10),
             ],
           ),

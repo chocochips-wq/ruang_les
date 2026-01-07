@@ -1,27 +1,12 @@
 import 'package:flutter/material.dart';
-import '../../pengaturan/warna.dart';
-import 'drawer/appbar.dart';
-
-// Model Data Murid
-class Murid {
-  int? id;
-  String nama;
-  String? kelas;
-  String? email;
-  String? noHp;
-  String status; // Aktif / Tidak Aktif
-  DateTime? tanggalDaftar;
-
-  Murid({
-    this.id,
-    required this.nama,
-    this.kelas,
-    this.email,
-    this.noHp,
-    this.status = 'Aktif',
-    this.tanggalDaftar,
-  });
-}
+import 'package:provider/provider.dart';
+import 'package:uuid/uuid.dart';
+import '../../../core/utils/colors.dart';
+import '../widgets/teacher_app_bar.dart';
+import '../providers/teacher_provider.dart';
+import '../../auth/providers/auth_provider.dart';
+import '../../../core/models/student_model.dart';
+import '../../../data/repositories/student_repository.dart';
 
 class HalamanKelolaMurid extends StatefulWidget {
   const HalamanKelolaMurid({super.key});
@@ -31,59 +16,26 @@ class HalamanKelolaMurid extends StatefulWidget {
 }
 
 class _HalamanKelolaMuridState extends State<HalamanKelolaMurid> {
-  int _selectedMenuIndex = 7; // Index untuk menu Kelola Murid
+  int _selectedMenuIndex = 7;
   final TextEditingController _searchController = TextEditingController();
   String _filterStatus = 'Semua';
-  
-  // Data Murid
-  List<Murid> _muridList = [
-    Murid(id: 1, nama: 'Putri', kelas: 'SP.TK', email: 'putri@gmail.com', tanggalDaftar: DateTime(2024, 1, 15)),
-    Murid(id: 2, nama: 'Rexy', kelas: 'P.TK', email: 'rexy@gmail.com', tanggalDaftar: DateTime(2024, 1, 20)),
-    Murid(id: 3, nama: 'Syauqi', kelas: 'SPE.3', email: 'syauqi@gmail.com', tanggalDaftar: DateTime(2024, 2, 5)),
-    Murid(id: 4, nama: 'Nadiya', kelas: 'SP.4', email: 'nadiya@gmail.com', tanggalDaftar: DateTime(2024, 2, 10)),
-    Murid(id: 5, nama: 'Keysha', kelas: 'SP.5', email: 'keysha@gmail.com', tanggalDaftar: DateTime(2024, 3, 1)),
-    Murid(id: 6, nama: 'Jelovha', kelas: 'SP.5', email: 'jelovha@gmail.com', tanggalDaftar: DateTime(2024, 3, 5)),
-    Murid(id: 7, nama: 'Hanum', kelas: 'SP.6', email: 'hanum@gmail.com', tanggalDaftar: DateTime(2024, 3, 10)),
-    Murid(id: 8, nama: 'Choirul', kelas: 'R.4', email: 'choirul@gmail.com', tanggalDaftar: DateTime(2024, 3, 15)),
-    Murid(id: 9, nama: 'Alita', kelas: 'SP.4', email: 'alita@gmail.com', tanggalDaftar: DateTime(2024, 4, 1)),
-    Murid(id: 10, nama: 'Abiyu', kelas: 'SP.5', email: 'abiyu@gmail.com', tanggalDaftar: DateTime(2024, 4, 5)),
-    Murid(id: 11, nama: 'Syafiqah', kelas: 'SP.6', email: 'syafiqah@gmail.com', tanggalDaftar: DateTime(2024, 4, 10)),
-    Murid(id: 12, nama: 'Elviana', kelas: 'R.5', email: 'elviana@gmail.com', tanggalDaftar: DateTime(2024, 4, 15)),
-    Murid(id: 13, nama: 'Irghi', kelas: 'SPE.5', email: 'irghi@gmail.com', tanggalDaftar: DateTime(2024, 5, 1)),
-    Murid(id: 14, nama: 'Kayden', kelas: 'SP.5', email: 'kayden@gmail.com', tanggalDaftar: DateTime(2024, 5, 5)),
-    Murid(id: 15, nama: 'Nabila', kelas: 'R.6', email: 'nabila@gmail.com', tanggalDaftar: DateTime(2024, 5, 10)),
-    Murid(id: 16, nama: 'Naysila', kelas: 'SP.6', email: 'naysila@gmail.com', tanggalDaftar: DateTime(2024, 5, 15)),
-    Murid(id: 17, nama: 'Kayla', kelas: 'SP.7', email: 'kayla@gmail.com', tanggalDaftar: DateTime(2024, 6, 1)),
-    Murid(id: 18, nama: 'Nayla', kelas: 'SP.7', email: 'nayla@gmail.com', tanggalDaftar: DateTime(2024, 6, 5)),
-    Murid(id: 19, nama: 'Alvaro', kelas: 'R.7', email: 'alvaro@gmail.com', tanggalDaftar: DateTime(2024, 6, 10)),
-    Murid(id: 20, nama: 'Haikal', kelas: 'SP.8', email: 'haikal@gmail.com', tanggalDaftar: DateTime(2024, 6, 15)),
-    Murid(id: 21, nama: 'Labib', kelas: 'SP.8', email: 'labib@gmail.com', tanggalDaftar: DateTime(2024, 7, 1)),
-    Murid(id: 22, nama: 'Sabrina', kelas: 'R.8', email: 'sabrina@gmail.com', tanggalDaftar: DateTime(2024, 7, 5)),
-    Murid(id: 23, nama: 'Anindya', kelas: 'SP.9', email: 'anindya@gmail.com', tanggalDaftar: DateTime(2024, 7, 10)),
-    Murid(id: 24, nama: 'Laiqa', kelas: 'SP.9', email: 'laiqa@gmail.com', tanggalDaftar: DateTime(2024, 7, 15)),
-    Murid(id: 25, nama: 'Ashylla', kelas: 'R.9', email: 'ashylla@gmail.com', tanggalDaftar: DateTime(2024, 8, 1)),
-    Murid(id: 26, nama: 'Fadli', kelas: 'SP.10', email: 'fadli@gmail.com', tanggalDaftar: DateTime(2024, 8, 5)),
-    Murid(id: 27, nama: 'Daffa', kelas: 'SP.10', email: 'daffa@gmail.com', tanggalDaftar: DateTime(2024, 8, 10)),
-    Murid(id: 28, nama: 'Arjuna', kelas: 'R.10', email: 'arjuna@gmail.com', tanggalDaftar: DateTime(2024, 8, 15)),
-    Murid(id: 29, nama: 'Alvaro', kelas: 'SP.11', email: 'alvaro2@gmail.com', tanggalDaftar: DateTime(2024, 9, 1)),
-    Murid(id: 30, nama: 'Sahla', kelas: 'SP.11', email: 'sahla@gmail.com', tanggalDaftar: DateTime(2024, 9, 5)),
-    Murid(id: 31, nama: 'Zhainah', kelas: 'R.11', email: 'zhainah@gmail.com', tanggalDaftar: DateTime(2024, 9, 10)),
-    Murid(id: 32, nama: 'Naqiyya', kelas: 'SP.12', email: 'naqiyya@gmail.com', tanggalDaftar: DateTime(2024, 9, 15)),
-    Murid(id: 33, nama: 'Azka', kelas: 'P.7', email: 'azka@gmail.com', tanggalDaftar: DateTime(2024, 10, 1)),
-  ];
+  bool _isInit = true;
 
-  List<Murid> get filteredMuridList {
-    return _muridList.where((murid) {
-      final matchesSearch = murid.nama.toLowerCase().contains(_searchController.text.toLowerCase()) ||
-                           (murid.kelas?.toLowerCase().contains(_searchController.text.toLowerCase()) ?? false);
-      final matchesFilter = _filterStatus == 'Semua' || murid.status == _filterStatus;
-      return matchesSearch && matchesFilter;
-    }).toList();
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_isInit) {
+      final user = context.read<AuthProvider>().user;
+      if (user != null) {
+        context.read<TeacherProvider>().loadTeacherData(user.userId!);
+      }
+      _isInit = false;
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    return PengajarScaffold(
+    return TeacherScaffold(
       title: 'Kelola Murid',
       selectedMenuIndex: _selectedMenuIndex,
       onMenuSelected: (index) => setState(() => _selectedMenuIndex = index),
@@ -92,29 +44,37 @@ class _HalamanKelolaMuridState extends State<HalamanKelolaMurid> {
           const SnackBar(content: Text('Notifikasi')),
         );
       },
-      body: Column(
-        children: [
-          Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildHeader(),
-                  const SizedBox(height: 24),
-                  _buildSearchAndFilter(),
-                  const SizedBox(height: 24),
-                  _buildMuridList(),
-                ],
+      body: Consumer<TeacherProvider>(
+        builder: (context, teacherProvider, child) {
+          if (teacherProvider.isLoading) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          return Column(
+            children: [
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildHeader(teacherProvider.students.length),
+                      const SizedBox(height: 24),
+                      _buildSearchAndFilter(),
+                      const SizedBox(height: 24),
+                      _buildMuridList(teacherProvider.students),
+                    ],
+                  ),
+                ),
               ),
-            ),
-          ),
-        ],
+            ],
+          );
+        },
       ),
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader(int totalStudents) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -151,7 +111,7 @@ class _HalamanKelolaMuridState extends State<HalamanKelolaMurid> {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  'Total: ${_muridList.length} murid terdaftar',
+                  'Total: $totalStudents murid terdaftar',
                   style: const TextStyle(
                     fontSize: 14,
                     color: AppColors.textLight,
@@ -222,18 +182,18 @@ class _HalamanKelolaMuridState extends State<HalamanKelolaMurid> {
           ),
           itemBuilder: (context) => [
             const PopupMenuItem(value: 'Semua', child: Text('Semua')),
-            const PopupMenuItem(value: 'Aktif', child: Text('Aktif')),
-            const PopupMenuItem(value: 'Tidak Aktif', child: Text('Tidak Aktif')),
+            // Note: Status might not be available in StudentModel directly unless added
+            // For now keeping simpler filter
+            const PopupMenuItem(value: 'SD', child: Text('SD')),
+            const PopupMenuItem(value: 'SMP', child: Text('SMP')),
           ],
         ),
       ],
     );
   }
 
-  Widget _buildMuridList() {
-    final muridList = filteredMuridList;
-
-    if (muridList.isEmpty) {
+  Widget _buildMuridList(List<StudentModel> students) {
+    if (students.isEmpty) {
       return Center(
         child: Column(
           children: [
@@ -249,18 +209,31 @@ class _HalamanKelolaMuridState extends State<HalamanKelolaMurid> {
       );
     }
 
+    final filteredList = students.where((student) {
+      final matchesSearch = student.fullName
+              .toLowerCase()
+              .contains(_searchController.text.toLowerCase()) ||
+          (student.gradeLevel
+              .toLowerCase()
+              .contains(_searchController.text.toLowerCase()));
+      // Simplified status filter based on grade level for now as pseudo-status
+      final matchesFilter = _filterStatus == 'Semua' ||
+          student.gradeLevel.contains(_filterStatus);
+      return matchesSearch && matchesFilter;
+    }).toList();
+
     return ListView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      itemCount: muridList.length,
+      itemCount: filteredList.length,
       itemBuilder: (context, index) {
-        final murid = muridList[index];
-        return _buildMuridCard(murid);
+        final student = filteredList[index];
+        return _buildMuridCard(student);
       },
     );
   }
 
-  Widget _buildMuridCard(Murid murid) {
+  Widget _buildMuridCard(StudentModel student) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
@@ -280,17 +253,24 @@ class _HalamanKelolaMuridState extends State<HalamanKelolaMurid> {
         leading: CircleAvatar(
           backgroundColor: AppColors.primary.withOpacity(0.1),
           radius: 28,
-          child: Text(
-            murid.nama[0].toUpperCase(),
-            style: const TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: AppColors.primary,
-            ),
-          ),
+          backgroundImage: student.avatarUrl != null
+              ? NetworkImage(student.avatarUrl!)
+              : null,
+          child: student.avatarUrl == null
+              ? Text(
+                  student.fullName.isNotEmpty
+                      ? student.fullName[0].toUpperCase()
+                      : '?',
+                  style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.primary,
+                  ),
+                )
+              : null,
         ),
         title: Text(
-          murid.nama,
+          student.fullName,
           style: const TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.bold,
@@ -306,24 +286,23 @@ class _HalamanKelolaMuridState extends State<HalamanKelolaMurid> {
                 Icon(Icons.class_, size: 14, color: Colors.grey.shade600),
                 const SizedBox(width: 4),
                 Text(
-                  murid.kelas ?? 'Belum ada kelas',
+                  student.gradeLevel,
                   style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
                 ),
                 const SizedBox(width: 16),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                   decoration: BoxDecoration(
-                    color: murid.status == 'Aktif' 
-                        ? Colors.green.withOpacity(0.1) 
-                        : Colors.red.withOpacity(0.1),
+                    color: Colors.green.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(4),
                   ),
-                  child: Text(
-                    murid.status,
+                  child: const Text(
+                    'Aktif', // Placeholder status
                     style: TextStyle(
                       fontSize: 11,
                       fontWeight: FontWeight.w600,
-                      color: murid.status == 'Aktif' ? Colors.green : Colors.red,
+                      color: Colors.green,
                     ),
                   ),
                 ),
@@ -338,7 +317,8 @@ class _HalamanKelolaMuridState extends State<HalamanKelolaMurid> {
               value: 'detail',
               child: Row(
                 children: [
-                  Icon(Icons.info_outline, size: 20, color: Colors.blue.shade700),
+                  Icon(Icons.info_outline,
+                      size: 20, color: Colors.blue.shade700),
                   const SizedBox(width: 12),
                   const Text('Detail'),
                 ],
@@ -348,7 +328,8 @@ class _HalamanKelolaMuridState extends State<HalamanKelolaMurid> {
               value: 'edit',
               child: Row(
                 children: [
-                  Icon(Icons.edit_outlined, size: 20, color: Colors.orange.shade700),
+                  Icon(Icons.edit_outlined,
+                      size: 20, color: Colors.orange.shade700),
                   const SizedBox(width: 12),
                   const Text('Edit'),
                 ],
@@ -358,7 +339,8 @@ class _HalamanKelolaMuridState extends State<HalamanKelolaMurid> {
               value: 'delete',
               child: Row(
                 children: [
-                  Icon(Icons.delete_outline, size: 20, color: Colors.red.shade700),
+                  Icon(Icons.delete_outline,
+                      size: 20, color: Colors.red.shade700),
                   const SizedBox(width: 12),
                   const Text('Hapus'),
                 ],
@@ -367,11 +349,11 @@ class _HalamanKelolaMuridState extends State<HalamanKelolaMurid> {
           ],
           onSelected: (value) {
             if (value == 'detail') {
-              _showDetailDialog(murid);
+              _showDetailDialog(student);
             } else if (value == 'edit') {
-              _showAddEditDialog(murid: murid);
+              _showAddEditDialog(student: student);
             } else if (value == 'delete') {
-              _showDeleteDialog(murid);
+              _showDeleteDialog(student);
             }
           },
         ),
@@ -379,19 +361,24 @@ class _HalamanKelolaMuridState extends State<HalamanKelolaMurid> {
     );
   }
 
-  void _showAddEditDialog({Murid? murid}) {
-    final isEdit = murid != null;
-    final namaController = TextEditingController(text: murid?.nama ?? '');
-    final kelasController = TextEditingController(text: murid?.kelas ?? '');
-    final emailController = TextEditingController(text: murid?.email ?? '');
-    final noHpController = TextEditingController(text: murid?.noHp ?? '');
-    String status = murid?.status ?? 'Aktif';
+  void _showAddEditDialog({StudentModel? student}) {
+    final isEdit = student != null;
+    final fullNameController =
+        TextEditingController(text: student?.fullName ?? '');
+    final gradeLevelController =
+        TextEditingController(text: student?.gradeLevel ?? '');
+    final nicknameController =
+        TextEditingController(text: student?.nickname ?? '');
+
+    // Note: Email dan Phone ada di UserModel, bukan StudentModel.
+    // Untuk CRUD sederhana ini kita simpan data StudentModel dulu.
 
     showDialog(
       context: context,
       builder: (context) => StatefulBuilder(
         builder: (context, setDialogState) => AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           title: Row(
             children: [
               Container(
@@ -414,59 +401,33 @@ class _HalamanKelolaMuridState extends State<HalamanKelolaMurid> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 TextField(
-                  controller: namaController,
+                  controller: fullNameController,
                   decoration: InputDecoration(
                     labelText: 'Nama Lengkap',
                     prefixIcon: const Icon(Icons.person),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                    border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10)),
                   ),
                 ),
                 const SizedBox(height: 16),
                 TextField(
-                  controller: kelasController,
+                  controller: nicknameController,
                   decoration: InputDecoration(
-                    labelText: 'Kelas',
+                    labelText: 'Nama Panggilan',
+                    prefixIcon: const Icon(Icons.face),
+                    border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10)),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: gradeLevelController,
+                  decoration: InputDecoration(
+                    labelText: 'Kelas / Grade',
                     prefixIcon: const Icon(Icons.class_),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                    border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10)),
                   ),
-                ),
-                const SizedBox(height: 16),
-                TextField(
-                  controller: emailController,
-                  decoration: InputDecoration(
-                    labelText: 'Email',
-                    prefixIcon: const Icon(Icons.email),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                  ),
-                  keyboardType: TextInputType.emailAddress,
-                ),
-                const SizedBox(height: 16),
-                TextField(
-                  controller: noHpController,
-                  decoration: InputDecoration(
-                    labelText: 'No. HP',
-                    prefixIcon: const Icon(Icons.phone),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                  ),
-                  keyboardType: TextInputType.phone,
-                ),
-                const SizedBox(height: 16),
-                DropdownButtonFormField<String>(
-                  value: status,
-                  decoration: InputDecoration(
-                    labelText: 'Status',
-                    prefixIcon: const Icon(Icons.check_circle),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                  ),
-                  items: const [
-                    DropdownMenuItem(value: 'Aktif', child: Text('Aktif')),
-                    DropdownMenuItem(value: 'Tidak Aktif', child: Text('Tidak Aktif')),
-                  ],
-                  onChanged: (value) {
-                    if (value != null) {
-                      setDialogState(() => status = value);
-                    }
-                  },
                 ),
               ],
             ),
@@ -477,44 +438,71 @@ class _HalamanKelolaMuridState extends State<HalamanKelolaMurid> {
               child: const Text('Batal'),
             ),
             ElevatedButton(
-              onPressed: () {
-                if (namaController.text.isEmpty) {
+              onPressed: () async {
+                if (fullNameController.text.isEmpty) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('Nama harus diisi')),
                   );
                   return;
                 }
 
-                setState(() {
-                  if (isEdit) {
-                    murid.nama = namaController.text;
-                    murid.kelas = kelasController.text;
-                    murid.email = emailController.text;
-                    murid.noHp = noHpController.text;
-                    murid.status = status;
-                  } else {
-                    final newId = _muridList.isEmpty ? 1 : _muridList.map((m) => m.id!).reduce((a, b) => a > b ? a : b) + 1;
-                    _muridList.add(Murid(
-                      id: newId,
-                      nama: namaController.text,
-                      kelas: kelasController.text,
-                      email: emailController.text,
-                      noHp: noHpController.text,
-                      status: status,
-                      tanggalDaftar: DateTime.now(),
-                    ));
-                  }
-                });
+                try {
+                  final teacherProvider = context.read<TeacherProvider>();
+                  final studentRepo =
+                      StudentRepository(); // Menggunakan repo langsung untuk create
 
-                Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(isEdit ? 'Murid berhasil diupdate' : 'Murid berhasil ditambahkan'),
-                    backgroundColor: Colors.green,
-                  ),
-                );
+                  if (isEdit) {
+                    final updatedStudent = student!.copyWith(
+                      fullName: fullNameController.text,
+                      nickname: nicknameController.text,
+                      gradeLevel: gradeLevelController.text,
+                    );
+                    await studentRepo.updateStudent(
+                        student.studentId!, updatedStudent);
+                  } else {
+                    // Create new student
+                    // Generate temp UID since we are not creating full Auth user here yet
+                    final tempUserId = const Uuid().v4();
+                    final newStudent = StudentModel(
+                      userId: tempUserId,
+                      fullName: fullNameController.text,
+                      nickname: nicknameController.text,
+                      gradeLevel: gradeLevelController.text,
+                      createdAt: DateTime.now(),
+                    );
+
+                    // Create in Firestore
+                    await studentRepo.createStudent(newStudent);
+
+                    // Note: Idealnya kita juga add ke User collection dan Auth,
+                    // tapi sesuai instruksi cukup CRUD data murid dulu.
+                  }
+
+                  // Reload data
+                  final user = context.read<AuthProvider>().user;
+                  if (user != null) {
+                    await teacherProvider.loadTeacherData(user.userId!);
+                  }
+
+                  if (context.mounted) {
+                    Navigator.pop(context);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(isEdit
+                            ? 'Murid berhasil diupdate'
+                            : 'Murid berhasil ditambahkan'),
+                        backgroundColor: Colors.green,
+                      ),
+                    );
+                  }
+                } catch (e) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Gagal: $e')),
+                  );
+                }
               },
-              style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
+              style:
+                  ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
               child: Text(isEdit ? 'Simpan' : 'Tambah'),
             ),
           ],
@@ -523,7 +511,7 @@ class _HalamanKelolaMuridState extends State<HalamanKelolaMurid> {
     );
   }
 
-  void _showDetailDialog(Murid murid) {
+  void _showDetailDialog(StudentModel student) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -532,19 +520,26 @@ class _HalamanKelolaMuridState extends State<HalamanKelolaMurid> {
           children: [
             CircleAvatar(
               backgroundColor: AppColors.primary.withOpacity(0.1),
-              child: Text(
-                murid.nama[0].toUpperCase(),
-                style: const TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.primary,
-                ),
-              ),
+              backgroundImage: student.avatarUrl != null
+                  ? NetworkImage(student.avatarUrl!)
+                  : null,
+              child: student.avatarUrl == null
+                  ? Text(
+                      student.fullName.isNotEmpty
+                          ? student.fullName[0].toUpperCase()
+                          : '?',
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.primary,
+                      ),
+                    )
+                  : null,
             ),
             const SizedBox(width: 12),
             Expanded(
               child: Text(
-                murid.nama,
+                student.fullName,
                 style: const TextStyle(fontSize: 18),
               ),
             ),
@@ -554,21 +549,13 @@ class _HalamanKelolaMuridState extends State<HalamanKelolaMurid> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildDetailRow(Icons.class_, 'Kelas', murid.kelas ?? '-'),
-            _buildDetailRow(Icons.email, 'Email', murid.email ?? '-'),
-            _buildDetailRow(Icons.phone, 'No. HP', murid.noHp ?? '-'),
+            _buildDetailRow(Icons.face, 'Nama Panggilan', student.nickname),
+            _buildDetailRow(Icons.class_, 'Kelas', student.gradeLevel),
+            _buildDetailRow(Icons.star, 'Total Poin', '${student.totalPoints}'),
             _buildDetailRow(
               Icons.calendar_today,
               'Tanggal Daftar',
-              murid.tanggalDaftar != null
-                  ? '${murid.tanggalDaftar!.day}/${murid.tanggalDaftar!.month}/${murid.tanggalDaftar!.year}'
-                  : '-',
-            ),
-            _buildDetailRow(
-              Icons.check_circle,
-              'Status',
-              murid.status,
-              valueColor: murid.status == 'Aktif' ? Colors.green : Colors.red,
+              '${student.createdAt.day}/${student.createdAt.month}/${student.createdAt.year}',
             ),
           ],
         ),
@@ -582,7 +569,8 @@ class _HalamanKelolaMuridState extends State<HalamanKelolaMurid> {
     );
   }
 
-  Widget _buildDetailRow(IconData icon, String label, String value, {Color? valueColor}) {
+  Widget _buildDetailRow(IconData icon, String label, String value,
+      {Color? valueColor}) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Row(
@@ -613,7 +601,7 @@ class _HalamanKelolaMuridState extends State<HalamanKelolaMurid> {
     );
   }
 
-  void _showDeleteDialog(Murid murid) {
+  void _showDeleteDialog(StudentModel student) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -625,24 +613,51 @@ class _HalamanKelolaMuridState extends State<HalamanKelolaMurid> {
             Text('Hapus Murid'),
           ],
         ),
-        content: Text('Apakah Anda yakin ingin menghapus murid "${murid.nama}"?'),
+        content: Text(
+            'Apakah Anda yakin ingin menghapus murid "${student.fullName}"?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
             child: const Text('Batal'),
           ),
           ElevatedButton(
-            onPressed: () {
-              setState(() {
-                _muridList.removeWhere((m) => m.id == murid.id);
-              });
-              Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('Murid "${murid.nama}" berhasil dihapus'),
-                  backgroundColor: Colors.green,
-                ),
-              );
+            onPressed: () async {
+              try {
+                // Delete from Firestore
+                await StudentRepository().deleteStudent(student.studentId!);
+
+                // Refresh data
+                // Note: Since TeacherProvider loads students from classes,
+                // deleting a student might not remove them from the class list automatically
+                // if we don't reload.
+                final user = context.read<AuthProvider>().user;
+                if (user != null) {
+                  await context
+                      .read<TeacherProvider>()
+                      .loadTeacherData(user.userId!);
+                }
+
+                if (context.mounted) {
+                  Navigator.pop(context);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content:
+                          Text('Murid "${student.fullName}" berhasil dihapus'),
+                      backgroundColor: Colors.green,
+                    ),
+                  );
+                }
+              } catch (e) {
+                if (context.mounted) {
+                  Navigator.pop(context);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Gagal menghapus: $e'),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                }
+              }
             },
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
             child: const Text('Hapus'),
@@ -650,11 +665,5 @@ class _HalamanKelolaMuridState extends State<HalamanKelolaMurid> {
         ],
       ),
     );
-  }
-
-  @override
-  void dispose() {
-    _searchController.dispose();
-    super.dispose();
   }
 }

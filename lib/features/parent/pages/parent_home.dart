@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import '../pengaturan/warna.dart';
-import 'drawer/drawer.dart';        // Mengimpor DrawerOrangtua
-import 'drawer/bottomnav.dart';     // Mengimpor FooterOrangtua
+import '../../../core/utils/colors.dart';
+import '../widgets/parent_drawer.dart';
+import '../widgets/parent_bottom_nav.dart';
 
 class BerandaOrangtua extends StatefulWidget {
   const BerandaOrangtua({super.key});
@@ -86,7 +86,8 @@ class _BerandaOrangtuaState extends State<BerandaOrangtua> {
           ),
         ],
       ),
-      drawer: const DrawerOrangtua(),  // Menggunakan DrawerOrangtua yang sudah dibuat
+      drawer:
+          const ParentDrawer(), // Menggunakan DrawerOrangtua yang sudah dibuat
       body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -262,7 +263,7 @@ class _BerandaOrangtuaState extends State<BerandaOrangtua> {
           ],
         ),
       ),
-      bottomNavigationBar: const FooterOrangtua(selectedIndex: 0),
+      bottomNavigationBar: ParentBottomNav(selectedIndex: _selectedIndex),
     );
   }
 

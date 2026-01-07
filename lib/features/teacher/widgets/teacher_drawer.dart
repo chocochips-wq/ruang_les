@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
-import '../../pengaturan/warna.dart';
-import '../../pengaturan/rute.dart';
+import '../../../core/utils/routes.dart';
+import '../../../core/utils/colors.dart';
 
-class PengajarDrawer extends StatelessWidget {
+class TeacherDrawer extends StatelessWidget {
   final int selectedMenuIndex;
   final Function(int) onMenuSelected;
 
-  const PengajarDrawer({
+  const TeacherDrawer({
     super.key,
     required this.selectedMenuIndex,
     required this.onMenuSelected,

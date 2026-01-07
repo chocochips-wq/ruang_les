@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import '../../pengaturan/warna.dart';
-import 'drawer/drawer.dart';
-import 'drawer/bottomnav.dart';
+import '../../../core/utils/colors.dart';
+import '../widgets/parent_drawer.dart';
+import '../widgets/parent_bottom_nav.dart';
 
 class LaporanBelajarOrangtua extends StatefulWidget {
   const LaporanBelajarOrangtua({super.key});
@@ -28,7 +28,7 @@ class _LaporanBelajarOrangtuaState extends State<LaporanBelajarOrangtua> {
         ),
         iconTheme: const IconThemeData(color: Colors.white),
       ),
-      drawer: const DrawerOrangtua(),
+      drawer: const ParentDrawer(),
       body: SingleChildScrollView(
         child: Column(
           children: [
@@ -63,7 +63,7 @@ class _LaporanBelajarOrangtuaState extends State<LaporanBelajarOrangtua> {
           ],
         ),
       ),
-      bottomNavigationBar: const FooterOrangtua(selectedIndex: 1),
+      bottomNavigationBar: const ParentBottomNav(selectedIndex: 1),
     );
   }
 
@@ -203,7 +203,8 @@ class _LaporanBelajarOrangtuaState extends State<LaporanBelajarOrangtua> {
         children: [
           const Row(
             children: [
-              Icon(Icons.analytics_outlined, size: 20, color: AppColors.primary),
+              Icon(Icons.analytics_outlined,
+                  size: 20, color: AppColors.primary),
               SizedBox(width: 8),
               Text(
                 'Statistik Belajar',
@@ -250,7 +251,8 @@ class _LaporanBelajarOrangtuaState extends State<LaporanBelajarOrangtua> {
     );
   }
 
-  Widget _buildStatItem(String value, String label, IconData icon, Color color, {bool isWide = false}) {
+  Widget _buildStatItem(String value, String label, IconData icon, Color color,
+      {bool isWide = false}) {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
@@ -339,7 +341,8 @@ class _LaporanBelajarOrangtuaState extends State<LaporanBelajarOrangtua> {
     );
   }
 
-  Widget _buildPerformaItem(String subject, String grade, int score, String subtitle, Color color) {
+  Widget _buildPerformaItem(
+      String subject, String grade, int score, String subtitle, Color color) {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
@@ -368,7 +371,8 @@ class _LaporanBelajarOrangtuaState extends State<LaporanBelajarOrangtua> {
                         ),
                         const SizedBox(width: 8),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 10, vertical: 4),
                           decoration: BoxDecoration(
                             color: color.withOpacity(0.15),
                             borderRadius: BorderRadius.circular(6),
@@ -490,7 +494,8 @@ class _LaporanBelajarOrangtuaState extends State<LaporanBelajarOrangtua> {
                 const SizedBox(height: 4),
                 Row(
                   children: [
-                    Icon(Icons.calendar_today, size: 16, color: Colors.grey.shade600),
+                    Icon(Icons.calendar_today,
+                        size: 16, color: Colors.grey.shade600),
                     const SizedBox(width: 6),
                     Text(
                       '26 Januari 2025',

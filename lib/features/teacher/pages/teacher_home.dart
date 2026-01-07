@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import '../pengaturan/warna.dart';
-import 'drawer/appbar.dart';
-import 'drawer/bottomnav.dart';
+import '../../../core/utils/colors.dart';
+import '../widgets/teacher_app_bar.dart';
+import '../widgets/teacher_bottom_nav.dart';
 
 class HalamanBeranda extends StatefulWidget {
   const HalamanBeranda({super.key});
@@ -16,7 +16,7 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
   @override
   Widget build(BuildContext context) {
     // Pakai PengajarScaffold yang sudah include AppBar + Drawer + Notif
-    return PengajarScaffold(
+    return TeacherScaffold(
       selectedMenuIndex: _selectedMenuIndex,
       onMenuSelected: (index) {
         setState(() {
@@ -122,9 +122,9 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
               },
             ),
           ),
-          
+
           // Bottom Navigation
-          const PengajarFooter(currentIndex: 1),
+          const TeacherBottomNav(currentIndex: 1),
         ],
       ),
     );

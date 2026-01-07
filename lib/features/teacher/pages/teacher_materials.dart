@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import '../../pengaturan/warna.dart';
-import 'drawer/appbar.dart';
-import 'drawer/bottomnav.dart';
-import 'pengajar_kelola_materi.dart';
+import '../../../core/utils/colors.dart';
+import '../widgets/teacher_app_bar.dart';
+import '../widgets/teacher_bottom_nav.dart';
+import 'teacher_material_management.dart';
 
 class PengajarMateri extends StatefulWidget {
   const PengajarMateri({super.key});
@@ -48,7 +48,7 @@ class _PengajarMateriState extends State<PengajarMateri> {
   @override
   Widget build(BuildContext context) {
     // ✅ GUNAKAN PengajarScaffold dari appbar.dart
-    return PengajarScaffold(
+    return TeacherScaffold(
       title: "Kelola Materi",
       selectedMenuIndex: _selectedMenuIndex,
       onMenuSelected: (index) {
@@ -70,7 +70,7 @@ class _PengajarMateriState extends State<PengajarMateri> {
             ),
           ),
           // ✅ GUNAKAN PengajarFooter dari bottomnav.dart (urutan: Materi, Home, Profile)
-          const PengajarFooter(
+          const TeacherBottomNav(
             currentIndex: 0, // Index 0 = Materi (posisi pertama)
           ),
         ],
@@ -236,7 +236,8 @@ class _PengajarMateriState extends State<PengajarMateri> {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.file_copy_outlined, size: 14, color: materi['color']),
+                Icon(Icons.file_copy_outlined,
+                    size: 14, color: materi['color']),
                 const SizedBox(width: 4),
                 Text(
                   '${materi['jumlah']} Materi',
@@ -269,7 +270,7 @@ class _PengajarMateriState extends State<PengajarMateri> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => PengajarKelolaMateri(
+        builder: (context) => TeacherMaterialManagement(
           mataPelajaran: materi['mata_pelajaran'],
           warna: materi['color'],
           icon: materi['icon'],

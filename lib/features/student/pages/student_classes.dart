@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import '../pengaturan/warna.dart';
-import 'drawer/drawer.dart';
-import 'drawer/bottomnav.dart';
+import '../../../core/utils/colors.dart';
+import '../widgets/student_drawer.dart';
+import '../widgets/student_bottom_nav.dart';
 
 class HalamanKelas extends StatefulWidget {
   const HalamanKelas({super.key});
@@ -22,91 +22,96 @@ class _HalamanKelasState extends State<HalamanKelas> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
-        backgroundColor: AppColors.primary,
-        elevation: 0,
-        leading: Builder(
-          builder: (context) => IconButton(
-            icon: const Icon(Icons.menu, color: Colors.white),
-            onPressed: () => Scaffold.of(context).openDrawer(),
-          ),
-        ),
-        title: const Text(
-          'Kelas',
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        centerTitle: true,
-      ),
-      drawer: const DrawerMurid(),
-
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          // ====== HARI INI ======
-          _buildSectionCard(
-            title: 'Hari ini',
-            icon: Icons.today,
-            child: Column(
-              children: [
-                _buildScheduleItem(
-                  time: '08.00',
-                  title: 'Matematika - SMP',
-                  buttonText: 'Masuk Kelas',
-                  onTap: () {},
-                ),
-              ],
+        backgroundColor: AppColors.background,
+        appBar: AppBar(
+          backgroundColor: AppColors.primary,
+          elevation: 0,
+          leading: Builder(
+            builder: (context) => IconButton(
+              icon: const Icon(Icons.menu, color: Colors.white),
+              onPressed: () => Scaffold.of(context).openDrawer(),
             ),
           ),
-
-          const SizedBox(height: 16),
-
-          // ====== HARI SECTION ======
-          _buildSimpleCard(
-            padding: 16,
-            child: Wrap(
-              alignment: WrapAlignment.center,
-              spacing: 8,
-              runSpacing: 8,
-              children: ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu']
-                  .map((day) => _buildDayChip(day, day == 'Senin'))
-                  .toList(),
+          title: const Text(
+            'Kelas',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
             ),
           ),
+          centerTitle: true,
+        ),
+        drawer: const DrawerMurid(),
+        body: ListView(
+          padding: const EdgeInsets.all(16),
+          children: [
+            // ====== HARI INI ======
+            _buildSectionCard(
+              title: 'Hari ini',
+              icon: Icons.today,
+              child: Column(
+                children: [
+                  _buildScheduleItem(
+                    time: '08.00',
+                    title: 'Matematika - SMP',
+                    buttonText: 'Masuk Kelas',
+                    onTap: () {},
+                  ),
+                ],
+              ),
+            ),
 
-          const SizedBox(height: 16),
+            const SizedBox(height: 16),
 
-          // ====== KELASKU ======
-          _buildSectionCard(
-            title: 'Kelasku',
-            icon: Icons.class_,
-            child: _buildClassDetail(),
-          ),
+            // ====== HARI SECTION ======
+            _buildSimpleCard(
+              padding: 16,
+              child: Wrap(
+                alignment: WrapAlignment.center,
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  'Senin',
+                  'Selasa',
+                  'Rabu',
+                  'Kamis',
+                  'Jumat',
+                  'Sabtu',
+                  'Minggu'
+                ].map((day) => _buildDayChip(day, day == 'Senin')).toList(),
+              ),
+            ),
 
-          const SizedBox(height: 16),
+            const SizedBox(height: 16),
 
-          // ====== ABSEN ======
-          _buildSectionCard(
-            title: 'Absen',
-            icon: Icons.checklist,
-            child: _buildAbsenceTable(),
-          ),
-        ],
-      ),
+            // ====== KELASKU ======
+            _buildSectionCard(
+              title: 'Kelasku',
+              icon: Icons.class_,
+              child: _buildClassDetail(),
+            ),
 
-      bottomNavigationBar: FooterMurid(selectedIndex: 0) // Index 0 = Kelas
-    );
+            const SizedBox(height: 16),
+
+            // ====== ABSEN ======
+            _buildSectionCard(
+              title: 'Absen',
+              icon: Icons.checklist,
+              child: _buildAbsenceTable(),
+            ),
+          ],
+        ),
+        bottomNavigationBar: FooterMurid(selectedIndex: 0) // Index 0 = Kelas
+        );
   }
 
   // -----------------------------
   // COMPONENTS
   // -----------------------------
 
-  Widget _buildSectionCard({required String title, required Widget child, IconData? icon}) {
+  Widget _buildSectionCard(
+      {required String title, required Widget child, IconData? icon}) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: _cardDecoration(),
@@ -164,7 +169,9 @@ class _HalamanKelasState extends State<HalamanKelas> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: isActive ? AppColors.primary.withOpacity(0.1) : Colors.grey.shade100,
+        color: isActive
+            ? AppColors.primary.withOpacity(0.1)
+            : Colors.grey.shade100,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
           color: isActive ? AppColors.primary : Colors.grey.shade300,
@@ -208,7 +215,8 @@ class _HalamanKelasState extends State<HalamanKelas> {
               color: AppColors.primary.withOpacity(0.1),
               borderRadius: BorderRadius.circular(8),
             ),
-            child: const Icon(Icons.schedule, color: AppColors.primary, size: 22),
+            child:
+                const Icon(Icons.schedule, color: AppColors.primary, size: 22),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -241,7 +249,8 @@ class _HalamanKelasState extends State<HalamanKelas> {
               onTap: onTap,
               borderRadius: BorderRadius.circular(8),
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 child: Text(
                   buttonText,
                   style: const TextStyle(
@@ -282,7 +291,8 @@ class _HalamanKelasState extends State<HalamanKelas> {
                   color: AppColors.primary.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: const Icon(Icons.book, color: AppColors.primary, size: 20),
+                child:
+                    const Icon(Icons.book, color: AppColors.primary, size: 20),
               ),
               const SizedBox(width: 10),
               const Expanded(
@@ -303,9 +313,7 @@ class _HalamanKelasState extends State<HalamanKelas> {
           _buildInfoRow(Icons.access_time, 'Senin 08.00 | Rabu 09.00'),
           const SizedBox(height: 6),
           _buildInfoRow(Icons.analytics, '3/8 Pertemuan'),
-
           const SizedBox(height: 16),
-
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
@@ -379,13 +387,24 @@ class _HalamanKelasState extends State<HalamanKelas> {
           ),
           child: const Row(
             children: [
-              Expanded(flex: 2, child: Text('Nama', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold))),
-              Expanded(flex: 2, child: Text('Tanggal', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold))),
-              Expanded(flex: 1, child: Text('Status', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold))),
+              Expanded(
+                  flex: 2,
+                  child: Text('Nama',
+                      style: TextStyle(
+                          fontSize: 13, fontWeight: FontWeight.bold))),
+              Expanded(
+                  flex: 2,
+                  child: Text('Tanggal',
+                      style: TextStyle(
+                          fontSize: 13, fontWeight: FontWeight.bold))),
+              Expanded(
+                  flex: 1,
+                  child: Text('Status',
+                      style: TextStyle(
+                          fontSize: 13, fontWeight: FontWeight.bold))),
             ],
           ),
         ),
-
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
           decoration: BoxDecoration(

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../../pengaturan/warna.dart';
-import 'drawer/appbar.dart'; // Import PengajarScaffold
+import '../../../core/utils/colors.dart';
+import '../widgets/teacher_app_bar.dart';
 
 class PengajarPengaturan extends StatefulWidget {
   const PengajarPengaturan({super.key});
@@ -13,7 +13,7 @@ class _PengajarPengaturanState extends State<PengajarPengaturan> {
   int _selectedMenuIndex = 6;
   @override
   Widget build(BuildContext context) {
-    return PengajarScaffold(
+    return TeacherScaffold(
       // title: 'Pengaturan', // Opsional, akan auto pakai "Pengaturan" sesuai selectedMenuIndex
       selectedMenuIndex: _selectedMenuIndex,
       onMenuSelected: (index) => setState(() => _selectedMenuIndex = index),

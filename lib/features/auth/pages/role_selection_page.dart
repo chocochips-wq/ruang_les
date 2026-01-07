@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import '../pengaturan/warna.dart';
-import '../pengaturan/rute.dart';
-import '../komponen/tombol_custom.dart';
+import '../../../core/utils/colors.dart';
+import '../../../core/utils/routes.dart';
+import '../../../core/widgets/custom_button.dart';
 
 class HalamanPilihRole extends StatefulWidget {
   const HalamanPilihRole({super.key});
@@ -24,7 +24,7 @@ class _HalamanPilihRoleState extends State<HalamanPilihRole> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 const SizedBox(height: 20),
-                
+
                 // Icon
                 Container(
                   width: 100,
@@ -40,7 +40,7 @@ class _HalamanPilihRoleState extends State<HalamanPilihRole> {
                   ),
                 ),
                 const SizedBox(height: 32),
-                
+
                 // Title
                 const Text(
                   'Ruang Les',
@@ -59,7 +59,7 @@ class _HalamanPilihRoleState extends State<HalamanPilihRole> {
                   ),
                 ),
                 const SizedBox(height: 32),
-                
+
                 const Text(
                   'Masuk Sebagai Siapa?',
                   style: TextStyle(
@@ -69,16 +69,17 @@ class _HalamanPilihRoleState extends State<HalamanPilihRole> {
                   ),
                 ),
                 const SizedBox(height: 24),
-                
+
                 // Pilihan Role
                 _buildRoleCard('murid', 'Murid', Icons.school_rounded),
                 const SizedBox(height: 16),
-                _buildRoleCard('orangtua', 'Orang Tua', Icons.family_restroom_rounded),
+                _buildRoleCard(
+                    'orangtua', 'Orang Tua', Icons.family_restroom_rounded),
                 const SizedBox(height: 16),
                 _buildRoleCard('pengajar', 'Pengajar', Icons.person_rounded),
-                
+
                 const SizedBox(height: 32),
-                
+
                 // Button Masuk
                 TombolCustom(
                   teks: 'Masuk',
@@ -86,7 +87,7 @@ class _HalamanPilihRoleState extends State<HalamanPilihRole> {
                       ? () {
                           // Kirim role ke halaman login
                           Navigator.pushNamed(
-                            context, 
+                            context,
                             AppRoutes.login,
                             arguments: roleDipilih,
                           );
@@ -97,7 +98,7 @@ class _HalamanPilihRoleState extends State<HalamanPilihRole> {
                       : AppColors.buttonDisabled,
                 ),
                 const SizedBox(height: 16),
-                
+
                 // Text Belum Punya Akun
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -120,7 +121,7 @@ class _HalamanPilihRoleState extends State<HalamanPilihRole> {
                     ),
                   ],
                 ),
-                
+
                 const SizedBox(height: 20),
               ],
             ),
@@ -132,7 +133,7 @@ class _HalamanPilihRoleState extends State<HalamanPilihRole> {
 
   Widget _buildRoleCard(String roleValue, String roleLabel, IconData icon) {
     final bool isSelected = roleDipilih == roleValue;
-    
+
     return GestureDetector(
       onTap: () {
         setState(() {

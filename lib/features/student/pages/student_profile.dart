@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import '../../pengaturan/warna.dart';
-import 'drawer/drawer.dart';
-import 'drawer/bottomnav.dart';
+import '../../../core/utils/colors.dart';
+import '../widgets/student_drawer.dart';
+import '../widgets/student_bottom_nav.dart';
 
 class ProfileMurid extends StatefulWidget {
   const ProfileMurid({super.key});
@@ -30,39 +30,42 @@ class _ProfileMuridState extends State<ProfileMurid> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
-        backgroundColor: AppColors.primary,
-        elevation: 0,
-        title: const Text('Profil Kamu', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 20)),
-        iconTheme: const IconThemeData(color: Colors.white),
-      ),
-      drawer: const DrawerMurid(),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            _buildHeader(),
-            const SizedBox(height: 20),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Column(
-                children: [
-                  _buildProgressSection(),
-                  const SizedBox(height: 20),
-                  _buildBadges(),
-                  const SizedBox(height: 20),
-                  _buildInfoCard(),
-                  const SizedBox(height: 20),
-                  _buildActionButtons(),
-                  const SizedBox(height: 20),
-                ],
-              ),
-            ),
-          ],
+        backgroundColor: AppColors.background,
+        appBar: AppBar(
+          backgroundColor: AppColors.primary,
+          elevation: 0,
+          title: const Text('Profil Kamu',
+              style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 20)),
+          iconTheme: const IconThemeData(color: Colors.white),
         ),
-      ),
-      bottomNavigationBar: FooterMurid(selectedIndex: 2)
-    );
+        drawer: const DrawerMurid(),
+        body: SingleChildScrollView(
+          child: Column(
+            children: [
+              _buildHeader(),
+              const SizedBox(height: 20),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Column(
+                  children: [
+                    _buildProgressSection(),
+                    const SizedBox(height: 20),
+                    _buildBadges(),
+                    const SizedBox(height: 20),
+                    _buildInfoCard(),
+                    const SizedBox(height: 20),
+                    _buildActionButtons(),
+                    const SizedBox(height: 20),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+        bottomNavigationBar: FooterMurid(selectedIndex: 2));
   }
 
   Widget _buildHeader() {
@@ -119,7 +122,8 @@ class _ProfileMuridState extends State<ProfileMurid> {
                         )
                       ],
                     ),
-                    child: const Icon(Icons.camera_alt, color: AppColors.primary, size: 18),
+                    child: const Icon(Icons.camera_alt,
+                        color: AppColors.primary, size: 18),
                   ),
                 ),
               ),
@@ -427,7 +431,8 @@ class _ProfileMuridState extends State<ProfileMurid> {
     );
   }
 
-  Widget _buildBigButton(String label, IconData icon, Color color, VoidCallback onTap) {
+  Widget _buildBigButton(
+      String label, IconData icon, Color color, VoidCallback onTap) {
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(16),

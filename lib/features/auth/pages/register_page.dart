@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
-import '../pengaturan/warna.dart';
-import '../pengaturan/rute.dart';
-import '../komponen/tombol_custom.dart';
-import '../komponen/input_text.dart';
+import 'package:provider/provider.dart';
+import '../../../core/utils/colors.dart';
+
+import '../../../core/widgets/custom_button.dart';
+import '../../../core/widgets/custom_input.dart';
+import '../providers/auth_provider.dart';
 
 class HalamanDaftar extends StatefulWidget {
   const HalamanDaftar({super.key});
@@ -27,23 +29,60 @@ class _HalamanDaftarState extends State<HalamanDaftar> {
     super.dispose();
   }
 
-  void _handleDaftar() {
+  Future<void> _handleDaftar() async {
     if (_formKey.currentState!.validate()) {
-      // Simulasi registrasi berhasil
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Pendaftaran berhasil! Silakan login'),
-          backgroundColor: Colors.green,
-          duration: Duration(seconds: 2),
-        ),
+      // Logic berdasarkan role
+      // Sesuai request:
+      // - Teacher: Langsung daftar (buat akun utama)
+      // - Student/Parent: Masuk notifikasi ke teacher (pending)
+
+      final role = _selectedRole;
+
+      if (role != 'Pengajar') {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+                'Pendaftaran untuk role $role memerlukan verifikasi Pengajar. (Fitur dalam pengembangan)'),
+            backgroundColor: Colors.orange,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+        return;
+      }
+
+      // Proses Pendaftaran Pengajar
+      final email = _emailController.text.trim();
+      final password = _passwordController.text;
+      final nama = _namaController.text.trim();
+
+      final authProvider = context.read<AuthProvider>();
+
+      final success = await authProvider.register(
+        email: email,
+        password: password,
+        name: nama,
+        phone: '', // Optional/Later
+        role: 'teacher', // Mapping 'Pengajar' -> 'teacher'
       );
 
-      // Navigasi ke halaman login dengan role yang dipilih
-      Navigator.pushReplacementNamed(
-        context,
-        AppRoutes.login,
-        arguments: _selectedRole.toLowerCase(),
-      );
+      if (!mounted) return;
+
+      if (success) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Pendaftaran Berhasil! Silakan Login.'),
+            backgroundColor: Colors.green,
+          ),
+        );
+        Navigator.pop(context); // Kembali ke login
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(authProvider.error ?? 'Gagal Mendaftar'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 
@@ -103,9 +142,9 @@ class _HalamanDaftarState extends State<HalamanDaftar> {
                     ],
                   ),
                 ),
-                
+
                 const SizedBox(height: 32),
-                
+
                 const Text(
                   'Daftar',
                   style: TextStyle(
@@ -115,7 +154,7 @@ class _HalamanDaftarState extends State<HalamanDaftar> {
                   ),
                 ),
                 const SizedBox(height: 24),
-                
+
                 // Pilih Role
                 const Text(
                   'Daftar Sebagai',
@@ -129,18 +168,22 @@ class _HalamanDaftarState extends State<HalamanDaftar> {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   decoration: BoxDecoration(
-                    border: Border.all(color: AppColors.textLight.withOpacity(0.3)),
+                    border:
+                        Border.all(color: AppColors.textLight.withOpacity(0.3)),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: DropdownButtonHideUnderline(
                     child: DropdownButton<String>(
                       value: _selectedRole,
                       isExpanded: true,
-                      icon: const Icon(Icons.arrow_drop_down, color: AppColors.primary),
+                      icon: const Icon(Icons.arrow_drop_down,
+                          color: AppColors.primary),
                       items: const [
                         DropdownMenuItem(value: 'Murid', child: Text('Murid')),
-                        DropdownMenuItem(value: 'Pengajar', child: Text('Pengajar')),
-                        DropdownMenuItem(value: 'Orangtua', child: Text('Orang Tua')),
+                        DropdownMenuItem(
+                            value: 'Pengajar', child: Text('Pengajar')),
+                        DropdownMenuItem(
+                            value: 'Orangtua', child: Text('Orang Tua')),
                       ],
                       onChanged: (value) {
                         setState(() {
@@ -150,9 +193,9 @@ class _HalamanDaftarState extends State<HalamanDaftar> {
                     ),
                   ),
                 ),
-                
+
                 const SizedBox(height: 20),
-                
+
                 // Nama Input
                 InputText(
                   label: 'Nama Lengkap',
@@ -166,9 +209,9 @@ class _HalamanDaftarState extends State<HalamanDaftar> {
                     return null;
                   },
                 ),
-                
+
                 const SizedBox(height: 20),
-                
+
                 // Email Input
                 InputText(
                   label: 'Email',
@@ -186,9 +229,9 @@ class _HalamanDaftarState extends State<HalamanDaftar> {
                     return null;
                   },
                 ),
-                
+
                 const SizedBox(height: 20),
-                
+
                 // Password Input
                 InputText(
                   label: 'Password',
@@ -218,17 +261,21 @@ class _HalamanDaftarState extends State<HalamanDaftar> {
                     return null;
                   },
                 ),
-                
+
                 const SizedBox(height: 32),
-                
+
                 // Button Daftar
-                TombolCustom(
-                  teks: 'Daftar',
-                  onPressed: _handleDaftar,
+                Consumer<AuthProvider>(
+                  builder: (context, auth, child) {
+                    return TombolCustom(
+                      teks: auth.isLoading ? 'Loading...' : 'Daftar',
+                      onPressed: auth.isLoading ? null : () => _handleDaftar(),
+                    );
+                  },
                 ),
-                
+
                 const SizedBox(height: 24),
-                
+
                 // Sudah Punya Akun
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,

@@ -1,34 +1,34 @@
 import 'package:flutter/material.dart';
-import '../awal/halaman_pengenalan.dart';
-import '../awal/halaman_pilih_role.dart';
-import '../awal/halaman_login.dart';
-import '../awal/halaman_daftar.dart';
-import '../awal/halaman_lupa_password.dart';
+import '../../features/auth/pages/introduction_page.dart';
+import '../../features/auth/pages/role_selection_page.dart';
+import '../../features/auth/pages/login_page.dart';
+import '../../features/auth/pages/register_page.dart';
+import '../../features/auth/pages/forgot_password_page.dart';
 
-// Import Pengajar
-import '../pengajar/pengajar_beranda.dart';
-import '../pengajar/quiz/pengajar_quiz.dart';
-import '../pengajar/kelas/pengajar_kelas.dart';
-import '../pengajar/pengajar_profile.dart';
-import '../pengajar/pengajar_laporan_anak.dart';
-import '../pengajar/pengajar_pembayaran.dart';
-import '../pengajar/pengajar_pengaturan.dart';
-import '../pengajar/pengajar_materi.dart';
-import '../pengajar/pengajar_kelola_murid.dart';
+// Import Teacher
+import '../../features/teacher/pages/teacher_home.dart';
+// import '../../features/teacher/pages/teacher_quiz.dart'; // File doesn't exist
+// import '../../features/teacher/pages/teacher_classes.dart'; // File doesn't exist
+import '../../features/teacher/pages/teacher_profile.dart';
+import '../../features/teacher/pages/teacher_reports.dart';
+import '../../features/teacher/pages/teacher_payments.dart';
+import '../../features/teacher/pages/teacher_settings.dart';
+import '../../features/teacher/pages/teacher_materials.dart';
+import '../../features/teacher/pages/teacher_students.dart';
 
-// Import Murid
-import '../murid/beranda_murid.dart';
-import '../murid/halaman_kelas.dart';
-import '../murid/halaman_profile.dart';
-import '../murid/halaman_pengaturan.dart';
+// Import Student
+import '../../features/student/pages/student_home.dart';
+import '../../features/student/pages/student_classes.dart';
+import '../../features/student/pages/student_profile.dart';
+import '../../features/student/pages/student_settings.dart';
 
-// Import Orang Tua
-import '../orangtua/orangtua_beranda.dart';
-import '../orangtua/orangtua_laporan_belajar.dart';
-import '../orangtua/orangtua_profile.dart';
-import '../orangtua/orangtua_forum.dart';
-import '../orangtua/orangtua_pembayaran.dart';
-import '../orangtua/orangtua_pengaturan.dart';
+// Import Parent
+import '../../features/parent/pages/parent_home.dart';
+import '../../features/parent/pages/parent_learning_report.dart';
+import '../../features/parent/pages/parent_profile.dart';
+import '../../features/parent/pages/parent_forum.dart';
+import '../../features/parent/pages/parent_payment.dart';
+import '../../features/parent/pages/parent_settings.dart';
 
 class AppRoutes {
   // ========== ROUTES UMUM ==========
@@ -73,33 +73,37 @@ class AppRoutes {
       // ========== ROUTES UMUM ==========
       case splash:
         return MaterialPageRoute(builder: (_) => const HalamanPengenalan());
-      
+
       case pengenalan:
         return MaterialPageRoute(builder: (_) => const HalamanPengenalan());
-      
+
       case pilihRole:
         return MaterialPageRoute(builder: (_) => const HalamanPilihRole());
-      
+
       case login:
         final role = settings.arguments as String?;
         return MaterialPageRoute(
             builder: (_) => HalamanLogin(selectedRole: role));
-      
+
       case daftar:
         return MaterialPageRoute(builder: (_) => const HalamanDaftar());
-      
+
       case lupaPassword:
         return MaterialPageRoute(builder: (_) => const HalamanLupaPassword());
 
       // ========== ROUTES PENGAJAR ==========
       case pengajarBeranda:
         return MaterialPageRoute(builder: (_) => const HalamanBeranda());
-      
+
       case pengajarQuiz:
-        return MaterialPageRoute(builder: (_) => const HalamanQuiz());
-      
+        // TODO: Create teacher_quiz.dart or use quiz pages from features/quiz
+        return MaterialPageRoute(
+            builder: (_) => const HalamanBeranda()); // Temporary fallback
+
       case pengajarKelas:
-        return MaterialPageRoute(builder: (_) => const PengajarKelasPage());
+        // TODO: Create teacher_classes.dart
+        return MaterialPageRoute(
+            builder: (_) => const HalamanBeranda()); // Temporary fallback
 
       case pengajarMateri:
         return MaterialPageRoute(builder: (_) => const PengajarMateri());
@@ -122,7 +126,7 @@ class AppRoutes {
       // ========== ROUTES MURID ==========
       case muridBeranda:
         return MaterialPageRoute(builder: (_) => const BerandaMurid());
-      
+
       case muridKelas:
         return MaterialPageRoute(builder: (_) => const HalamanKelas());
 
@@ -143,7 +147,8 @@ class AppRoutes {
         return MaterialPageRoute(builder: (_) => const ForumOrangtua());
 
       case orangtuaLaporan:
-        return MaterialPageRoute(builder: (_) => const LaporanBelajarOrangtua());
+        return MaterialPageRoute(
+            builder: (_) => const LaporanBelajarOrangtua());
 
       case orangtuaPembayaran:
         return MaterialPageRoute(builder: (_) => const PembayaranOrangtua());

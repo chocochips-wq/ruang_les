@@ -29,6 +29,8 @@ dependencies:
   # Optional (tapi recommended):
   firebase_analytics: ^10.7.1   # Untuk tracking aktivitas anak
   firebase_crashlytics: ^3.3.1  # Untuk error reporting
+  provider: ^6.1.5+1
+  uuid: ^4.5.2
 
 dev_dependencies:
   flutter_test:

@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
-import '../pengaturan/warna.dart';
-import '../pengaturan/rute.dart';
-import '../komponen/tombol_custom.dart';
-import '../komponen/input_text.dart';
+import 'package:flutter/foundation.dart'; // For kDebugMode
+import 'package:provider/provider.dart'; // For context.read and Consumer
+import '../../../core/utils/colors.dart';
+import '../../../core/utils/routes.dart';
+import '../../../core/widgets/custom_button.dart';
+import '../../../core/widgets/custom_input.dart';
+import '../providers/auth_provider.dart'; // For AuthProvider class
 
 class HalamanLogin extends StatefulWidget {
   final String? selectedRole;
-  
+
   const HalamanLogin({super.key, this.selectedRole});
 
   @override
@@ -19,116 +22,19 @@ class _HalamanLoginState extends State<HalamanLogin> {
   final _passwordController = TextEditingController();
   bool _obscurePassword = true;
 
-  // Dummy data untuk login
-  final Map<String, Map<String, String>> _dummyUsers = {
-    'pengajar@gmail.com': {
-      'password': '123456',
-      'role': 'pengajar',
-      'nama': 'Ibu Ismaturrohmah'
-    },
-    'murid@gmail.com': {
-      'password': '123456',
-      'role': 'murid',
-      'nama': 'Alfito'
-    },
-    'orangtua@gmail.com': {
-      'password': '123456',
-      'role': 'orangtua',
-      'nama': 'Agustina Suraisa'
-    },
-  };
-
   @override
   void initState() {
     super.initState();
-    // Otomatis isi email berdasarkan role yang dipilih
-    if (widget.selectedRole != null) {
-      switch (widget.selectedRole) {
-        case 'pengajar':
-          _emailController.text = 'pengajar@gmail.com';
-          break;
-        case 'murid':
-          _emailController.text = 'murid@gmail.com';
-          break;
-        case 'orangtua':
-          _emailController.text = 'orangtua@gmail.com';
-          break;
-      }
-    }
-  }
-
-  void _handleLogin() {
-    if (_formKey.currentState!.validate()) {
-      final email = _emailController.text.trim();
-      final password = _passwordController.text;
-
-      // Cek apakah email ada di dummy data
-      if (_dummyUsers.containsKey(email)) {
-        final userData = _dummyUsers[email]!;
-        
-        // Cek password
-        if (userData['password'] == password) {
-          final role = userData['role']!;
-          
-          // Validasi role sesuai yang dipilih
-          if (widget.selectedRole != null && role != widget.selectedRole) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text('Akun ini bukan untuk role ${widget.selectedRole}'),
-                backgroundColor: Colors.red,
-                duration: const Duration(seconds: 2),
-              ),
-            );
-            return;
-          }
-          
-          // Navigasi berdasarkan role
-          String route;
-          switch (role) {
-            case 'pengajar':
-              route = AppRoutes.pengajarBeranda;
-              break;
-            case 'murid':
-              route = AppRoutes.muridBeranda;
-              break;
-            case 'orangtua':
-              route = AppRoutes.orangtuaBeranda;
-              break;
-            default:
-              route = AppRoutes.pengajarBeranda;
-          }
-          
-          // Navigasi ke halaman sesuai role
-          Navigator.pushReplacementNamed(context, route);
-          
-          // Tampilkan snackbar sukses
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Selamat datang, ${userData['nama']}!'),
-              backgroundColor: Colors.green,
-              duration: const Duration(seconds: 2),
-            ),
-          );
-        } else {
-          // Password salah
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Password salah!'),
-              backgroundColor: Colors.red,
-              duration: Duration(seconds: 2),
-            ),
-          );
-        }
-      } else {
-        // Email tidak ditemukan
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Email tidak terdaftar!'),
-            backgroundColor: Colors.red,
-            duration: Duration(seconds: 2),
-          ),
-        );
-      }
+    // Pre-fill email only for debug/testing if needed, or remove completely for production
+    // Keeping it clear for now or maybe just hint based on role
+    if (widget.selectedRole != null && kDebugMode) {
+      // Optional: Pre-fill for easier testing if desired
+      // switch (widget.selectedRole) {
+      //   case 'pengajar':
+      //     _emailController.text = 'pengajar@gmail.com';
+      //     break;
+      //   // ...
+      // }
     }
   }
 
@@ -137,6 +43,98 @@ class _HalamanLoginState extends State<HalamanLogin> {
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
+  }
+
+  Future<void> _handleLogin() async {
+    if (_formKey.currentState!.validate()) {
+      final email = _emailController.text.trim();
+      final password = _passwordController.text;
+
+      final authProvider = context.read<AuthProvider>();
+
+      // Call login method
+      final success = await authProvider.login(email, password);
+
+      if (!mounted) return;
+
+      if (success) {
+        final user = authProvider.user;
+
+        // Role Mapping helper
+        // Maps UI selection (Indonesian) to DB role (English)
+        // Returns true if roles are equivalent
+        bool isRoleMatch(String? userRole, String? selectedRole) {
+          if (userRole == null || selectedRole == null) return false;
+
+          final dbRole = userRole.toLowerCase();
+          final uiRole = selectedRole.toLowerCase();
+
+          // Direct match
+          if (dbRole == uiRole) return true;
+
+          // Mapping
+          if (dbRole == 'teacher' && uiRole == 'pengajar') return true;
+          if (dbRole == 'student' && uiRole == 'murid') return true;
+          if (dbRole == 'parent' &&
+              (uiRole == 'orangtua' || uiRole == 'orang tua')) return true;
+
+          return false;
+        }
+
+        // Validate role
+        if (widget.selectedRole != null &&
+            !isRoleMatch(user?.role, widget.selectedRole)) {
+          // Logout if role doesn't match
+          await authProvider.logout();
+
+          if (!mounted) return;
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                  'Akun ini terdaftar sebagai ${user?.role}, bukan ${widget.selectedRole}'),
+              backgroundColor: Colors.red,
+            ),
+          );
+          return;
+        }
+
+        // Determine route based on role
+        String route;
+        switch (user?.role) {
+          case 'teacher': // AuthProvider uses 'teacher', 'student', 'parent'
+          case 'pengajar': // Backwards compatibility if stored as Indonesian
+            route = AppRoutes.pengajarBeranda;
+            break;
+          case 'student':
+          case 'murid':
+            route = AppRoutes.muridBeranda;
+            break;
+          case 'parent':
+          case 'orangtua':
+            route = AppRoutes.orangtuaBeranda;
+            break;
+          default:
+            route = AppRoutes.pengajarBeranda; // Default or error page
+        }
+
+        Navigator.pushReplacementNamed(context, route);
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Selamat datang, ${user?.name}!'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      } else {
+        // Show error
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(authProvider.error ?? 'Login gagal'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 
   @override
@@ -151,7 +149,7 @@ class _HalamanLoginState extends State<HalamanLogin> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const SizedBox(height: 20),
-                
+
                 // Icon & Title
                 Center(
                   child: Column(
@@ -186,11 +184,11 @@ class _HalamanLoginState extends State<HalamanLogin> {
                           color: AppColors.textLight,
                         ),
                       ),
-                      // Tampilkan role yang dipilih
                       if (widget.selectedRole != null) ...[
                         const SizedBox(height: 8),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 6),
                           decoration: BoxDecoration(
                             color: AppColors.accent,
                             borderRadius: BorderRadius.circular(20),
@@ -208,9 +206,9 @@ class _HalamanLoginState extends State<HalamanLogin> {
                     ],
                   ),
                 ),
-                
+
                 const SizedBox(height: 40),
-                
+
                 const Text(
                   'Masuk',
                   style: TextStyle(
@@ -220,7 +218,7 @@ class _HalamanLoginState extends State<HalamanLogin> {
                   ),
                 ),
                 const SizedBox(height: 24),
-                
+
                 // Email Input
                 InputText(
                   label: 'Masukkan Email',
@@ -238,9 +236,9 @@ class _HalamanLoginState extends State<HalamanLogin> {
                     return null;
                   },
                 ),
-                
+
                 const SizedBox(height: 20),
-                
+
                 // Password Input
                 InputText(
                   label: 'Masukkan Password',
@@ -270,9 +268,9 @@ class _HalamanLoginState extends State<HalamanLogin> {
                     return null;
                   },
                 ),
-                
+
                 const SizedBox(height: 12),
-                
+
                 // Lupa Password
                 Align(
                   alignment: Alignment.centerRight,
@@ -289,17 +287,21 @@ class _HalamanLoginState extends State<HalamanLogin> {
                     ),
                   ),
                 ),
-                
+
                 const SizedBox(height: 32),
-                
+
                 // Button Masuk
-                TombolCustom(
-                  teks: 'Masuk',
-                  onPressed: _handleLogin,
+                Consumer<AuthProvider>(
+                  builder: (context, auth, child) {
+                    return TombolCustom(
+                      teks: auth.isLoading ? 'Loading...' : 'Masuk',
+                      onPressed: auth.isLoading ? null : () => _handleLogin(),
+                    );
+                  },
                 ),
-                
+
                 const SizedBox(height: 24),
-                
+
                 // Belum Punya Akun
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,

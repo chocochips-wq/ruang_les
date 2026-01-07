@@ -2,31 +2,31 @@ import 'package:flutter/material.dart';
 import '../../../core/utils/colors.dart';
 import '../../../core/utils/routes.dart';
 
-class FooterMurid extends StatelessWidget {
-  final int selectedIndex;
+class TeacherBottomNav extends StatelessWidget {
+  final int currentIndex;
 
-  const FooterMurid({
+  const TeacherBottomNav({
     super.key,
-    required this.selectedIndex,
+    required this.currentIndex,
   });
 
   void _onItemTapped(BuildContext context, int index) {
     // Jangan navigasi kalau sudah di halaman yang sama
-    if (index == selectedIndex) return;
+    if (index == currentIndex) return;
 
     String route;
     switch (index) {
-      case 0:
-        route = AppRoutes.muridKelas; // Kelas (icon menu_book)
+      case 0: // Materi
+        route = AppRoutes.pengajarMateri;
         break;
-      case 1:
-        route = AppRoutes.muridBeranda; // Home/Beranda
+      case 1: // Beranda
+        route = AppRoutes.pengajarBeranda;
         break;
-      case 2:
-        route = AppRoutes.muridProfile; // Profile
+      case 2: // Profil
+        route = AppRoutes.pengajarProfil;
         break;
       default:
-        route = AppRoutes.muridBeranda;
+        route = AppRoutes.pengajarBeranda;
     }
 
     Navigator.pushReplacementNamed(context, route);
@@ -35,18 +35,18 @@ class FooterMurid extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BottomNavigationBar(
-      currentIndex: selectedIndex,
-      onTap: (index) => _onItemTapped(context, index),
       type: BottomNavigationBarType.fixed,
       selectedItemColor: AppColors.primary,
-      unselectedItemColor: Colors.grey,
-      showSelectedLabels: true, // Ubah jadi true biar lebih jelas
+      unselectedItemColor: AppColors.textLight,
+      currentIndex: currentIndex,
+      onTap: (index) => _onItemTapped(context, index),
+      showSelectedLabels: true,
       showUnselectedLabels: true,
       items: const [
         BottomNavigationBarItem(
           icon: Icon(Icons.menu_book_outlined),
           activeIcon: Icon(Icons.menu_book),
-          label: 'Kelas',
+          label: 'Materi',
         ),
         BottomNavigationBarItem(
           icon: Icon(Icons.home_outlined),

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../pengaturan/warna.dart';
+import '../../../core/utils/colors.dart';
 
 class HalamanHasilQuiz extends StatefulWidget {
   final String quizTitle;

@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import '../../../core/utils/colors.dart';
 import '../../../core/utils/routes.dart';
 
-class FooterMurid extends StatelessWidget {
+class ParentBottomNav extends StatelessWidget {
   final int selectedIndex;
 
-  const FooterMurid({
+  const ParentBottomNav({
     super.key,
     required this.selectedIndex,
   });
@@ -16,17 +16,20 @@ class FooterMurid extends StatelessWidget {
 
     String route;
     switch (index) {
-      case 0:
-        route = AppRoutes.muridKelas; // Kelas (icon menu_book)
+      case 0: // Beranda
+        route = AppRoutes.orangtuaBeranda;
         break;
-      case 1:
-        route = AppRoutes.muridBeranda; // Home/Beranda
+      case 1: // Laporan Anak
+        route = AppRoutes.orangtuaLaporan;
         break;
-      case 2:
-        route = AppRoutes.muridProfile; // Profile
+      case 2: // Forum
+        route = AppRoutes.orangtuaForum;
+        break;
+      case 3: // Profil
+        route = AppRoutes.orangtuaProfile;
         break;
       default:
-        route = AppRoutes.muridBeranda;
+        route = AppRoutes.orangtuaBeranda;
     }
 
     Navigator.pushReplacementNamed(context, route);
@@ -40,18 +43,23 @@ class FooterMurid extends StatelessWidget {
       type: BottomNavigationBarType.fixed,
       selectedItemColor: AppColors.primary,
       unselectedItemColor: Colors.grey,
-      showSelectedLabels: true, // Ubah jadi true biar lebih jelas
+      showSelectedLabels: true,
       showUnselectedLabels: true,
       items: const [
-        BottomNavigationBarItem(
-          icon: Icon(Icons.menu_book_outlined),
-          activeIcon: Icon(Icons.menu_book),
-          label: 'Kelas',
-        ),
         BottomNavigationBarItem(
           icon: Icon(Icons.home_outlined),
           activeIcon: Icon(Icons.home),
           label: 'Beranda',
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.assessment_outlined),
+          activeIcon: Icon(Icons.assessment),
+          label: 'Laporan',
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.forum_outlined),
+          activeIcon: Icon(Icons.forum),
+          label: 'Forum',
         ),
         BottomNavigationBarItem(
           icon: Icon(Icons.person_outline),

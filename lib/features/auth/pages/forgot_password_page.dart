@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import '../pengaturan/warna.dart';
-import '../komponen/tombol_custom.dart';
-import '../komponen/input_text.dart';
+import '../../../core/utils/colors.dart';
+import '../../../core/widgets/custom_button.dart';
+import '../../../core/widgets/custom_input.dart';
 
 class HalamanLupaPassword extends StatefulWidget {
   const HalamanLupaPassword({super.key});

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import '../pengaturan/warna.dart';
-import '../pengaturan/rute.dart';
-import '../komponen/tombol_custom.dart';
+import '../../../core/utils/colors.dart';
+import '../../../core/utils/routes.dart';
+import '../../../core/widgets/custom_button.dart';
 
 class HalamanPengenalan extends StatefulWidget {
   const HalamanPengenalan({super.key});
