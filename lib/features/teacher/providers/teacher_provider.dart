@@ -65,7 +65,6 @@ class TeacherProvider with ChangeNotifier {
 
       // 4. Load payments for all classes
       await _loadPayments();
-
     } catch (e) {
       _error = 'Gagal memuat data: $e';
     } finally {
@@ -78,13 +77,14 @@ class TeacherProvider with ChangeNotifier {
   Future<void> _loadClasses(String teacherId) async {
     try {
       _classes = await _classRepository.getClassesByTeacherId(teacherId);
-      
+
       // Load students from all classes
       _students = [];
       for (final class_ in _classes) {
         for (final studentId in class_.studentIds) {
           final student = await _studentRepository.getStudentById(studentId);
-          if (student != null && !_students.any((s) => s.studentId == studentId)) {
+          if (student != null &&
+              !_students.any((s) => s.studentId == studentId)) {
             _students.add(student);
           }
         }
@@ -100,7 +100,8 @@ class TeacherProvider with ChangeNotifier {
       _sessions = [];
       for (final class_ in _classes) {
         if (class_.classId != null) {
-          final classSessions = await _sessionRepository.getSessionsByClassId(class_.classId!);
+          final classSessions =
+              await _sessionRepository.getSessionsByClassId(class_.classId!);
           _sessions.addAll(classSessions);
         }
       }
@@ -117,7 +118,8 @@ class TeacherProvider with ChangeNotifier {
       _classPayments = [];
       for (final student in _students) {
         if (student.studentId != null) {
-          final studentPayments = await _paymentRepository.getPaymentsByStudentId(student.studentId!);
+          final studentPayments = await _paymentRepository
+              .getPaymentsByStudentId(student.studentId!);
           _classPayments.addAll(studentPayments);
         }
       }
@@ -133,7 +135,7 @@ class TeacherProvider with ChangeNotifier {
       notifyListeners();
 
       final classId = await _classRepository.createClass(classModel);
-      
+
       // Add to teacher's classIds
       if (_currentTeacher?.teacherId != null) {
         final updatedTeacher = _currentTeacher!.copyWith(
@@ -159,6 +161,30 @@ class TeacherProvider with ChangeNotifier {
     }
   }
 
+  // Update teacher
+  Future<bool> updateTeacher(TeacherModel teacher) async {
+    try {
+      if (teacher.teacherId == null) {
+        _error = 'ID pengajar tidak valid';
+        return false;
+      }
+
+      _isLoading = true;
+      notifyListeners();
+
+      await _teacherRepository.updateTeacher(teacher.teacherId!, teacher);
+      _currentTeacher = teacher;
+
+      return true;
+    } catch (e) {
+      _error = 'Gagal mengupdate profile pengajar: $e';
+      return false;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
   // Update class
   Future<bool> updateClass(ClassModel classModel) async {
     try {
@@ -171,7 +197,7 @@ class TeacherProvider with ChangeNotifier {
       notifyListeners();
 
       await _classRepository.updateClass(classModel.classId!, classModel);
-      
+
       // Update local list
       final index = _classes.indexWhere((c) => c.classId == classModel.classId);
       if (index != -1) {
@@ -195,7 +221,7 @@ class TeacherProvider with ChangeNotifier {
       notifyListeners();
 
       await _sessionRepository.createSession(session);
-      
+
       // Reload sessions
       await _loadSessions();
 
@@ -210,13 +236,14 @@ class TeacherProvider with ChangeNotifier {
   }
 
   // Update attendance
-  Future<bool> updateAttendance(String sessionId, List<Attendance> attendance) async {
+  Future<bool> updateAttendance(
+      String sessionId, List<Attendance> attendance) async {
     try {
       _isLoading = true;
       notifyListeners();
 
       await _sessionRepository.updateAttendance(sessionId, attendance);
-      
+
       // Update local list
       final index = _sessions.indexWhere((s) => s.sessionId == sessionId);
       if (index != -1) {
@@ -242,7 +269,7 @@ class TeacherProvider with ChangeNotifier {
       notifyListeners();
 
       await _classRepository.addStudentToClass(classId, studentId);
-      
+
       // Reload classes and students
       if (_currentTeacher?.teacherId != null) {
         await _loadClasses(_currentTeacher!.teacherId!);
@@ -265,7 +292,7 @@ class TeacherProvider with ChangeNotifier {
       notifyListeners();
 
       await _classRepository.removeStudentFromClass(classId, studentId);
-      
+
       // Reload classes and students
       if (_currentTeacher?.teacherId != null) {
         await _loadClasses(_currentTeacher!.teacherId!);
@@ -311,20 +338,17 @@ class TeacherProvider with ChangeNotifier {
 
   // Get sessions by class ID
   List<SessionModel> getSessionsByClassId(String classId) {
-    return _sessions
-        .where((session) => session.classId == classId)
-        .toList();
+    return _sessions.where((session) => session.classId == classId).toList();
   }
 
   // Get upcoming sessions (next 7 days)
   List<SessionModel> getUpcomingSessions() {
     final now = DateTime.now();
     final weekFromNow = now.add(const Duration(days: 7));
-    
+
     return _sessions
-        .where((session) => 
-          session.date.isAfter(now) && 
-          session.date.isBefore(weekFromNow))
+        .where((session) =>
+            session.date.isAfter(now) && session.date.isBefore(weekFromNow))
         .toList();
   }
 
@@ -333,11 +357,10 @@ class TeacherProvider with ChangeNotifier {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
     final tomorrow = today.add(const Duration(days: 1));
-    
+
     return _sessions
-        .where((session) => 
-          session.date.isAfter(today) && 
-          session.date.isBefore(tomorrow))
+        .where((session) =>
+            session.date.isAfter(today) && session.date.isBefore(tomorrow))
         .toList();
   }
 
@@ -353,13 +376,12 @@ class TeacherProvider with ChangeNotifier {
     int totalSessions = sessions.length;
 
     for (final session in sessions) {
-      totalAttendance += session.attendance
-          .where((a) => a.status == 'present')
-          .length;
+      totalAttendance +=
+          session.attendance.where((a) => a.status == 'present').length;
     }
 
-    final avgAttendance = totalSessions > 0 
-        ? (totalAttendance / (totalSessions * students.length)) * 100 
+    final avgAttendance = totalSessions > 0
+        ? (totalAttendance / (totalSessions * students.length)) * 100
         : 0;
 
     return {

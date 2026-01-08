@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../../core/utils/colors.dart';
 import '../../../core/utils/routes.dart';
 import '../widgets/teacher_app_bar.dart';
+import '../../auth/providers/auth_provider.dart';
+import '../providers/teacher_provider.dart';
 
 class PengajarProfil extends StatefulWidget {
   const PengajarProfil({super.key});
@@ -11,93 +14,71 @@ class PengajarProfil extends StatefulWidget {
 }
 
 class _PengajarProfilState extends State<PengajarProfil> {
-  int _selectedMenuIndex = 1; // Untuk Drawer (Profile = index 1)
-
-  // Data dummy yang bisa diedit
-  String namaLengkap = 'Ismaturrohmah';
-  String email = 'pengajar@gmail.com';
-  String alamat = 'Kelapa 2 Depok';
-  String noHp = '0812-1546-5849';
+  int _selectedMenuIndex = 2; // Profile = index 2
 
   @override
   Widget build(BuildContext context) {
     return TeacherScaffold(
-      // title: 'Profile', // Bisa dihapus biar otomatis dari index
+      title: 'Profile',
       selectedMenuIndex: _selectedMenuIndex,
       onMenuSelected: (index) {
         setState(() => _selectedMenuIndex = index);
       },
       onNotificationTap: () {
-        // Aksi ketika notif diklik
-        print('Notifikasi diklik');
-        // Navigator.pushNamed(context, AppRoutes.pengajarNotifikasi);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Notifikasi')),
+        );
       },
-      body: Column(
-        children: [
-          Expanded(
-            child: SingleChildScrollView(
-              child: Column(
-                children: [
-                  _buildProfileHeader(),
-                  Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      children: [
-                        _buildInfoCard(),
-                        const SizedBox(height: 16),
-                        _buildEditButton(),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
+      body: Consumer2<AuthProvider, TeacherProvider>(
+        builder: (context, authProvider, teacherProvider, child) {
+          final user = authProvider.user;
+          final teacher = teacherProvider.currentTeacher;
 
-          // Bottom Navigation
-          BottomNavigationBar(
-            type: BottomNavigationBarType.fixed,
-            selectedItemColor: AppColors.primary,
-            unselectedItemColor: AppColors.textLight,
-            currentIndex: 2,
-            onTap: (index) {
-              String route;
-              switch (index) {
-                case 0:
-                  route = AppRoutes.pengajarMateri;
-                  break;
-                case 1:
-                  route = AppRoutes.pengajarBeranda;
-                  break;
-                case 2:
-                  route = AppRoutes.pengajarProfil;
-                  break;
-                default:
-                  route = AppRoutes.pengajarBeranda;
-              }
-              Navigator.pushReplacementNamed(context, route);
-            },
-            items: const [
-              BottomNavigationBarItem(
-                icon: Icon(Icons.menu_book),
-                label: 'Materi',
-              ),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.home),
-                label: 'Beranda',
-              ),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.person),
-                label: 'Profil',
+          if (user == null) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          return Column(
+            children: [
+              Expanded(
+                child: SingleChildScrollView(
+                  child: Column(
+                    children: [
+                      _buildProfileHeader(user.name, user.email),
+                      Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Column(
+                          children: [
+                            _buildInfoCard(
+                              name: user.name,
+                              email: user.email,
+                              phone: user.phone,
+                              specialization: teacher?.specialization ?? '-',
+                            ),
+                            const SizedBox(height: 16),
+                            _buildEditButton(
+                              currentName: user.name,
+                              currentPhone: user.phone,
+                              currentSpecialization:
+                                  teacher?.specialization ?? '',
+                            ),
+                            const SizedBox(height: 16),
+                            _buildLogoutButton(context),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
             ],
-          ),
-        ],
+          );
+        },
       ),
     );
   }
 
-  Widget _buildProfileHeader() {
+  Widget _buildProfileHeader(String name, String email) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.only(top: 20, bottom: 30),
@@ -121,7 +102,7 @@ class _PengajarProfilState extends State<PengajarProfil> {
                   color: Colors.white,
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.2),
+                      color: Colors.black.withValues(alpha: 0.2),
                       blurRadius: 10,
                       offset: const Offset(0, 5),
                     ),
@@ -147,7 +128,7 @@ class _PengajarProfilState extends State<PengajarProfil> {
                       shape: BoxShape.circle,
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.2),
+                          color: Colors.black.withValues(alpha: 0.2),
                           blurRadius: 5,
                         ),
                       ],
@@ -164,7 +145,7 @@ class _PengajarProfilState extends State<PengajarProfil> {
           ),
           const SizedBox(height: 16),
           Text(
-            namaLengkap,
+            name,
             style: const TextStyle(
               color: Colors.white,
               fontSize: 24,
@@ -183,7 +164,7 @@ class _PengajarProfilState extends State<PengajarProfil> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.2),
+              color: Colors.white.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(20),
               border: Border.all(color: Colors.white, width: 1),
             ),
@@ -201,7 +182,12 @@ class _PengajarProfilState extends State<PengajarProfil> {
     );
   }
 
-  Widget _buildInfoCard() {
+  Widget _buildInfoCard({
+    required String name,
+    required String email,
+    required String phone,
+    required String specialization,
+  }) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -233,13 +219,13 @@ class _PengajarProfilState extends State<PengajarProfil> {
             ],
           ),
           const SizedBox(height: 16),
-          _buildInfoRow(Icons.person, 'Nama Lengkap', namaLengkap),
+          _buildInfoRow(Icons.person, 'Nama Lengkap', name),
           const SizedBox(height: 12),
           _buildInfoRow(Icons.email, 'Email', email),
           const SizedBox(height: 12),
-          _buildInfoRow(Icons.home, 'Alamat', alamat),
+          _buildInfoRow(Icons.phone, 'No. Telepon', phone),
           const SizedBox(height: 12),
-          _buildInfoRow(Icons.phone, 'No. Telepon', noHp),
+          _buildInfoRow(Icons.work, 'Spesialisasi', specialization),
         ],
       ),
     );
@@ -252,7 +238,7 @@ class _PengajarProfilState extends State<PengajarProfil> {
         Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: AppColors.primary.withOpacity(0.1),
+            color: AppColors.primary.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(8),
           ),
           child: Icon(icon, size: 18, color: AppColors.primary),
@@ -282,12 +268,17 @@ class _PengajarProfilState extends State<PengajarProfil> {
     );
   }
 
-  Widget _buildEditButton() {
+  Widget _buildEditButton({
+    required String currentName,
+    required String currentPhone,
+    required String currentSpecialization,
+  }) {
     return SizedBox(
       width: double.infinity,
       height: 50,
       child: ElevatedButton.icon(
-        onPressed: _showEditDialog,
+        onPressed: () =>
+            _showEditDialog(currentName, currentPhone, currentSpecialization),
         icon: const Icon(Icons.edit, size: 20),
         label: const Text(
           'Edit Profile',
@@ -303,11 +294,71 @@ class _PengajarProfilState extends State<PengajarProfil> {
     );
   }
 
-  void _showEditDialog() {
-    final namaCtrl = TextEditingController(text: namaLengkap);
-    final emailCtrl = TextEditingController(text: email);
-    final alamatCtrl = TextEditingController(text: alamat);
-    final noHpCtrl = TextEditingController(text: noHp);
+  Widget _buildLogoutButton(BuildContext context) {
+    return SizedBox(
+      width: double.infinity,
+      height: 50,
+      child: OutlinedButton.icon(
+        onPressed: () async {
+          final confirm = await showDialog<bool>(
+            context: context,
+            builder: (context) => AlertDialog(
+              title: const Text('Logout'),
+              content: const Text('Apakah Anda yakin ingin keluar?'),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context, false),
+                  child: const Text('Batal'),
+                ),
+                TextButton(
+                  onPressed: () => Navigator.pop(context, true),
+                  child:
+                      const Text('Keluar', style: TextStyle(color: Colors.red)),
+                ),
+              ],
+            ),
+          );
+
+          if (confirm == true && context.mounted) {
+            final teacherProvider = context.read<TeacherProvider>();
+            final authProvider = context.read<AuthProvider>();
+
+            await authProvider.logout();
+            teacherProvider.clearTeacherData();
+
+            if (context.mounted) {
+              Navigator.of(context).pushNamedAndRemoveUntil(
+                AppRoutes.login,
+                (route) => false,
+              );
+            }
+          }
+        },
+        icon: const Icon(Icons.logout, size: 20, color: Colors.red),
+        label: const Text(
+          'Logout',
+          style: TextStyle(
+              fontSize: 16, fontWeight: FontWeight.w600, color: Colors.red),
+        ),
+        style: OutlinedButton.styleFrom(
+          side: const BorderSide(color: Colors.red),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showEditDialog(
+    String currentName,
+    String currentPhone,
+    String currentSpecialization,
+  ) {
+    final namaCtrl = TextEditingController(text: currentName);
+    final noHpCtrl = TextEditingController(text: currentPhone);
+    final specCtrl = TextEditingController(text: currentSpecialization);
+    final formKey = GlobalKey<FormState>();
 
     showDialog(
       context: context,
@@ -316,17 +367,19 @@ class _PengajarProfilState extends State<PengajarProfil> {
         title: const Text('Edit Profile',
             style: TextStyle(fontWeight: FontWeight.bold)),
         content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              _buildTextField(namaCtrl, 'Nama Lengkap', Icons.person),
-              const SizedBox(height: 12),
-              _buildTextField(emailCtrl, 'Email', Icons.email),
-              const SizedBox(height: 12),
-              _buildTextField(alamatCtrl, 'Alamat', Icons.home, maxLines: 2),
-              const SizedBox(height: 12),
-              _buildTextField(noHpCtrl, 'No. Telepon', Icons.phone),
-            ],
+          child: Form(
+            key: formKey,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _buildTextField(namaCtrl, 'Nama Lengkap', Icons.person),
+                const SizedBox(height: 12),
+                _buildTextField(noHpCtrl, 'No. Telepon', Icons.phone,
+                    inputType: TextInputType.phone),
+                const SizedBox(height: 12),
+                _buildTextField(specCtrl, 'Spesialisasi', Icons.work),
+              ],
+            ),
           ),
         ),
         actions: [
@@ -335,17 +388,47 @@ class _PengajarProfilState extends State<PengajarProfil> {
             child: const Text('Batal'),
           ),
           ElevatedButton(
-            onPressed: () {
-              setState(() {
-                namaLengkap = namaCtrl.text;
-                email = emailCtrl.text;
-                alamat = alamatCtrl.text;
-                noHp = noHpCtrl.text;
-              });
-              Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Profile berhasil diperbarui')),
-              );
+            onPressed: () async {
+              if (formKey.currentState!.validate()) {
+                final authProvider = context.read<AuthProvider>();
+                final teacherProvider = context.read<TeacherProvider>();
+
+                // 1. Update User Profile (Auth)
+                final successAuth = await authProvider.updateProfile(
+                  name: namaCtrl.text,
+                  phone: noHpCtrl.text,
+                );
+
+                // 2. Update Teacher Profile (Specialization)
+                bool successTeacher = true;
+                final currentTeacher = teacherProvider.currentTeacher;
+                if (currentTeacher != null &&
+                    specCtrl.text != currentSpecialization) {
+                  final updatedTeacher = currentTeacher.copyWith(
+                    specialization: specCtrl.text,
+                  );
+                  successTeacher =
+                      await teacherProvider.updateTeacher(updatedTeacher);
+                }
+
+                if (context.mounted) {
+                  Navigator.pop(context);
+                  if (successAuth && successTeacher) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                          content: Text('Profile berhasil diperbarui')),
+                    );
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(authProvider.error ??
+                            teacherProvider.error ??
+                            'Gagal update profile'),
+                      ),
+                    );
+                  }
+                }
+              }
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.primary,
@@ -362,10 +445,13 @@ class _PengajarProfilState extends State<PengajarProfil> {
     String label,
     IconData icon, {
     int maxLines = 1,
+    TextInputType inputType = TextInputType.text,
   }) {
-    return TextField(
+    return TextFormField(
       controller: controller,
       maxLines: maxLines,
+      keyboardType: inputType,
+      validator: (v) => (v == null || v.isEmpty) ? 'Wajib diisi' : null,
       decoration: InputDecoration(
         labelText: label,
         prefixIcon: Icon(icon, color: AppColors.primary),
@@ -396,7 +482,7 @@ class _PengajarProfilState extends State<PengajarProfil> {
               onTap: () {
                 Navigator.pop(context);
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Fitur kamera tersedia')),
+                  const SnackBar(content: Text('Fitur kamera segera hadir')),
                 );
               },
             ),
@@ -406,7 +492,7 @@ class _PengajarProfilState extends State<PengajarProfil> {
               onTap: () {
                 Navigator.pop(context);
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Fitur galeri tersedia')),
+                  const SnackBar(content: Text('Fitur galeri segera hadir')),
                 );
               },
             ),

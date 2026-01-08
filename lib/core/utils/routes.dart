@@ -8,7 +8,7 @@ import '../../features/auth/pages/forgot_password_page.dart';
 // Import Teacher
 import '../../features/teacher/pages/teacher_home.dart';
 // import '../../features/teacher/pages/teacher_quiz.dart'; // File doesn't exist
-// import '../../features/teacher/pages/teacher_classes.dart'; // File doesn't exist
+import '../../features/teacher/pages/teacher_classes.dart';
 import '../../features/teacher/pages/teacher_profile.dart';
 import '../../features/teacher/pages/teacher_reports.dart';
 import '../../features/teacher/pages/teacher_payments.dart';
@@ -101,9 +101,7 @@ class AppRoutes {
             builder: (_) => const HalamanBeranda()); // Temporary fallback
 
       case pengajarKelas:
-        // TODO: Create teacher_classes.dart
-        return MaterialPageRoute(
-            builder: (_) => const HalamanBeranda()); // Temporary fallback
+        return MaterialPageRoute(builder: (_) => const PengajarKelas());
 
       case pengajarMateri:
         return MaterialPageRoute(builder: (_) => const PengajarMateri());

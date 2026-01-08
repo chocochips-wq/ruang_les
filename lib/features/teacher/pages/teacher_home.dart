@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../../core/utils/colors.dart';
 import '../widgets/teacher_app_bar.dart';
 import '../widgets/teacher_bottom_nav.dart';
+import '../providers/teacher_provider.dart';
+import '../../../core/models/class_model.dart';
 
 class HalamanBeranda extends StatefulWidget {
   const HalamanBeranda({super.key});
@@ -14,8 +17,19 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
   int _selectedMenuIndex = 0;
 
   @override
+  void initState() {
+    super.initState();
+    // Ensure data is loaded
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final user = context.read<TeacherProvider>().currentTeacher;
+      if (user != null) {
+        context.read<TeacherProvider>().loadTeacherData(user.userId);
+      }
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
-    // Pakai PengajarScaffold yang sudah include AppBar + Drawer + Notif
     return TeacherScaffold(
       selectedMenuIndex: _selectedMenuIndex,
       onMenuSelected: (index) {
@@ -24,108 +38,91 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
         });
       },
       onNotificationTap: () {
-        // Aksi ketika notif diklik
-        print('Notifikasi diklik');
-        // Navigator.pushNamed(context, AppRoutes.pengajarNotifikasi);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Notifikasi')),
+        );
       },
-      body: Column(
-        children: [
-          // Main Content
-          Expanded(
-            child: OrientationBuilder(
-              builder: (context, orientation) {
-                return SingleChildScrollView(
-                  child: Padding(
-                    padding: EdgeInsets.all(
-                        orientation == Orientation.portrait ? 20 : 24),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const SizedBox(height: 24),
+      body: Consumer<TeacherProvider>(
+        builder: (context, teacherProvider, child) {
+          final totalStudents = teacherProvider.students.length;
+          final totalClasses = teacherProvider.classes.length;
 
-                        // Stats Cards
-                        orientation == Orientation.landscape
-                            ? Row(
-                                children: [
-                                  Expanded(
-                                      child: _buildStatCard(
-                                          'Total Murid', '24', Icons.people)),
-                                  const SizedBox(width: 16),
-                                  Expanded(
-                                      child: _buildStatCard(
-                                          'Kelas Aktif', '8', Icons.class_)),
-                                ],
-                              )
-                            : Column(
-                                children: [
-                                  Row(
+          return Column(
+            children: [
+              // Main Content
+              Expanded(
+                child: OrientationBuilder(
+                  builder: (context, orientation) {
+                    return SingleChildScrollView(
+                      child: Padding(
+                        padding: EdgeInsets.all(
+                            orientation == Orientation.portrait ? 20 : 24),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const SizedBox(height: 24),
+
+                            // Stats Cards
+                            orientation == Orientation.landscape
+                                ? Row(
                                     children: [
                                       Expanded(
                                           child: _buildStatCard('Total Murid',
-                                              '24', Icons.people)),
+                                              '$totalStudents', Icons.people)),
                                       const SizedBox(width: 16),
                                       Expanded(
                                           child: _buildStatCard('Kelas Aktif',
-                                              '8', Icons.class_)),
+                                              '$totalClasses', Icons.class_)),
+                                    ],
+                                  )
+                                : Column(
+                                    children: [
+                                      Row(
+                                        children: [
+                                          Expanded(
+                                              child: _buildStatCard(
+                                                  'Total Murid',
+                                                  '$totalStudents',
+                                                  Icons.people)),
+                                          const SizedBox(width: 16),
+                                          Expanded(
+                                              child: _buildStatCard(
+                                                  'Kelas Aktif',
+                                                  '$totalClasses',
+                                                  Icons.class_)),
+                                        ],
+                                      ),
                                     ],
                                   ),
-                                ],
-                              ),
 
-                        const SizedBox(height: 24),
+                            const SizedBox(height: 24),
 
-                        // Jadwal Mengajar Hari Ini
-                        const Text(
-                          'Jadwal Mengajar Hari Ini',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.textDark,
-                          ),
+                            // Jadwal Mengajar Hari Ini
+                            // Logic: Filter classes that contain today's day name in schedule string
+                            _buildTodaySchedule(teacherProvider.classes),
+
+                            const SizedBox(height: 24),
+
+                            // Murid Terbaru (Pengganti Aktivitas Terakhir)
+                            _buildRecentStudents(teacherProvider),
+
+                            const SizedBox(height: 24),
+                          ],
                         ),
-                        const SizedBox(height: 12),
-                        _buildScheduleCard(),
+                      ),
+                    );
+                  },
+                ),
+              ),
 
-                        const SizedBox(height: 24),
-
-                        // Feedback Orang Tua
-                        const Text(
-                          'Feedback Orang Tua',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.textDark,
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        _buildFeedbackCard(),
-
-                        const SizedBox(height: 24),
-
-                        // Aktivitas Terakhir
-                        const Text(
-                          'Aktivitas Terakhir',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.textDark,
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        _buildWeeklyReportCard(),
-
-                        const SizedBox(height: 24),
-                      ],
-                    ),
-                  ),
-                );
-              },
-            ),
-          ),
-
-          // Bottom Navigation
-          const TeacherBottomNav(currentIndex: 1),
-        ],
+              // Bottom Navigation
+              const TeacherBottomNav(
+                  currentIndex:
+                      1), // Index 1 is Home in logic but Nav has Home at 1?
+              // Wait, in BottomNav: 0=Materi, 1=Beranda, 2=Profil
+            ],
+          );
+        },
       ),
     );
   }
@@ -172,39 +169,102 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
     );
   }
 
-  Widget _buildScheduleCard() {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: AppColors.cardBackground,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey.shade300),
-      ),
-      child: Column(
-        children: [
-          _buildScheduleItem(
-            'Semi Private - PAUD',
-            '09:00 - 10:00',
-            '3 Murid',
-            Colors.blue,
+  Widget _buildTodaySchedule(List<ClassModel> classes) {
+    // Determine today's day name in Indonesian
+    final now = DateTime.now();
+    final dayNames = [
+      'Senin',
+      'Selasa',
+      'Rabu',
+      'Kamis',
+      'Jumat',
+      'Sabtu',
+      'Minggu'
+    ];
+    final todayName = dayNames[now.weekday - 1];
+
+    // Filter classes
+    final todayClasses =
+        classes.where((c) => c.schedule.contains(todayName)).toList();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              'Jadwal Hari Ini ($todayName)',
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: AppColors.textDark,
+              ),
+            ),
+            if (todayClasses.isEmpty)
+              Text(
+                'Tidak ada jadwal',
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Colors.grey.shade500,
+                  fontStyle: FontStyle.italic,
+                ),
+              ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        if (todayClasses.isNotEmpty)
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: AppColors.cardBackground,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.grey.shade300),
+            ),
+            child: Column(
+              children: todayClasses.asMap().entries.map((entry) {
+                final index = entry.key;
+                final c = entry.value;
+                return Column(
+                  children: [
+                    if (index > 0) const Divider(height: 24),
+                    _buildScheduleItem(
+                      c.className,
+                      c.schedule,
+                      '${c.studentIds.length} Murid',
+                      _getColorForIndex(index),
+                    ),
+                  ],
+                );
+              }).toList(),
+            ),
+          )
+        else
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: Colors.grey.shade50,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.grey.shade200),
+            ),
+            child: const Center(
+              child: Text('Libur mengajar! Istirahat yang cukup ☕'),
+            ),
           ),
-          const Divider(height: 24),
-          _buildScheduleItem(
-            'Reguler - SMP',
-            '13:00 - 15:00',
-            '8 Murid',
-            Colors.orange,
-          ),
-          const Divider(height: 24),
-          _buildScheduleItem(
-            'Semi Private - SD',
-            '15:00 - 17:00',
-            '5 Murid',
-            Colors.green,
-          ),
-        ],
-      ),
+      ],
     );
+  }
+
+  Color _getColorForIndex(int index) {
+    const colors = [
+      Colors.blue,
+      Colors.orange,
+      Colors.green,
+      Colors.purple,
+      Colors.red
+    ];
+    return colors[index % colors.length];
   }
 
   Widget _buildScheduleItem(
@@ -238,22 +298,14 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
                   const Icon(Icons.access_time,
                       size: 14, color: AppColors.textLight),
                   const SizedBox(width: 4),
-                  Text(
-                    time,
-                    style: const TextStyle(
-                      fontSize: 12,
-                      color: AppColors.textLight,
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  const Icon(Icons.people,
-                      size: 14, color: AppColors.textLight),
-                  const SizedBox(width: 4),
-                  Text(
-                    students,
-                    style: const TextStyle(
-                      fontSize: 12,
-                      color: AppColors.textLight,
+                  Expanded(
+                    child: Text(
+                      time,
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: AppColors.textLight,
+                      ),
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
                 ],
@@ -264,11 +316,11 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
           decoration: BoxDecoration(
-            color: color.withOpacity(0.1),
+            color: color.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(6),
           ),
           child: Text(
-            'Mulai',
+            students,
             style: TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.w600,
@@ -280,182 +332,75 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
     );
   }
 
-  Widget _buildFeedbackCard() {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: AppColors.cardBackground,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey.shade300),
-      ),
-      child: Column(
-        children: [
-          _buildSingleFeedback(
-            'Bunda Zayn',
-            '2 hari yang lalu',
-            'Terima kasih atas pengajarannya yang luar biasa! Anak saya sangat menikmati les matematika dan nilainya meningkat drastis.',
-          ),
-          const Divider(height: 24),
-          _buildSingleFeedback(
-            'Ayah Eleven',
-            '5 hari yang lalu',
-            'Penjelasan materi sangat jelas dan mudah dipahami. Eleven sekarang lebih percaya diri dalam belajar.',
-          ),
-        ],
-      ),
-    );
-  }
+  Widget _buildRecentStudents(TeacherProvider provider) {
+    final students = provider.students.take(3).toList();
+    if (students.isEmpty) return const SizedBox.shrink();
 
-  Widget _buildSingleFeedback(String name, String time, String message) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          children: [
-            Container(
-              width: 40,
-              height: 40,
-              decoration: const BoxDecoration(
-                color: AppColors.primary,
-                shape: BoxShape.circle,
-              ),
-              child: Center(
-                child: Text(
-                  name.split(' ').map((e) => e[0]).join('').toUpperCase(),
-                  style: const TextStyle(
-                    color: AppColors.textWhite,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 14,
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    name,
-                    style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.textDark,
-                    ),
-                  ),
-                  Text(
-                    time,
-                    style: const TextStyle(
-                      fontSize: 11,
-                      color: AppColors.textLight,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
+        const Text(
+          'Murid Terbaru',
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: AppColors.textDark,
+          ),
         ),
         const SizedBox(height: 12),
         Container(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
-            color: Colors.grey.shade100,
-            borderRadius: BorderRadius.circular(8),
+            color: AppColors.cardBackground,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.grey.shade300),
           ),
-          child: Text(
-            message,
-            style: const TextStyle(
-              fontSize: 13,
-              color: AppColors.textDark,
-              height: 1.5,
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildWeeklyReportCard() {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: AppColors.cardBackground,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey.shade300),
-      ),
-      child: Column(
-        children: [
-          _buildReportItem(
-            'Alfito Mengumpulkan Tugas Matematika',
-            '1 Menit lalu',
-            Icons.assignment_turned_in,
-            Colors.green,
-          ),
-          const Divider(height: 24),
-          _buildReportItem(
-            'Zayn Menyelesaikan Quiz Bahasa Indonesia',
-            '15 Menit lalu',
-            Icons.quiz,
-            Colors.blue,
-          ),
-          const Divider(height: 24),
-          _buildReportItem(
-            'Raka Bergabung di Kelas Semi Private SD',
-            '1 Jam lalu',
-            Icons.person_add,
-            Colors.orange,
-          ),
-          const Divider(height: 24),
-          _buildReportItem(
-            'Nina Meminta Revisi Tugas IPA',
-            '2 Jam lalu',
-            Icons.edit,
-            Colors.purple,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildReportItem(
-      String title, String time, IconData icon, Color color) {
-    return Row(
-      children: [
-        Container(
-          width: 40,
-          height: 40,
-          decoration: BoxDecoration(
-            color: color.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Icon(
-            icon,
-            color: color,
-            size: 20,
-          ),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                title,
-                style: const TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w500,
-                  color: AppColors.textDark,
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                time,
-                style: const TextStyle(
-                  fontSize: 11,
-                  color: AppColors.textLight,
-                ),
-              ),
-            ],
+            children: students.asMap().entries.map((entry) {
+              final index = entry.key;
+              final s = entry.value;
+              return Column(
+                children: [
+                  if (index > 0) const Divider(height: 24),
+                  Row(
+                    children: [
+                      CircleAvatar(
+                        backgroundColor:
+                            AppColors.primary.withValues(alpha: 0.1),
+                        child: Text(s.fullName[0].toUpperCase()),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              s.fullName,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.textDark,
+                              ),
+                            ),
+                            Text(
+                              'Kelas ${s.gradeLevel}',
+                              style: const TextStyle(
+                                  color: Colors.grey, fontSize: 12),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const Chip(
+                        label: Text('Baru',
+                            style:
+                                TextStyle(fontSize: 10, color: Colors.white)),
+                        backgroundColor: Colors.green,
+                        padding: EdgeInsets.all(0),
+                      ),
+                    ],
+                  ),
+                ],
+              );
+            }).toList(),
           ),
         ),
       ],

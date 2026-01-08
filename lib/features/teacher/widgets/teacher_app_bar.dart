@@ -113,6 +113,7 @@ class TeacherScaffold extends StatelessWidget {
   final Function(int) onMenuSelected;
   final VoidCallback? onNotificationTap;
   final Widget? bottomNavigationBar;
+  final Widget? floatingActionButton;
 
   const TeacherScaffold({
     super.key,
@@ -122,6 +123,7 @@ class TeacherScaffold extends StatelessWidget {
     required this.onMenuSelected,
     this.onNotificationTap,
     this.bottomNavigationBar,
+    this.floatingActionButton,
   });
 
   @override
@@ -139,6 +141,7 @@ class TeacherScaffold extends StatelessWidget {
       ),
       body: body,
       bottomNavigationBar: bottomNavigationBar,
+      floatingActionButton: floatingActionButton,
     );
   }
 }

@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart'; // import provider
+import 'package:intl/intl.dart'; // import intl for date formatting
 import '../../../core/utils/colors.dart';
 import '../widgets/teacher_app_bar.dart';
+import '../providers/teacher_provider.dart';
+import '../../../core/models/student_model.dart';
+import '../../../core/models/payment_model.dart';
 
 class PengajarPembayaran extends StatefulWidget {
   const PengajarPembayaran({super.key});
@@ -12,210 +17,140 @@ class PengajarPembayaran extends StatefulWidget {
 class _PengajarPembayaranState extends State<PengajarPembayaran> {
   int _selectedMenuIndex = 5;
 
-  final List<Map<String, dynamic>> _pembayaranList = [
-    {
-      'nama': 'Zayn Athallah',
-      'kelas': 'Private - SD',
-      'status': 'Belum Lunas',
-      'lunas': false,
-    },
-    {
-      'nama': 'Alfito',
-      'kelas': 'Reguler - PAUD',
-      'status': 'Lunas',
-      'lunas': true,
-    },
-    {
-      'nama': 'Jonathan',
-      'kelas': 'Semi Private - SD',
-      'status': 'Lunas',
-      'lunas': true,
-    },
-  ];
-
   @override
   Widget build(BuildContext context) {
     return TeacherScaffold(
-      title: 'Kelola Pembayaran', // Atau hapus untuk pakai default "Pembayaran"
+      title: 'Riwayat Pembayaran',
       selectedMenuIndex: _selectedMenuIndex,
       onMenuSelected: (index) => setState(() => _selectedMenuIndex = index),
       onNotificationTap: () {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Anda memiliki 3 notifikasi baru')),
+          const SnackBar(content: Text('Notifikasi')),
         );
       },
-      body: Container(
-        color: AppColors.background,
-        child: ListView.builder(
-          padding: const EdgeInsets.all(16),
-          itemCount: _pembayaranList.length,
-          itemBuilder: (context, index) {
-            return _buildPembayaranCard(_pembayaranList[index], index);
-          },
-        ),
-      ),
-    );
-  }
+      body: Consumer<TeacherProvider>(
+        builder: (context, teacherProvider, child) {
+          if (teacherProvider.isLoading) {
+            return const Center(child: CircularProgressIndicator());
+          }
 
-  Widget _buildPembayaranCard(Map<String, dynamic> data, int index) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: data['lunas'] ? Colors.green : Colors.orange,
-          width: 1.5,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.shade200,
-            blurRadius: 6,
-            offset: const Offset(0, 3),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                width: 50,
-                height: 50,
-                decoration: BoxDecoration(
-                  color: AppColors.primary.withOpacity(0.1),
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(
-                  Icons.person,
-                  color: AppColors.primary,
-                  size: 28,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      data['nama'],
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.textDark,
-                      ),
-                    ),
-                    Text(
-                      data['kelas'],
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey.shade600,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(
-                  color: data['lunas']
-                      ? Colors.green.withOpacity(0.1)
-                      : Colors.orange.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(
-                    color: data['lunas'] ? Colors.green : Colors.orange,
-                  ),
-                ),
-                child: Text(
-                  data['status'],
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    color: data['lunas'] ? Colors.green : Colors.orange,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          const Divider(),
-          const SizedBox(height: 8),
-          if (!data['lunas'])
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton.icon(
-                onPressed: () => _showKonfirmasiDialog(data, index),
-                icon: const Icon(Icons.check_circle, size: 18),
-                label: const Text('Tandai Lunas'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.green,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-              ),
-            )
-          else
-            Row(
-              children: [
-                const Icon(Icons.check_circle, color: Colors.green, size: 20),
-                const SizedBox(width: 8),
-                Text(
-                  'Pembayaran telah lunas',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey.shade600,
-                  ),
-                ),
-              ],
-            ),
-        ],
-      ),
-    );
-  }
+          // Filter only paid payments
+          final paidPayments = teacherProvider.classPayments
+              .where((p) => p.status == 'paid')
+              .toList();
 
-  void _showKonfirmasiDialog(Map<String, dynamic> data, int index) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        title: const Text('Konfirmasi Pembayaran'),
-        content: Text(
-          'Apakah Anda yakin pembayaran ${data['nama']} sudah lunas?',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Batal'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              setState(() {
-                _pembayaranList[index]['lunas'] = true;
-                _pembayaranList[index]['status'] = 'Lunas';
-              });
-              Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Row(
-                    children: [
-                      const Icon(Icons.check_circle, color: Colors.white),
-                      const SizedBox(width: 12),
-                      Text('Pembayaran ${data['nama']} telah lunas'),
-                    ],
+          // Sort by paidAt descending (newest first)
+          paidPayments.sort((a, b) {
+            final aTime = a.paidAt ?? DateTime(2000);
+            final bTime = b.paidAt ?? DateTime(2000);
+            return bTime.compareTo(aTime);
+          });
+
+          if (paidPayments.isEmpty) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.payment_outlined,
+                      size: 80, color: Colors.grey.shade300),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Belum ada pembayaran lunas',
+                    style: TextStyle(fontSize: 16, color: Colors.grey.shade600),
                   ),
-                  backgroundColor: Colors.green,
+                ],
+              ),
+            );
+          }
+
+          return ListView.builder(
+            padding: const EdgeInsets.all(16),
+            itemCount: paidPayments.length,
+            itemBuilder: (context, index) {
+              final payment = paidPayments[index];
+              final student = teacherProvider.students.firstWhere(
+                (s) => s.studentId == payment.studentId,
+                orElse: () => StudentModel(
+                  userId: 'unknown',
+                  studentId: 'unknown',
+                  fullName: 'Unknown Student',
+                  nickname: '',
+                  gradeLevel: '',
+                  createdAt: DateTime.now(),
                 ),
               );
+
+              return _buildPembayaranCard(payment, student);
             },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.green,
-            ),
-            child: const Text('Ya, Lunas'),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildPembayaranCard(PaymentModel payment, StudentModel student) {
+    final dateFormatter = DateFormat('dd MMMM yyyy');
+    final currencyFormatter = NumberFormat.currency(
+      locale: 'id_ID',
+      symbol: 'Rp ',
+      decimalDigits: 0,
+    );
+
+    return Card(
+      elevation: 2,
+      margin: const EdgeInsets.only(bottom: 12),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Theme(
+        data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+        child: ExpansionTile(
+          leading: CircleAvatar(
+            backgroundColor: Colors.green.withOpacity(0.1),
+            child: const Icon(Icons.check, color: Colors.green),
           ),
+          title: Text(
+            student.fullName,
+            style: const TextStyle(
+              fontWeight: FontWeight.bold,
+              color: AppColors.textDark,
+            ),
+          ),
+          subtitle: Text(
+            'Tenggat: ${dateFormatter.format(payment.dueDate)}',
+            style: TextStyle(color: Colors.grey.shade600, fontSize: 13),
+          ),
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+              child: Column(
+                children: [
+                  const Divider(),
+                  const SizedBox(height: 8),
+                  _buildDetailRow(
+                      'Jumlah', currencyFormatter.format(payment.amount)),
+                  _buildDetailRow(
+                      'Tanggal Bayar',
+                      payment.paidAt != null
+                          ? dateFormatter.format(payment.paidAt!)
+                          : '-'),
+                  _buildDetailRow(
+                      'Sesi Terbayar', '${payment.sessionsPaid} Sesi'),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDetailRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(label, style: const TextStyle(color: Colors.grey)),
+          Text(value, style: const TextStyle(fontWeight: FontWeight.w600)),
         ],
       ),
     );
