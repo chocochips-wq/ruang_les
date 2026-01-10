@@ -93,4 +93,13 @@ class ClassRepository {
         .map((snapshot) =>
             snapshot.docs.map((doc) => ClassModel.fromFirestore(doc)).toList());
   }
+
+  Stream<List<ClassModel>> streamClassesByStudentId(String studentId) {
+    return _firestore
+        .collection(collectionName)
+        .where('studentIds', arrayContains: studentId)
+        .snapshots()
+        .map((snapshot) =>
+            snapshot.docs.map((doc) => ClassModel.fromFirestore(doc)).toList());
+  }
 }

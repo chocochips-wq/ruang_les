@@ -1,5 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:provider/provider.dart';
 import '../../../core/utils/colors.dart';
+import '../../../data/repositories/user_repository.dart';
+import '../../../data/repositories/parent_repository.dart';
+import '../../../data/repositories/student_repository.dart';
+import '../../../core/models/user_model.dart';
+import '../../../core/models/parent_model.dart';
+import '../../../core/models/student_model.dart';
 import '../widgets/parent_drawer.dart';
 import '../widgets/parent_bottom_nav.dart';
 
@@ -11,14 +20,38 @@ class ProfileOrangtua extends StatefulWidget {
 }
 
 class _ProfileOrangtuaState extends State<ProfileOrangtua> {
-  // Data dummy yang bisa diedit
-  String nama = 'Agustina Suraisa';
-  String email = 'orangtua@gmail.com';
-  String alamat = 'Kelapa 2 Depok';
-  String noHp = '0812-3456-7890';
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final UserRepository _userRepository = UserRepository();
+  final ParentRepository _parentRepository = ParentRepository();
+  final StudentRepository _studentRepository = StudentRepository();
+  String? _parentId;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadParentId();
+  }
+
+  Future<void> _loadParentId() async {
+    final userId = _auth.currentUser?.uid;
+    if (userId == null) return;
+    
+    try {
+      final parent = await _parentRepository.getParentByUserId(userId);
+      if (parent != null && parent.parentId != null) {
+        setState(() {
+          _parentId = parent.parentId;
+        });
+      }
+    } catch (e) {
+      print('Error loading parent ID: $e');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    final userId = _auth.currentUser?.uid;
+
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
@@ -35,39 +68,89 @@ class _ProfileOrangtuaState extends State<ProfileOrangtua> {
         iconTheme: const IconThemeData(color: Colors.white),
       ),
       drawer: const ParentDrawer(),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            // Header Profile Section
-            _buildProfileHeader(),
+      body: userId == null
+          ? const Center(child: Text('User not logged in'))
+          : StreamBuilder<DocumentSnapshot>(
+              stream: FirebaseFirestore.instance
+                  .collection('users')
+                  .doc(userId)
+                  .snapshots(),
+              builder: (context, userSnapshot) {
+                if (userSnapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                }
 
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                children: [
-                  // Info Card
-                  _buildInfoCard(),
+                if (!userSnapshot.hasData) {
+                  return const Center(child: Text('User data not found'));
+                }
 
-                  const SizedBox(height: 16),
+                final userData = userSnapshot.data!.data() as Map<String, dynamic>;
+                final nama = userData['name'] ?? '';
+                final email = userData['email'] ?? '';
+                final phone = userData['phone'] ?? '';
 
-                  // Anak Section
-                  _buildAnakSection(),
+                // Get parent address
+                return StreamBuilder<DocumentSnapshot?>(
+                  stream: _parentId != null
+                      ? FirebaseFirestore.instance
+                          .collection('parents')
+                          .doc(_parentId)
+                          .snapshots()
+                      : null,
+                  builder: (context, parentSnapshot) {
+                    final alamat = parentSnapshot.data?.get('address') ?? '';
 
-                  const SizedBox(height: 16),
+                    return SingleChildScrollView(
+                      child: Column(
+                        children: [
+                          // Header Profile Section
+                          _buildProfileHeader(nama, email),
 
-                  // Edit Profile Button
-                  _buildEditButton(),
-                ],
-              ),
+                          Padding(
+                            padding: const EdgeInsets.all(16),
+                            child: Column(
+                              children: [
+                                // Info Card
+                                _buildInfoCard(nama, email, alamat, phone),
+
+                                const SizedBox(height: 16),
+
+                                // Anak Section - Real-time
+                                if (_parentId != null)
+                                  StreamBuilder<List<StudentModel>>(
+                                    stream: _studentRepository.streamStudentsByParentId(_parentId!),
+                                    builder: (context, childrenSnapshot) {
+                                      if (childrenSnapshot.connectionState ==
+                                          ConnectionState.waiting) {
+                                        return const Center(
+                                            child: CircularProgressIndicator());
+                                      }
+
+                                      final children = childrenSnapshot.data ?? [];
+
+                                      return _buildAnakSection(children);
+                                    },
+                                  ),
+
+                                const SizedBox(height: 16),
+
+                                // Edit Profile Button
+                                _buildEditButton(nama, email, alamat, phone),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                );
+              },
             ),
-          ],
-        ),
-      ),
       bottomNavigationBar: const ParentBottomNav(selectedIndex: 3),
     );
   }
 
-  Widget _buildProfileHeader() {
+  Widget _buildProfileHeader(String nama, String email) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.only(top: 20, bottom: 30),
@@ -100,7 +183,7 @@ class _ProfileOrangtuaState extends State<ProfileOrangtua> {
                 ),
                 child: ClipOval(
                   child: Image.asset(
-                    'assets/images/profile_placeholder.png',
+                    'assets/gambar/profile.png',
                     fit: BoxFit.cover,
                     errorBuilder: (context, error, stackTrace) {
                       return const Icon(
@@ -189,7 +272,7 @@ class _ProfileOrangtuaState extends State<ProfileOrangtua> {
     );
   }
 
-  Widget _buildInfoCard() {
+  Widget _buildInfoCard(String nama, String email, String alamat, String phone) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -226,9 +309,9 @@ class _ProfileOrangtuaState extends State<ProfileOrangtua> {
           const SizedBox(height: 12),
           _buildInfoRow(Icons.email, 'Email', email),
           const SizedBox(height: 12),
-          _buildInfoRow(Icons.home, 'Alamat', alamat),
+          _buildInfoRow(Icons.home, 'Alamat', alamat.isNotEmpty ? alamat : 'Belum diisi'),
           const SizedBox(height: 12),
-          _buildInfoRow(Icons.phone, 'No. HP', noHp),
+          _buildInfoRow(Icons.phone, 'No. HP', phone),
         ],
       ),
     );
@@ -274,7 +357,7 @@ class _ProfileOrangtuaState extends State<ProfileOrangtua> {
     );
   }
 
-  Widget _buildAnakSection() {
+  Widget _buildAnakSection(List<StudentModel> children) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -307,13 +390,22 @@ class _ProfileOrangtuaState extends State<ProfileOrangtua> {
             ],
           ),
           const SizedBox(height: 16),
-          _buildAnakCard('Agustian', 'Kelas 5 SD', 'Aktif'),
+          if (children.isEmpty)
+            const Text(
+              'Belum ada anak terdaftar',
+              style: TextStyle(color: AppColors.textLight),
+            )
+          else
+            ...children.map((child) => Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: _buildAnakCard(child),
+                )),
         ],
       ),
     );
   }
 
-  Widget _buildAnakCard(String nama, String kelas, String status) {
+  Widget _buildAnakCard(StudentModel child) {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
@@ -330,11 +422,25 @@ class _ProfileOrangtuaState extends State<ProfileOrangtua> {
               color: AppColors.primary.withOpacity(0.1),
               shape: BoxShape.circle,
             ),
-            child: const Icon(
-              Icons.person,
-              color: AppColors.primary,
-              size: 28,
-            ),
+            child: child.avatarUrl != null
+                ? ClipOval(
+                    child: Image.network(
+                      child.avatarUrl!,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return const Icon(
+                          Icons.person,
+                          color: AppColors.primary,
+                          size: 28,
+                        );
+                      },
+                    ),
+                  )
+                : const Icon(
+                    Icons.person,
+                    color: AppColors.primary,
+                    size: 28,
+                  ),
           ),
           const SizedBox(width: 14),
           Expanded(
@@ -342,7 +448,7 @@ class _ProfileOrangtuaState extends State<ProfileOrangtua> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  nama,
+                  child.fullName,
                   style: const TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.bold,
@@ -351,7 +457,7 @@ class _ProfileOrangtuaState extends State<ProfileOrangtua> {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  kelas,
+                  child.gradeLevel,
                   style: TextStyle(
                     fontSize: 13,
                     color: Colors.grey.shade600,
@@ -367,9 +473,9 @@ class _ProfileOrangtuaState extends State<ProfileOrangtua> {
               borderRadius: BorderRadius.circular(6),
               border: Border.all(color: Colors.green),
             ),
-            child: Text(
-              status,
-              style: const TextStyle(
+            child: const Text(
+              'Aktif',
+              style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
                 color: Colors.green,
@@ -381,13 +487,14 @@ class _ProfileOrangtuaState extends State<ProfileOrangtua> {
     );
   }
 
-  Widget _buildEditButton() {
+  Widget _buildEditButton(String currentNama, String currentEmail,
+      String currentAlamat, String currentPhone) {
     return SizedBox(
       width: double.infinity,
       height: 50,
       child: ElevatedButton(
         onPressed: () {
-          _showEditProfileDialog();
+          _showEditProfileDialog(currentNama, currentEmail, currentAlamat, currentPhone);
         },
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.primary,
@@ -414,15 +521,13 @@ class _ProfileOrangtuaState extends State<ProfileOrangtua> {
     );
   }
 
-  void _showEditProfileDialog() {
-    final TextEditingController namaController =
-        TextEditingController(text: nama);
-    final TextEditingController emailController =
-        TextEditingController(text: email);
+  void _showEditProfileDialog(
+      String nama, String email, String alamat, String phone) {
+    final TextEditingController namaController = TextEditingController(text: nama);
+    final TextEditingController emailController = TextEditingController(text: email);
     final TextEditingController alamatController =
         TextEditingController(text: alamat);
-    final TextEditingController noHpController =
-        TextEditingController(text: noHp);
+    final TextEditingController phoneController = TextEditingController(text: phone);
 
     showDialog(
       context: context,
@@ -470,6 +575,7 @@ class _ProfileOrangtuaState extends State<ProfileOrangtua> {
                   label: 'Email',
                   icon: Icons.email,
                   keyboardType: TextInputType.emailAddress,
+                  enabled: false, // Email usually shouldn't be changed
                 ),
                 const SizedBox(height: 16),
                 _buildTextField(
@@ -480,7 +586,7 @@ class _ProfileOrangtuaState extends State<ProfileOrangtua> {
                 ),
                 const SizedBox(height: 16),
                 _buildTextField(
-                  controller: noHpController,
+                  controller: phoneController,
                   label: 'No. HP',
                   icon: Icons.phone,
                   keyboardType: TextInputType.phone,
@@ -501,36 +607,61 @@ class _ProfileOrangtuaState extends State<ProfileOrangtua> {
               ),
             ),
             ElevatedButton(
-              onPressed: () {
+              onPressed: () async {
                 if (namaController.text.isNotEmpty &&
-                    emailController.text.isNotEmpty &&
-                    alamatController.text.isNotEmpty &&
-                    noHpController.text.isNotEmpty) {
-                  setState(() {
-                    nama = namaController.text;
-                    email = emailController.text;
-                    alamat = alamatController.text;
-                    noHp = noHpController.text;
-                  });
-                  Navigator.pop(context);
+                    phoneController.text.isNotEmpty) {
+                  try {
+                    final userId = _auth.currentUser?.uid;
+                    if (userId == null) return;
 
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: const Row(
-                        children: [
-                          Icon(Icons.check_circle, color: Colors.white),
-                          SizedBox(width: 12),
-                          Text('Profile berhasil diperbarui'),
-                        ],
+                    // Update user document
+                    await FirebaseFirestore.instance
+                        .collection('users')
+                        .doc(userId)
+                        .update({
+                      'name': namaController.text,
+                      'phone': phoneController.text,
+                    });
+
+                    // Update parent address if parent ID exists
+                    if (_parentId != null) {
+                      await FirebaseFirestore.instance
+                          .collection('parents')
+                          .doc(_parentId)
+                          .update({
+                        'address': alamatController.text,
+                      });
+                    }
+
+                    if (!mounted) return;
+                    Navigator.pop(context);
+
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: const Row(
+                          children: [
+                            Icon(Icons.check_circle, color: Colors.white),
+                            SizedBox(width: 12),
+                            Text('Profile berhasil diperbarui'),
+                          ],
+                        ),
+                        backgroundColor: Colors.green,
+                        behavior: SnackBarBehavior.floating,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        duration: const Duration(seconds: 3),
                       ),
-                      backgroundColor: Colors.green,
-                      behavior: SnackBarBehavior.floating,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
+                    );
+                  } catch (e) {
+                    if (!mounted) return;
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Error: $e'),
+                        backgroundColor: Colors.red,
                       ),
-                      duration: const Duration(seconds: 3),
-                    ),
-                  );
+                    );
+                  }
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
@@ -555,8 +686,7 @@ class _ProfileOrangtuaState extends State<ProfileOrangtua> {
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
               ),
               child: const Text(
                 'Simpan',
@@ -578,11 +708,13 @@ class _ProfileOrangtuaState extends State<ProfileOrangtua> {
     required IconData icon,
     TextInputType? keyboardType,
     int maxLines = 1,
+    bool enabled = true,
   }) {
     return TextField(
       controller: controller,
       keyboardType: keyboardType,
       maxLines: maxLines,
+      enabled: enabled,
       decoration: InputDecoration(
         labelText: label,
         prefixIcon: Icon(icon, color: AppColors.primary),
@@ -616,7 +748,6 @@ class _ProfileOrangtuaState extends State<ProfileOrangtua> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // Handle bar
               Container(
                 width: 40,
                 height: 4,
@@ -626,7 +757,6 @@ class _ProfileOrangtuaState extends State<ProfileOrangtua> {
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
-
               const Padding(
                 padding: EdgeInsets.symmetric(horizontal: 20),
                 child: Text(
@@ -638,9 +768,7 @@ class _ProfileOrangtuaState extends State<ProfileOrangtua> {
                   ),
                 ),
               ),
-
               const SizedBox(height: 20),
-
               ListTile(
                 leading: Container(
                   padding: const EdgeInsets.all(8),
@@ -657,17 +785,16 @@ class _ProfileOrangtuaState extends State<ProfileOrangtua> {
                 onTap: () {
                   Navigator.pop(context);
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: const Text('Fitur kamera akan segera tersedia'),
+                    const SnackBar(
+                      content: Text('Fitur kamera akan segera tersedia'),
                       behavior: SnackBarBehavior.floating,
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
+                        borderRadius: BorderRadius.all(Radius.circular(10)),
                       ),
                     ),
                   );
                 },
               ),
-
               ListTile(
                 leading: Container(
                   padding: const EdgeInsets.all(8),
@@ -684,45 +811,16 @@ class _ProfileOrangtuaState extends State<ProfileOrangtua> {
                 onTap: () {
                   Navigator.pop(context);
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: const Text('Fitur galeri akan segera tersedia'),
+                    const SnackBar(
+                      content: Text('Fitur galeri akan segera tersedia'),
                       behavior: SnackBarBehavior.floating,
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
+                        borderRadius: BorderRadius.all(Radius.circular(10)),
                       ),
                     ),
                   );
                 },
               ),
-
-              ListTile(
-                leading: Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: Colors.red.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: const Icon(Icons.delete, color: Colors.red),
-                ),
-                title: const Text(
-                  'Hapus Foto',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-                ),
-                onTap: () {
-                  Navigator.pop(context);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: const Text('Foto profile dihapus'),
-                      backgroundColor: Colors.red,
-                      behavior: SnackBarBehavior.floating,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                    ),
-                  );
-                },
-              ),
-
               const SizedBox(height: 10),
             ],
           ),

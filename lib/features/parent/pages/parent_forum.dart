@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../../core/utils/colors.dart';
+import '../../../data/repositories/forum_repository.dart';
+import '../../../data/repositories/user_repository.dart';
+import '../../../core/models/forum_post_model.dart';
 import '../widgets/parent_drawer.dart';
 import '../widgets/parent_bottom_nav.dart';
 
@@ -11,28 +16,29 @@ class ForumOrangtua extends StatefulWidget {
 }
 
 class _ForumOrangtuaState extends State<ForumOrangtua> {
-  final List<Map<String, dynamic>> _forumPosts = [
-    {
-      'nama': 'Ibu Siti',
-      'waktu': '2 jam yang lalu',
-      'judul': 'Tips Mendampingi Anak Belajar Matematika',
-      'isi':
-          'Halo parents! Saya mau share tips efektif mendampingi anak belajar matematika di rumah. Pertama, buat jadwal rutin...',
-      'replies': 5,
-      'likes': 12,
-      'isOwner': false,
-    },
-    {
-      'nama': 'Pak Budi',
-      'waktu': '5 jam yang lalu',
-      'judul': 'Rekomendasi Buku Bacaan untuk Anak SD',
-      'isi':
-          'Ada yang punya rekomendasi buku bacaan yang bagus untuk anak kelas 4 SD? Anak saya mulai suka membaca nih...',
-      'replies': 8,
-      'likes': 15,
-      'isOwner': false,
-    },
-  ];
+  final ForumRepository _forumRepository = ForumRepository();
+  final UserRepository _userRepository = UserRepository();
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  String? _currentUserId;
+  String? _currentUserName;
+
+  @override
+  void initState() {
+    super.initState();
+    _currentUserId = _auth.currentUser?.uid;
+    _loadCurrentUserName();
+  }
+
+  Future<void> _loadCurrentUserName() async {
+    if (_currentUserId != null) {
+      final user = await _userRepository.getUserById(_currentUserId!);
+      if (user != null) {
+        setState(() {
+          _currentUserName = user.name;
+        });
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -102,17 +108,36 @@ class _ForumOrangtuaState extends State<ForumOrangtua> {
             ),
           ),
 
-          // List Forum Posts
+          // List Forum Posts - Real-time
           Expanded(
-            child: _forumPosts.isEmpty
-                ? _buildEmptyState()
-                : ListView.builder(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    itemCount: _forumPosts.length,
-                    itemBuilder: (context, index) {
-                      return _buildForumPostCard(_forumPosts[index], index);
-                    },
-                  ),
+            child: StreamBuilder<List<ForumPostModel>>(
+              stream: _forumRepository.streamAllPosts(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+
+                if (snapshot.hasError) {
+                  return Center(child: Text('Error: ${snapshot.error}'));
+                }
+
+                final posts = snapshot.data ?? [];
+
+                if (posts.isEmpty) {
+                  return _buildEmptyState();
+                }
+
+                return ListView.builder(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  itemCount: posts.length,
+                  itemBuilder: (context, index) {
+                    final post = posts[index];
+                    final isOwner = post.userId == _currentUserId;
+                    return _buildForumPostCard(post, isOwner);
+                  },
+                );
+              },
+            ),
           ),
         ],
       ),
@@ -120,7 +145,9 @@ class _ForumOrangtuaState extends State<ForumOrangtua> {
     );
   }
 
-  Widget _buildForumPostCard(Map<String, dynamic> post, int index) {
+  Widget _buildForumPostCard(ForumPostModel post, bool isOwner) {
+    final isLiked = post.likedBy.contains(_currentUserId);
+
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(16),
@@ -151,7 +178,7 @@ class _ForumOrangtuaState extends State<ForumOrangtua> {
                 ),
                 child: Center(
                   child: Text(
-                    post['nama'][0],
+                    post.authorName.isNotEmpty ? post.authorName[0].toUpperCase() : '?',
                     style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
@@ -166,7 +193,7 @@ class _ForumOrangtuaState extends State<ForumOrangtua> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      post['nama'],
+                      post.authorName,
                       style: const TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.bold,
@@ -174,7 +201,7 @@ class _ForumOrangtuaState extends State<ForumOrangtua> {
                       ),
                     ),
                     Text(
-                      post['waktu'],
+                      post.timeAgo,
                       style: TextStyle(
                         fontSize: 12,
                         color: Colors.grey.shade600,
@@ -186,7 +213,7 @@ class _ForumOrangtuaState extends State<ForumOrangtua> {
               IconButton(
                 icon: Icon(Icons.more_vert, color: Colors.grey.shade600),
                 onPressed: () {
-                  _showPostOptions(context, post, index);
+                  _showPostOptions(context, post, isOwner);
                 },
               ),
             ],
@@ -196,7 +223,7 @@ class _ForumOrangtuaState extends State<ForumOrangtua> {
 
           // Judul Post
           Text(
-            post['judul'],
+            post.title,
             style: const TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
@@ -208,7 +235,7 @@ class _ForumOrangtuaState extends State<ForumOrangtua> {
 
           // Isi Post
           Text(
-            post['isi'],
+            post.content,
             maxLines: 3,
             overflow: TextOverflow.ellipsis,
             style: TextStyle(
@@ -224,15 +251,15 @@ class _ForumOrangtuaState extends State<ForumOrangtua> {
           Row(
             children: [
               _buildActionButton(
-                icon: Icons.favorite_border,
-                label: '${post['likes']}',
-                color: Colors.red,
-                onTap: () {},
+                icon: isLiked ? Icons.favorite : Icons.favorite_border,
+                label: '${post.likes}',
+                color: isLiked ? Colors.red : Colors.red,
+                onTap: () => _toggleLike(post),
               ),
               const SizedBox(width: 16),
               _buildActionButton(
                 icon: Icons.chat_bubble_outline,
-                label: '${post['replies']} Balasan',
+                label: '${post.replies} Balasan',
                 color: Colors.blue,
                 onTap: () {},
               ),
@@ -241,6 +268,20 @@ class _ForumOrangtuaState extends State<ForumOrangtua> {
         ],
       ),
     );
+  }
+
+  Future<void> _toggleLike(ForumPostModel post) async {
+    if (_currentUserId == null || post.postId == null) return;
+
+    try {
+      await _forumRepository.likePost(post.postId!, _currentUserId!);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: $e')),
+        );
+      }
+    }
   }
 
   Widget _buildActionButton({
@@ -306,7 +347,7 @@ class _ForumOrangtuaState extends State<ForumOrangtua> {
   }
 
   void _showPostOptions(
-      BuildContext context, Map<String, dynamic> post, int index) {
+      BuildContext context, ForumPostModel post, bool isOwner) {
     showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(
@@ -330,7 +371,7 @@ class _ForumOrangtuaState extends State<ForumOrangtua> {
               ),
 
               // Option: Laporkan (untuk post orang lain)
-              if (!post['isOwner'])
+              if (!isOwner)
                 ListTile(
                   leading:
                       const Icon(Icons.flag_outlined, color: Colors.orange),
@@ -345,7 +386,7 @@ class _ForumOrangtuaState extends State<ForumOrangtua> {
                 ),
 
               // Option: Edit (hanya untuk post sendiri)
-              if (post['isOwner'])
+              if (isOwner)
                 ListTile(
                   leading: const Icon(Icons.edit_outlined, color: Colors.blue),
                   title: const Text(
@@ -354,12 +395,12 @@ class _ForumOrangtuaState extends State<ForumOrangtua> {
                   ),
                   onTap: () {
                     Navigator.pop(context);
-                    _showEditPostDialog(post, index);
+                    _showEditPostDialog(post);
                   },
                 ),
 
               // Option: Hapus (hanya untuk post sendiri)
-              if (post['isOwner'])
+              if (isOwner)
                 ListTile(
                   leading: const Icon(Icons.delete_outline, color: Colors.red),
                   title: const Text(
@@ -368,7 +409,7 @@ class _ForumOrangtuaState extends State<ForumOrangtua> {
                   ),
                   onTap: () {
                     Navigator.pop(context);
-                    _showDeleteConfirmation(context, index);
+                    _showDeleteConfirmation(context, post);
                   },
                 ),
 
@@ -380,7 +421,7 @@ class _ForumOrangtuaState extends State<ForumOrangtua> {
     );
   }
 
-  void _showDeleteConfirmation(BuildContext context, int index) {
+  void _showDeleteConfirmation(BuildContext context, ForumPostModel post) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -415,30 +456,42 @@ class _ForumOrangtuaState extends State<ForumOrangtua> {
               ),
             ),
             ElevatedButton(
-              onPressed: () {
-                setState(() {
-                  _forumPosts.removeAt(index);
-                });
-                Navigator.pop(context);
+              onPressed: () async {
+                if (post.postId == null) return;
 
-                // Tampilkan snackbar konfirmasi
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: const Row(
-                      children: [
-                        Icon(Icons.check_circle, color: Colors.white),
-                        SizedBox(width: 12),
-                        Text('Diskusi berhasil dihapus'),
-                      ],
+                try {
+                  await _forumRepository.deletePost(post.postId!);
+                  if (!mounted) return;
+                  Navigator.pop(context);
+
+                  // Tampilkan snackbar konfirmasi
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: const Row(
+                        children: [
+                          Icon(Icons.check_circle, color: Colors.white),
+                          SizedBox(width: 12),
+                          Text('Diskusi berhasil dihapus'),
+                        ],
+                      ),
+                      backgroundColor: Colors.green,
+                      behavior: SnackBarBehavior.floating,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      duration: const Duration(seconds: 3),
                     ),
-                    backgroundColor: Colors.green,
-                    behavior: SnackBarBehavior.floating,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
+                  );
+                } catch (e) {
+                  if (!mounted) return;
+                  Navigator.pop(context);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Error: $e'),
+                      backgroundColor: Colors.red,
                     ),
-                    duration: const Duration(seconds: 3),
-                  ),
-                );
+                  );
+                }
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.red,
@@ -499,11 +552,11 @@ class _ForumOrangtuaState extends State<ForumOrangtua> {
     );
   }
 
-  void _showEditPostDialog(Map<String, dynamic> post, int index) {
+  void _showEditPostDialog(ForumPostModel post) {
     final TextEditingController judulController =
-        TextEditingController(text: post['judul']);
+        TextEditingController(text: post.title);
     final TextEditingController isiController =
-        TextEditingController(text: post['isi']);
+        TextEditingController(text: post.content);
 
     showDialog(
       context: context,
@@ -553,32 +606,47 @@ class _ForumOrangtuaState extends State<ForumOrangtua> {
               ),
             ),
             ElevatedButton(
-              onPressed: () {
+              onPressed: () async {
                 if (judulController.text.isNotEmpty &&
-                    isiController.text.isNotEmpty) {
-                  setState(() {
-                    _forumPosts[index]['judul'] = judulController.text;
-                    _forumPosts[index]['isi'] = isiController.text;
-                    _forumPosts[index]['waktu'] = 'Baru saja (diedit)';
-                  });
-                  Navigator.pop(context);
+                    isiController.text.isNotEmpty &&
+                    post.postId != null) {
+                  try {
+                    final updatedPost = post.copyWith(
+                      title: judulController.text,
+                      content: isiController.text,
+                      updatedAt: DateTime.now(),
+                    );
+                    
+                    await _forumRepository.updatePost(post.postId!, updatedPost);
+                    
+                    if (!mounted) return;
+                    Navigator.pop(context);
 
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: const Row(
-                        children: [
-                          Icon(Icons.check_circle, color: Colors.white),
-                          SizedBox(width: 12),
-                          Text('Diskusi berhasil diperbarui'),
-                        ],
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: const Row(
+                          children: [
+                            Icon(Icons.check_circle, color: Colors.white),
+                            SizedBox(width: 12),
+                            Text('Diskusi berhasil diperbarui'),
+                          ],
+                        ),
+                        backgroundColor: Colors.green,
+                        behavior: SnackBarBehavior.floating,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
                       ),
-                      backgroundColor: Colors.green,
-                      behavior: SnackBarBehavior.floating,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
+                    );
+                  } catch (e) {
+                    if (!mounted) return;
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Error: $e'),
+                        backgroundColor: Colors.red,
                       ),
-                    ),
-                  );
+                    );
+                  }
                 }
               },
               style: ElevatedButton.styleFrom(
@@ -647,39 +715,50 @@ class _ForumOrangtuaState extends State<ForumOrangtua> {
               ),
             ),
             ElevatedButton(
-              onPressed: () {
-                // Logic untuk menambahkan post baru
+              onPressed: () async {
                 if (judulController.text.isNotEmpty &&
-                    isiController.text.isNotEmpty) {
-                  setState(() {
-                    _forumPosts.insert(0, {
-                      'nama': 'Agustina Suraisa',
-                      'waktu': 'Baru saja',
-                      'judul': judulController.text,
-                      'isi': isiController.text,
-                      'replies': 0,
-                      'likes': 0,
-                      'isOwner': true, // Tandai sebagai post milik user
-                    });
-                  });
-                  Navigator.pop(context);
+                    isiController.text.isNotEmpty &&
+                    _currentUserId != null &&
+                    _currentUserName != null) {
+                  try {
+                    final newPost = ForumPostModel(
+                      userId: _currentUserId!,
+                      authorName: _currentUserName!,
+                      title: judulController.text,
+                      content: isiController.text,
+                      createdAt: DateTime.now(),
+                    );
 
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: const Row(
-                        children: [
-                          Icon(Icons.check_circle, color: Colors.white),
-                          SizedBox(width: 12),
-                          Text('Diskusi berhasil dipublikasikan'),
-                        ],
+                    await _forumRepository.createPost(newPost);
+                    
+                    if (!mounted) return;
+                    Navigator.pop(context);
+
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: const Row(
+                          children: [
+                            Icon(Icons.check_circle, color: Colors.white),
+                            SizedBox(width: 12),
+                            Text('Diskusi berhasil dipublikasikan'),
+                          ],
+                        ),
+                        backgroundColor: Colors.green,
+                        behavior: SnackBarBehavior.floating,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
                       ),
-                      backgroundColor: Colors.green,
-                      behavior: SnackBarBehavior.floating,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
+                    );
+                  } catch (e) {
+                    if (!mounted) return;
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Error: $e'),
+                        backgroundColor: Colors.red,
                       ),
-                    ),
-                  );
+                    );
+                  }
                 }
               },
               style: ElevatedButton.styleFrom(

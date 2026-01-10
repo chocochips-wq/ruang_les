@@ -43,5 +43,3 @@ flutter:
   
   assets:
     - assets/gambar/
-    - assets/images/      # Tambah folder untuk gambar game
-    - assets/sounds/      # Untuk suara game (opsional)

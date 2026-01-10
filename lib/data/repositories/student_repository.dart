@@ -122,4 +122,14 @@ class StudentRepository {
     return _firestore.collection(collectionName).snapshots().map((snapshot) =>
         snapshot.docs.map((doc) => StudentModel.fromFirestore(doc)).toList());
   }
+
+  // Stream students by parent ID (for real-time updates)
+  Stream<List<StudentModel>> streamStudentsByParentId(String parentId) {
+    return _firestore
+        .collection(collectionName)
+        .where('parentId', isEqualTo: parentId)
+        .snapshots()
+        .map((snapshot) =>
+            snapshot.docs.map((doc) => StudentModel.fromFirestore(doc)).toList());
+  }
 }

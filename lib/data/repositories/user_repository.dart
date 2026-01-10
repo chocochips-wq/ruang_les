@@ -223,6 +223,113 @@ class UserRepository {
     }
   }
 
+  // 16. GET PENDING USERS (for verification)
+  Future<List<UserModel>> getPendingUsers({List<String>? roles}) async {
+    try {
+      Query query = _firestore
+          .collection(collectionName)
+          .where('verificationStatus', isEqualTo: 'pending');
+
+      if (roles != null && roles.isNotEmpty) {
+        query = query.where('role', whereIn: roles);
+      }
+
+      final snapshot = await query.get();
+      final users = snapshot.docs.map((doc) => UserModel.fromFirestore(doc)).toList();
+      
+      // Sort by createdAt on client side
+      users.sort((a, b) => a.createdAt.compareTo(b.createdAt));
+      
+      return users;
+    } catch (e) {
+      throw Exception('Failed to get pending users: $e');
+    }
+  }
+
+  // 17. STREAM PENDING USERS (real-time)
+  Stream<List<UserModel>> streamPendingUsers({List<String>? roles}) {
+    if (roles != null && roles.isNotEmpty && roles.length <= 10) {
+      // If roles specified (max 10 roles for whereIn), filter by role
+      Query query = _firestore
+          .collection(collectionName)
+          .where('verificationStatus', isEqualTo: 'pending')
+          .where('role', whereIn: roles);
+
+      return query.snapshots().map((snapshot) {
+        final users = snapshot.docs.map((doc) => UserModel.fromFirestore(doc)).toList();
+        // Sort by createdAt on client side
+        users.sort((a, b) => a.createdAt.compareTo(b.createdAt));
+        return users;
+      });
+    } else {
+      // If no roles specified or too many roles, get all pending users
+      Query query = _firestore
+          .collection(collectionName)
+          .where('verificationStatus', isEqualTo: 'pending');
+
+      return query.snapshots().map((snapshot) {
+        final users = snapshot.docs.map((doc) => UserModel.fromFirestore(doc)).toList();
+        // Filter by roles if needed (client-side filtering)
+        final filteredUsers = roles != null && roles.isNotEmpty
+            ? users.where((user) => roles.contains(user.role)).toList()
+            : users;
+        // Sort by createdAt on client side
+        filteredUsers.sort((a, b) => a.createdAt.compareTo(b.createdAt));
+        return filteredUsers;
+      });
+    }
+  }
+
+  // 18. APPROVE USER (verify user account)
+  Future<void> approveUser(String userId, String verifiedBy) async {
+    try {
+      await _firestore.collection(collectionName).doc(userId).update({
+        'verificationStatus': 'verified',
+        'verifiedAt': Timestamp.now(),
+        'verifiedBy': verifiedBy,
+      });
+    } catch (e) {
+      throw Exception('Failed to approve user: $e');
+    }
+  }
+
+  // 19. REJECT USER (reject user account)
+  Future<void> rejectUser(String userId, String rejectedBy) async {
+    try {
+      await _firestore.collection(collectionName).doc(userId).update({
+        'verificationStatus': 'rejected',
+        'verifiedAt': Timestamp.now(),
+        'verifiedBy': rejectedBy,
+      });
+    } catch (e) {
+      throw Exception('Failed to reject user: $e');
+    }
+  }
+
+  // 20. UPDATE USER VERIFICATION STATUS (for migration/updates)
+  Future<void> updateUserVerificationStatus(
+    String userId,
+    String verificationStatus, {
+    String? verifiedBy,
+  }) async {
+    try {
+      final updateData = <String, dynamic>{
+        'verificationStatus': verificationStatus,
+      };
+      
+      if (verificationStatus == 'verified' || verificationStatus == 'rejected') {
+        updateData['verifiedAt'] = Timestamp.now();
+        if (verifiedBy != null) {
+          updateData['verifiedBy'] = verifiedBy;
+        }
+      }
+      
+      await _firestore.collection(collectionName).doc(userId).update(updateData);
+    } catch (e) {
+      throw Exception('Failed to update user verification status: $e');
+    }
+  }
+
   // 15. BATCH OPERATION: Create user with related data
   Future<void> createUserWithRoleData({
     required UserModel userModel,

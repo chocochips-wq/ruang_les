@@ -1,7 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../../core/utils/colors.dart';
+import '../../../data/repositories/payment_repository.dart';
+import '../../../data/repositories/parent_repository.dart';
+import '../../../data/repositories/student_repository.dart';
+import '../../../data/repositories/class_repository.dart';
+import '../../../core/models/payment_model.dart';
+import '../../../core/models/student_model.dart';
+import '../../../core/models/class_model.dart';
 import '../widgets/parent_drawer.dart';
 import '../widgets/parent_bottom_nav.dart';
 
@@ -15,6 +23,13 @@ class PembayaranOrangtua extends StatefulWidget {
 class _PembayaranOrangtuaState extends State<PembayaranOrangtua> {
   String? selectedPaymentMethod;
   bool isProcessing = false;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final PaymentRepository _paymentRepository = PaymentRepository();
+  final ParentRepository _parentRepository = ParentRepository();
+  final StudentRepository _studentRepository = StudentRepository();
+  final ClassRepository _classRepository = ClassRepository();
+  String? _parentId;
+  PaymentModel? _currentPayment;
 
   final Map<String, List<Map<String, String>>> paymentMethods = {
     'Transfer Bank': [
@@ -37,6 +52,28 @@ class _PembayaranOrangtuaState extends State<PembayaranOrangtua> {
   };
 
   @override
+  void initState() {
+    super.initState();
+    _loadParentId();
+  }
+
+  Future<void> _loadParentId() async {
+    final userId = _auth.currentUser?.uid;
+    if (userId == null) return;
+
+    try {
+      final parent = await _parentRepository.getParentByUserId(userId);
+      if (parent != null && parent.parentId != null) {
+        setState(() {
+          _parentId = parent.parentId;
+        });
+      }
+    } catch (e) {
+      print('Error loading parent ID: $e');
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey[50],
@@ -50,35 +87,112 @@ class _PembayaranOrangtuaState extends State<PembayaranOrangtua> {
         elevation: 0,
       ),
       drawer: const ParentDrawer(),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            // Header dengan informasi tagihan
-            _buildBillingHeader(),
+      body: _parentId == null
+          ? const Center(child: CircularProgressIndicator())
+          : StreamBuilder<List<PaymentModel>>(
+              stream: _paymentRepository.streamPaymentsByParentId(_parentId!),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                }
 
-            const SizedBox(height: 16),
+                if (snapshot.hasError) {
+                  return Center(child: Text('Error: ${snapshot.error}'));
+                }
 
-            // Card informasi paket
-            _buildPackageInfo(),
+                final payments = snapshot.data ?? [];
+                final pendingPayments =
+                    payments.where((p) => p.status == 'pending').toList();
+                _currentPayment =
+                    pendingPayments.isNotEmpty ? pendingPayments.first : null;
 
-            const SizedBox(height: 20),
+                if (_currentPayment == null && payments.isEmpty) {
+                  return SingleChildScrollView(
+                    child: Padding(
+                      padding: const EdgeInsets.all(24),
+                      child: Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.payment, size: 64, color: Colors.grey.shade400),
+                            const SizedBox(height: 16),
+                            Text(
+                              'Tidak ada tagihan aktif',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.grey.shade600,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  );
+                }
 
-            // Metode pembayaran
-            _buildPaymentMethods(),
+                return SingleChildScrollView(
+                  child: Column(
+                    children: [
+                      // Header dengan informasi tagihan
+                      _buildBillingHeader(_currentPayment),
 
-            const SizedBox(height: 24),
+                      const SizedBox(height: 16),
 
-            // Tombol konfirmasi
-            _buildConfirmButton(),
+                      // Card informasi paket - Real-time
+                      if (_currentPayment != null)
+                        FutureBuilder<Map<String, dynamic>>(
+                          future: _getPackageInfo(_currentPayment!),
+                          builder: (context, packageSnapshot) {
+                            if (!packageSnapshot.hasData) {
+                              return const Center(
+                                  child: CircularProgressIndicator());
+                            }
+                            return _buildPackageInfo(packageSnapshot.data!);
+                          },
+                        ),
 
-            const SizedBox(height: 24),
-          ],
-        ),
-      ),
+                      const SizedBox(height: 20),
+
+                      // Metode pembayaran
+                      _buildPaymentMethods(),
+
+                      const SizedBox(height: 24),
+
+                      // Tombol konfirmasi
+                      _buildConfirmButton(_currentPayment),
+
+                      const SizedBox(height: 24),
+                    ],
+                  ),
+                );
+              },
+            ),
     );
   }
 
-  Widget _buildBillingHeader() {
+  Future<Map<String, dynamic>> _getPackageInfo(PaymentModel payment) async {
+    try {
+      final student = await _studentRepository.getStudentById(payment.studentId);
+      final classModel = await _classRepository.getClassById(payment.classId);
+
+      return {
+        'studentName': student?.fullName ?? 'N/A',
+        'className': classModel?.className ?? 'N/A',
+        'period': 'Bulanan', // You might want to add this to payment model
+      };
+    } catch (e) {
+      return {
+        'studentName': 'N/A',
+        'className': 'N/A',
+        'period': 'Bulanan',
+      };
+    }
+  }
+
+  Widget _buildBillingHeader(PaymentModel? payment) {
+    final totalAmount = payment?.amount ?? 0;
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20),
@@ -114,10 +228,10 @@ class _PembayaranOrangtuaState extends State<PembayaranOrangtua> {
               borderRadius: BorderRadius.circular(12),
               border: Border.all(color: Colors.white.withOpacity(0.3)),
             ),
-            child: const Row(
+            child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
+                const Text(
                   'Total Tagihan:',
                   style: TextStyle(
                     color: Colors.white,
@@ -125,8 +239,8 @@ class _PembayaranOrangtuaState extends State<PembayaranOrangtua> {
                   ),
                 ),
                 Text(
-                  'Rp 250.000',
-                  style: TextStyle(
+                  'Rp ${totalAmount.toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]}.')}',
+                  style: const TextStyle(
                     color: Colors.white,
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
@@ -140,7 +254,7 @@ class _PembayaranOrangtuaState extends State<PembayaranOrangtua> {
     );
   }
 
-  Widget _buildPackageInfo() {
+  Widget _buildPackageInfo(Map<String, dynamic> packageInfo) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16),
       padding: const EdgeInsets.all(20),
@@ -189,19 +303,19 @@ class _PembayaranOrangtuaState extends State<PembayaranOrangtua> {
           _buildInfoRow(
             icon: Icons.library_books,
             label: 'Paket Kelas',
-            value: 'Matematika & Bahasa Inggris',
+            value: packageInfo['className'] ?? 'N/A',
           ),
           const SizedBox(height: 12),
           _buildInfoRow(
             icon: Icons.person,
             label: 'Siswa',
-            value: 'Agustian',
+            value: packageInfo['studentName'] ?? 'N/A',
           ),
           const SizedBox(height: 12),
           _buildInfoRow(
             icon: Icons.access_time,
             label: 'Periode',
-            value: 'Bulanan',
+            value: packageInfo['period'] ?? 'Bulanan',
           ),
         ],
       ),
@@ -358,8 +472,7 @@ class _PembayaranOrangtuaState extends State<PembayaranOrangtua> {
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
-                      color:
-                          isSelected ? AppColors.primary : AppColors.textDark,
+                      color: isSelected ? AppColors.primary : AppColors.textDark,
                     ),
                   ),
                   const SizedBox(height: 4),
@@ -438,7 +551,7 @@ class _PembayaranOrangtuaState extends State<PembayaranOrangtua> {
     );
   }
 
-  Widget _buildConfirmButton() {
+  Widget _buildConfirmButton(PaymentModel? payment) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Column(
@@ -473,9 +586,11 @@ class _PembayaranOrangtuaState extends State<PembayaranOrangtua> {
             width: double.infinity,
             height: 54,
             child: ElevatedButton(
-              onPressed: selectedPaymentMethod == null || isProcessing
+              onPressed: selectedPaymentMethod == null ||
+                      isProcessing ||
+                      payment == null
                   ? null
-                  : _confirmPayment,
+                  : () => _confirmPayment(payment),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primary,
                 foregroundColor: Colors.white,
@@ -508,91 +623,105 @@ class _PembayaranOrangtuaState extends State<PembayaranOrangtua> {
     );
   }
 
-  void _confirmPayment() async {
+  void _confirmPayment(PaymentModel payment) async {
     setState(() {
       isProcessing = true;
     });
 
-    // Simulasi proses
-    await Future.delayed(const Duration(seconds: 2));
+    try {
+      // Update payment status in Firestore
+      await _paymentRepository.updatePaymentStatus(payment.paymentId!, 'paid');
 
-    if (!mounted) return;
+      if (!mounted) return;
 
-    setState(() {
-      isProcessing = false;
-    });
+      setState(() {
+        isProcessing = false;
+      });
 
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.green[50],
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(
-                  Icons.check_circle,
-                  color: Colors.green[600],
-                  size: 64,
-                ),
-              ),
-              const SizedBox(height: 24),
-              const Text(
-                'Konfirmasi Berhasil',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.textDark,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 12),
-              Text(
-                'Pembayaran Anda sedang diproses. Kami akan mengirim notifikasi setelah pembayaran terverifikasi.',
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.grey[600],
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 24),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.pop(context); // Tutup dialog
-                    Navigator.pop(context); // Kembali ke halaman sebelumnya
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    padding: const EdgeInsets.symmetric(vertical: 14),
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.green[50],
+                    shape: BoxShape.circle,
                   ),
-                  child: const Text(
-                    'OK',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
+                  child: Icon(
+                    Icons.check_circle,
+                    color: Colors.green[600],
+                    size: 64,
                   ),
                 ),
-              ),
-            ],
-          ),
-        );
-      },
-    );
+                const SizedBox(height: 24),
+                const Text(
+                  'Konfirmasi Berhasil',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.textDark,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  'Pembayaran Anda sedang diproses. Kami akan mengirim notifikasi setelah pembayaran terverifikasi.',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.grey[600],
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 24),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primary,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                    ),
+                    child: const Text(
+                      'OK',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+      );
+    } catch (e) {
+      if (!mounted) return;
+
+      setState(() {
+        isProcessing = false;
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 }

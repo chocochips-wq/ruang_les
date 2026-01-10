@@ -37,4 +37,9 @@ class AppConstants {
   static const String attendancePresent = 'present';
   static const String attendanceAbsent = 'absent';
   static const String attendanceExcused = 'excused';
+
+  // Verification status
+  static const String verificationPending = 'pending';
+  static const String verificationVerified = 'verified';
+  static const String verificationRejected = 'rejected';
 }

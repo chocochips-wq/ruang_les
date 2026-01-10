@@ -32,49 +32,81 @@ class _HalamanDaftarState extends State<HalamanDaftar> {
   Future<void> _handleDaftar() async {
     if (_formKey.currentState!.validate()) {
       // Logic berdasarkan role
-      // Sesuai request:
-      // - Teacher: Langsung daftar (buat akun utama)
-      // - Student/Parent: Masuk notifikasi ke teacher (pending)
+      // - Teacher: Langsung daftar (verified)
+      // - Student/Parent: Masuk pending (perlu verifikasi dari teacher)
 
-      final role = _selectedRole;
-
-      if (role != 'Pengajar') {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-                'Pendaftaran untuk role $role memerlukan verifikasi Pengajar. (Fitur dalam pengembangan)'),
-            backgroundColor: Colors.orange,
-            duration: const Duration(seconds: 3),
-          ),
-        );
-        return;
-      }
-
-      // Proses Pendaftaran Pengajar
       final email = _emailController.text.trim();
       final password = _passwordController.text;
       final nama = _namaController.text.trim();
 
       final authProvider = context.read<AuthProvider>();
 
+      // Mapping role
+      String role;
+      String verificationStatus;
+      
+      if (_selectedRole == 'Pengajar') {
+        role = 'teacher';
+        verificationStatus = 'verified'; // Teacher langsung verified
+      } else if (_selectedRole == 'Murid') {
+        role = 'student';
+        verificationStatus = 'pending'; // Perlu verifikasi
+      } else if (_selectedRole == 'Orangtua') {
+        role = 'parent';
+        verificationStatus = 'pending'; // Perlu verifikasi
+      } else {
+        role = 'student';
+        verificationStatus = 'pending';
+      }
+
+      // Prepare role data for student/parent
+      Map<String, dynamic>? roleData;
+      if (role == 'student') {
+        roleData = {
+          'nickname': nama.split(' ').first, // Use first name as nickname
+          'fullName': nama,
+          'gradeLevel': 'SD 1-3', // Default, bisa diubah nanti
+        };
+      } else if (role == 'parent') {
+        roleData = {
+          'address': '', // Default empty, bisa diisi nanti
+          'studentIds': [], // Empty array, bisa ditambah nanti
+        };
+      }
+
       final success = await authProvider.register(
         email: email,
         password: password,
         name: nama,
         phone: '', // Optional/Later
-        role: 'teacher', // Mapping 'Pengajar' -> 'teacher'
+        role: role,
+        verificationStatus: verificationStatus,
+        roleData: roleData,
       );
 
       if (!mounted) return;
 
       if (success) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Pendaftaran Berhasil! Silakan Login.'),
-            backgroundColor: Colors.green,
-          ),
-        );
-        Navigator.pop(context); // Kembali ke login
+        if (verificationStatus == 'verified') {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Pendaftaran Berhasil! Silakan Login.'),
+              backgroundColor: Colors.green,
+            ),
+          );
+          Navigator.pop(context); // Kembali ke login
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: const Text(
+                'Pendaftaran berhasil! Akun Anda sedang menunggu verifikasi dari Pengajar. Silakan login setelah akun diverifikasi.',
+              ),
+              backgroundColor: Colors.orange,
+              duration: const Duration(seconds: 5),
+            ),
+          );
+          Navigator.pop(context); // Kembali ke login
+        }
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(

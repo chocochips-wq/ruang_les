@@ -1,61 +1,92 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart' hide AuthProvider;
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:provider/provider.dart';
 import '../../../core/utils/colors.dart';
 import '../../../core/utils/routes.dart';
+import '../../auth/providers/auth_provider.dart';
 
 class DrawerMurid extends StatelessWidget {
   const DrawerMurid({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final currentUserId = FirebaseAuth.instance.currentUser?.uid;
+
     return Drawer(
       child: Column(
         children: [
           // Header Drawer
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(24),
-            decoration: const BoxDecoration(
-              color: AppColors.primary,
-            ),
-            child: SafeArea(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
-                    width: 70,
-                    height: 70,
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      shape: BoxShape.circle,
-                      border: Border.all(color: Colors.white, width: 3),
-                    ),
-                    child: const Icon(
-                      Icons.person,
-                      size: 40,
-                      color: AppColors.primary,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  const Text(
-                    'Alfito',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'murid@gmail.com',
-                    style: TextStyle(
-                      color: Colors.white.withOpacity(0.9),
-                      fontSize: 14,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
+          currentUserId == null
+              ? const SizedBox(
+                  height: 200,
+                  child: Center(child: CircularProgressIndicator()),
+                )
+              : StreamBuilder<DocumentSnapshot>(
+                  stream: FirebaseFirestore.instance
+                      .collection('users')
+                      .doc(currentUserId)
+                      .snapshots(),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const SizedBox(
+                        height: 200,
+                        child: Center(child: CircularProgressIndicator()),
+                      );
+                    }
+
+                    final userData =
+                        snapshot.data?.data() as Map<String, dynamic>? ?? {};
+                    final userName = userData['name'] ?? 'Siswa';
+                    final email = userData['email'] ?? '';
+
+                    return Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(24),
+                      decoration: const BoxDecoration(
+                        color: AppColors.primary,
+                      ),
+                      child: SafeArea(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Container(
+                              width: 70,
+                              height: 70,
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                shape: BoxShape.circle,
+                                border: Border.all(color: Colors.white, width: 3),
+                              ),
+                              child: const Icon(
+                                Icons.person,
+                                size: 40,
+                                color: AppColors.primary,
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                            Text(
+                              userName,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              email,
+                              style: TextStyle(
+                                color: Colors.white.withValues(alpha: 0.9),
+                                fontSize: 14,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                ),
 
           // Menu Items
           Expanded(
@@ -122,7 +153,7 @@ class DrawerMurid extends StatelessWidget {
             child: Text(
               'Versi 1.0.0',
               style: TextStyle(
-                color: Colors.grey.shade600,
+                color: Colors.grey[600]!,
                 fontSize: 12,
               ),
             ),
@@ -180,16 +211,20 @@ class DrawerMurid extends StatelessWidget {
               child: Text(
                 'Batal',
                 style: TextStyle(
-                  color: Colors.grey.shade700,
+                  color: Colors.grey[700]!,
                   fontSize: 15,
                   fontWeight: FontWeight.w500,
                 ),
               ),
             ),
             ElevatedButton(
-              onPressed: () {
-                Navigator.pop(context); // Tutup dialog
-                Navigator.pushReplacementNamed(context, AppRoutes.login);
+              onPressed: () async {
+                final authProvider = context.read<AuthProvider>();
+                await authProvider.logout();
+                if (context.mounted) {
+                  Navigator.pop(context); // Tutup dialog
+                  Navigator.pushReplacementNamed(context, AppRoutes.login);
+                }
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.red,

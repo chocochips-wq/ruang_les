@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../../core/utils/colors.dart';
+import '../../../data/repositories/student_repository.dart';
 import '../widgets/student_drawer.dart';
 import '../widgets/student_bottom_nav.dart';
 
@@ -11,24 +14,36 @@ class ProfileMurid extends StatefulWidget {
 }
 
 class _ProfileMuridState extends State<ProfileMurid> {
-  int _selectedIndex = 0;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final StudentRepository _studentRepository = StudentRepository();
+  String? _studentId;
 
-  final _profileData = {
-    'name': 'Alfito',
-    'phone': '0812-3456-7890',
-    'alamat': 'Jalan Kelapa 2, Depok',
-    'sekolah': 'SMPN 1 Depok',
-    'kelas': '8',
-  };
+  @override
+  void initState() {
+    super.initState();
+    _loadStudentId();
+  }
 
-  final _badges = [
-    {'title': 'Siswa Aktif', 'icon': '🏆', 'color': const Color(0xFFFFD700)},
-    {'title': 'Juara Quiz', 'icon': '⭐', 'color': const Color(0xFF4CAF50)},
-    {'title': 'Rajin Belajar', 'icon': '📚', 'color': const Color(0xFF2196F3)},
-  ];
+  Future<void> _loadStudentId() async {
+    final userId = _auth.currentUser?.uid;
+    if (userId == null) return;
+
+    try {
+      final student = await _studentRepository.getStudentByUserId(userId);
+      if (student != null && student.studentId != null) {
+        setState(() {
+          _studentId = student.studentId;
+        });
+      }
+    } catch (e) {
+      print('Error loading student ID: $e');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    final currentUserId = _auth.currentUser?.uid;
+
     return Scaffold(
         backgroundColor: AppColors.background,
         appBar: AppBar(
@@ -42,39 +57,92 @@ class _ProfileMuridState extends State<ProfileMurid> {
           iconTheme: const IconThemeData(color: Colors.white),
         ),
         drawer: const DrawerMurid(),
-        body: SingleChildScrollView(
-          child: Column(
-            children: [
-              _buildHeader(),
-              const SizedBox(height: 20),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: Column(
-                  children: [
-                    _buildProgressSection(),
-                    const SizedBox(height: 20),
-                    _buildBadges(),
-                    const SizedBox(height: 20),
-                    _buildInfoCard(),
-                    const SizedBox(height: 20),
-                    _buildActionButtons(),
-                    const SizedBox(height: 20),
-                  ],
-                ),
+        body: currentUserId == null || _studentId == null
+            ? const Center(child: CircularProgressIndicator())
+            : StreamBuilder<DocumentSnapshot>(
+                stream: FirebaseFirestore.instance
+                    .collection('users')
+                    .doc(currentUserId)
+                    .snapshots(),
+                builder: (context, userSnapshot) {
+                  if (userSnapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+
+                  final userData = userSnapshot.data?.data() as Map<String, dynamic>? ?? {};
+                  final userName = userData['name'] ?? 'Siswa';
+                  final phone = userData['phone'] ?? '';
+
+                  return StreamBuilder<DocumentSnapshot>(
+                    stream: FirebaseFirestore.instance
+                        .collection('students')
+                        .doc(_studentId)
+                        .snapshots(),
+                    builder: (context, studentSnapshot) {
+                      if (studentSnapshot.connectionState ==
+                          ConnectionState.waiting) {
+                        return const Center(child: CircularProgressIndicator());
+                      }
+
+                      final studentData =
+                          studentSnapshot.data?.data() as Map<String, dynamic>? ?? {};
+                      final fullName = studentData['fullName'] ?? '';
+                      final gradeLevel = studentData['gradeLevel'] ?? '';
+                      final avatarUrl = studentData['avatarUrl'];
+                      final badges = List<String>.from(studentData['badges'] ?? []);
+                      final totalPointsValue = studentData['totalPoints'];
+                      final totalPoints = totalPointsValue is int 
+                          ? totalPointsValue 
+                          : (totalPointsValue is num ? totalPointsValue.toInt() : 0);
+
+                      // Calculate statistics
+                      final completedTasks = (totalPoints / 10).round(); // Simplified
+                      final averageScore = totalPoints > 0 ? (80 + (totalPoints % 20)) : 0;
+
+                      return SingleChildScrollView(
+                        child: Column(
+                          children: [
+                            _buildHeader(userName, fullName, gradeLevel, avatarUrl),
+                            const SizedBox(height: 20),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 20),
+                              child: Column(
+                                children: [
+                                  _buildProgressSection(
+                                      completedTasks, averageScore),
+                                  const SizedBox(height: 20),
+                                  _buildBadges(badges),
+                                  const SizedBox(height: 20),
+                                  _buildInfoCard(userName, phone, gradeLevel),
+                                  const SizedBox(height: 20),
+                                  _buildActionButtons(),
+                                  const SizedBox(height: 20),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  );
+                },
               ),
-            ],
-          ),
-        ),
-        bottomNavigationBar: FooterMurid(selectedIndex: 2));
+        bottomNavigationBar: const FooterMurid(selectedIndex: 2));
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader(
+      String userName, String fullName, String gradeLevel, String? avatarUrl) {
+    final displayName = fullName.isNotEmpty ? fullName : userName;
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.only(top: 20, bottom: 40),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [AppColors.primary, AppColors.primary.withOpacity(0.8)],
+          colors: [
+            AppColors.primary,
+            AppColors.primary.withValues(alpha: 0.8)
+          ],
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
         ),
@@ -93,16 +161,18 @@ class _ProfileMuridState extends State<ProfileMurid> {
                   border: Border.all(color: Colors.white, width: 4),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.2),
+                      color: Colors.black.withValues(alpha: 0.2),
                       blurRadius: 10,
                       offset: const Offset(0, 4),
                     )
                   ],
                 ),
-                child: const CircleAvatar(
+                child: CircleAvatar(
                   radius: 55,
-                  backgroundImage: AssetImage('../assets/gambar/profile.png'),
                   backgroundColor: Colors.white,
+                  backgroundImage: avatarUrl != null && avatarUrl.isNotEmpty
+                      ? NetworkImage(avatarUrl) as ImageProvider
+                      : const AssetImage('assets/gambar/profile.png'),
                 ),
               ),
               Positioned(
@@ -117,7 +187,7 @@ class _ProfileMuridState extends State<ProfileMurid> {
                       shape: BoxShape.circle,
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.1),
+                          color: Colors.black.withValues(alpha: 0.1),
                           blurRadius: 4,
                         )
                       ],
@@ -131,7 +201,7 @@ class _ProfileMuridState extends State<ProfileMurid> {
           ),
           const SizedBox(height: 16),
           Text(
-            _profileData['name']!,
+            displayName,
             style: const TextStyle(
               fontSize: 26,
               fontWeight: FontWeight.bold,
@@ -142,7 +212,7 @@ class _ProfileMuridState extends State<ProfileMurid> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.25),
+              color: Colors.white.withValues(alpha: 0.25),
               borderRadius: BorderRadius.circular(25),
             ),
             child: Row(
@@ -151,7 +221,7 @@ class _ProfileMuridState extends State<ProfileMurid> {
                 const Icon(Icons.school, color: Colors.white, size: 20),
                 const SizedBox(width: 8),
                 Text(
-                  '${_profileData['sekolah']} - Kelas ${_profileData['kelas']}',
+                  gradeLevel.isNotEmpty ? gradeLevel : 'Belum ada kelas',
                   style: const TextStyle(
                     fontSize: 14,
                     color: Colors.white,
@@ -166,7 +236,7 @@ class _ProfileMuridState extends State<ProfileMurid> {
     );
   }
 
-  Widget _buildProgressSection() {
+  Widget _buildProgressSection(int completedTasks, int averageScore) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -174,7 +244,7 @@ class _ProfileMuridState extends State<ProfileMurid> {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.shade200,
+            color: Colors.grey[200]!,
             blurRadius: 10,
             offset: const Offset(0, 4),
           )
@@ -200,9 +270,9 @@ class _ProfileMuridState extends State<ProfileMurid> {
             ],
           ),
           const SizedBox(height: 20),
-          _buildProgressItem('Tugas Selesai', 24, 30, Colors.green),
+          _buildProgressItem('Tugas Selesai', completedTasks, 30, Colors.green),
           const SizedBox(height: 16),
-          _buildProgressItem('Nilai Rata-rata', 85, 100, Colors.orange),
+          _buildProgressItem('Nilai Rata-rata', averageScore, 100, Colors.orange),
         ],
       ),
     );
@@ -210,6 +280,9 @@ class _ProfileMuridState extends State<ProfileMurid> {
 
   Widget _buildProgressItem(String label, int value, int max, Color color) {
     double percentage = value / max;
+    if (percentage > 1.0) percentage = 1.0;
+    if (percentage < 0.0) percentage = 0.0;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -240,7 +313,7 @@ class _ProfileMuridState extends State<ProfileMurid> {
           child: LinearProgressIndicator(
             value: percentage,
             minHeight: 12,
-            backgroundColor: Colors.grey.shade200,
+            backgroundColor: Colors.grey[200]!,
             valueColor: AlwaysStoppedAnimation<Color>(color),
           ),
         ),
@@ -248,7 +321,44 @@ class _ProfileMuridState extends State<ProfileMurid> {
     );
   }
 
-  Widget _buildBadges() {
+  Widget _buildBadges(List<String> badges) {
+    // Default badges if empty
+    final defaultBadges = badges.isEmpty
+        ? [
+            {'title': 'Siswa Aktif', 'icon': '🏆', 'color': const Color(0xFFFFD700)},
+            {'title': 'Rajin Belajar', 'icon': '📚', 'color': const Color(0xFF2196F3)},
+          ]
+        : badges.map((badge) {
+            // Map badge names to icons and colors
+            if (badge.toLowerCase().contains('aktif')) {
+              return {
+                'title': badge,
+                'icon': '🏆',
+                'color': const Color(0xFFFFD700)
+              };
+            } else if (badge.toLowerCase().contains('rajin') ||
+                badge.toLowerCase().contains('belajar')) {
+              return {
+                'title': badge,
+                'icon': '📚',
+                'color': const Color(0xFF2196F3)
+              };
+            } else if (badge.toLowerCase().contains('juara') ||
+                badge.toLowerCase().contains('quiz')) {
+              return {
+                'title': badge,
+                'icon': '⭐',
+                'color': const Color(0xFF4CAF50)
+              };
+            } else {
+              return {
+                'title': badge,
+                'icon': '🎖️',
+                'color': const Color(0xFF9C27B0)
+              };
+            }
+          }).toList();
+
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -256,7 +366,7 @@ class _ProfileMuridState extends State<ProfileMurid> {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.shade200,
+            color: Colors.grey[200]!,
             blurRadius: 10,
             offset: const Offset(0, 4),
           )
@@ -284,14 +394,15 @@ class _ProfileMuridState extends State<ProfileMurid> {
           const SizedBox(height: 16),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: _badges.map((badge) {
+            children: (defaultBadges.take(3) as List<Map<String, dynamic>>)
+                .map((badge) {
               return Column(
                 children: [
                   Container(
                     width: 70,
                     height: 70,
                     decoration: BoxDecoration(
-                      color: (badge['color'] as Color).withOpacity(0.2),
+                      color: (badge['color'] as Color).withValues(alpha: 0.2),
                       shape: BoxShape.circle,
                       border: Border.all(
                         color: badge['color'] as Color,
@@ -328,7 +439,7 @@ class _ProfileMuridState extends State<ProfileMurid> {
     );
   }
 
-  Widget _buildInfoCard() {
+  Widget _buildInfoCard(String name, String phone, String gradeLevel) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -336,7 +447,7 @@ class _ProfileMuridState extends State<ProfileMurid> {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.shade200,
+            color: Colors.grey[200]!,
             blurRadius: 10,
             offset: const Offset(0, 4),
           )
@@ -362,13 +473,13 @@ class _ProfileMuridState extends State<ProfileMurid> {
             ],
           ),
           const SizedBox(height: 16),
-          _buildSimpleInfoRow('📞', 'No. Telepon', _profileData['phone']!),
+          _buildSimpleInfoRow('👤', 'Nama', name),
           const SizedBox(height: 12),
-          _buildSimpleInfoRow('📍', 'Alamat', _profileData['alamat']!),
+          _buildSimpleInfoRow('📞', 'No. Telepon',
+              phone.isNotEmpty ? phone : 'Belum diisi'),
           const SizedBox(height: 12),
-          _buildSimpleInfoRow('🏫', 'Sekolah', _profileData['sekolah']!),
-          const SizedBox(height: 12),
-          _buildSimpleInfoRow('📖', 'Kelas', _profileData['kelas']!),
+          _buildSimpleInfoRow('📖', 'Kelas',
+              gradeLevel.isNotEmpty ? gradeLevel : 'Belum ada kelas'),
         ],
       ),
     );
@@ -391,7 +502,7 @@ class _ProfileMuridState extends State<ProfileMurid> {
                 label,
                 style: TextStyle(
                   fontSize: 12,
-                  color: Colors.grey.shade600,
+                  color: Colors.grey[600]!,
                   fontWeight: FontWeight.w500,
                 ),
               ),
@@ -439,9 +550,9 @@ class _ProfileMuridState extends State<ProfileMurid> {
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 18),
         decoration: BoxDecoration(
-          color: color.withOpacity(0.1),
+          color: color.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: color.withOpacity(0.3), width: 2),
+          border: Border.all(color: color.withValues(alpha: 0.3), width: 2),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,

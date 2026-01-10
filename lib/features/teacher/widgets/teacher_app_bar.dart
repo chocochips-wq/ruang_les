@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../core/utils/colors.dart';
+import '../../../core/utils/routes.dart';
+import '../../../data/repositories/user_repository.dart';
 import 'teacher_drawer.dart';
 
 class TeacherAppBar extends StatelessWidget implements PreferredSizeWidget {
@@ -7,6 +9,7 @@ class TeacherAppBar extends StatelessWidget implements PreferredSizeWidget {
   final int selectedMenuIndex;
   final Function(int) onMenuSelected;
   final VoidCallback? onNotificationTap;
+  final int? pendingVerificationCount;
 
   const TeacherAppBar({
     super.key,
@@ -14,6 +17,7 @@ class TeacherAppBar extends StatelessWidget implements PreferredSizeWidget {
     required this.selectedMenuIndex,
     required this.onMenuSelected,
     this.onNotificationTap,
+    this.pendingVerificationCount,
   });
 
   // Fungsi untuk dapat nama halaman berdasarkan index
@@ -56,45 +60,53 @@ class TeacherAppBar extends StatelessWidget implements PreferredSizeWidget {
       backgroundColor: AppColors.primary,
       iconTheme: const IconThemeData(color: AppColors.textWhite),
       actions: [
-        // Icon Notifikasi
-        IconButton(
-          icon: Stack(
-            children: [
-              const Icon(Icons.notifications),
-              // Badge notifikasi (opsional)
-              Positioned(
-                right: 0,
-                top: 0,
-                child: Container(
-                  padding: const EdgeInsets.all(2),
-                  decoration: const BoxDecoration(
-                    color: Colors.red,
-                    shape: BoxShape.circle,
-                  ),
-                  constraints: const BoxConstraints(
-                    minWidth: 16,
-                    minHeight: 16,
-                  ),
-                  child: const Text(
-                    '3',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 10,
-                      fontWeight: FontWeight.bold,
+        // Icon Notifikasi dengan badge pending verifications
+        StreamBuilder<int>(
+          stream: UserRepository()
+              .streamPendingUsers(roles: ['student', 'parent'])
+              .map((users) => users.length),
+          builder: (context, snapshot) {
+            final count = snapshot.data ?? pendingVerificationCount ?? 0;
+            return IconButton(
+              icon: Stack(
+                children: [
+                  const Icon(Icons.notifications),
+                  if (count > 0)
+                    Positioned(
+                      right: 0,
+                      top: 0,
+                      child: Container(
+                        padding: const EdgeInsets.all(2),
+                        decoration: const BoxDecoration(
+                          color: Colors.red,
+                          shape: BoxShape.circle,
+                        ),
+                        constraints: const BoxConstraints(
+                          minWidth: 16,
+                          minHeight: 16,
+                        ),
+                        child: Text(
+                          count > 99 ? '99+' : '$count',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
                     ),
-                    textAlign: TextAlign.center,
-                  ),
-                ),
+                ],
               ),
-            ],
-          ),
-          onPressed: onNotificationTap ??
-              () {
-                // Default action jika tidak ada callback
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Notifikasi diklik')),
-                );
-              },
+              onPressed: onNotificationTap ??
+                  () {
+                    // Default action - arahkan ke halaman verifikasi jika ada callback
+                    if (onNotificationTap == null) {
+                      Navigator.pushNamed(context, AppRoutes.pengajarVerifikasi);
+                    }
+                  },
+            );
+          },
         ),
         const SizedBox(width: 8),
       ],

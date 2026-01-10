@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../core/utils/routes.dart';
 import '../../../core/utils/colors.dart';
+import '../../../data/repositories/user_repository.dart';
 
 class TeacherDrawer extends StatelessWidget {
   final int selectedMenuIndex;
@@ -120,6 +121,7 @@ class TeacherDrawer extends StatelessWidget {
                   index: 5,
                   route: AppRoutes.pengajarPembayaran,
                 ),
+                _buildVerificationMenuItem(context),
 
                 // ===== GARIS PEMISAH =====
                 const Padding(
@@ -132,7 +134,7 @@ class TeacherDrawer extends StatelessWidget {
                   context,
                   icon: Icons.settings,
                   title: 'Pengaturan',
-                  index: 6,
+                  index: 7,
                   route: AppRoutes.pengajarPengaturan,
                 ),
 
@@ -188,6 +190,63 @@ class TeacherDrawer extends StatelessWidget {
         if (route != null) {
           Navigator.pushReplacementNamed(context, route);
         }
+      },
+    );
+  }
+
+  Widget _buildVerificationMenuItem(BuildContext context) {
+    final isSelected = selectedMenuIndex == 6;
+
+    return StreamBuilder<int>(
+      stream: UserRepository()
+          .streamPendingUsers(roles: ['student', 'parent'])
+          .map((users) => users.length),
+      builder: (context, snapshot) {
+        final pendingCount = snapshot.data ?? 0;
+
+        return ListTile(
+          leading: Icon(
+            Icons.verified_user,
+            color: isSelected ? AppColors.primary : AppColors.textLight,
+          ),
+          title: Row(
+            children: [
+              Expanded(
+                child: Text(
+                  'Verifikasi Akun',
+                  style: TextStyle(
+                    color: isSelected ? AppColors.primary : AppColors.textDark,
+                    fontWeight:
+                        isSelected ? FontWeight.bold : FontWeight.normal,
+                  ),
+                ),
+              ),
+              if (pendingCount > 0)
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: Colors.red,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(
+                    '$pendingCount',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+          selected: isSelected,
+          selectedTileColor: AppColors.accent,
+          onTap: () {
+            onMenuSelected(6);
+            Navigator.pop(context);
+            Navigator.pushReplacementNamed(context, AppRoutes.pengajarVerifikasi);
+          },
+        );
       },
     );
   }

@@ -15,6 +15,7 @@ import '../../features/teacher/pages/teacher_payments.dart';
 import '../../features/teacher/pages/teacher_settings.dart';
 import '../../features/teacher/pages/teacher_materials.dart';
 import '../../features/teacher/pages/teacher_students.dart';
+import '../../features/teacher/pages/teacher_verification.dart';
 
 // Import Student
 import '../../features/student/pages/student_home.dart';
@@ -49,6 +50,7 @@ class AppRoutes {
   static const String pengajarPembayaran = '/pengajar/pembayaran';
   static const String pengajarPengaturan = '/pengajar/pengaturan';
   static const String pengajarLaporanAnak = '/pengajar/kelola-murid';
+  static const String pengajarVerifikasi = '/pengajar/verifikasi';
 
   // ========== ROUTES MURID ==========
   static const String muridBeranda = '/murid/beranda';
@@ -120,6 +122,9 @@ class AppRoutes {
 
       case pengajarPengaturan:
         return MaterialPageRoute(builder: (_) => const PengajarPengaturan());
+
+      case pengajarVerifikasi:
+        return MaterialPageRoute(builder: (_) => const TeacherVerificationPage());
 
       // ========== ROUTES MURID ==========
       case muridBeranda:

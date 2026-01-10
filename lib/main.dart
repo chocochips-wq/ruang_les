@@ -19,6 +19,7 @@ import 'data/repositories/teacher_repository.dart';
 import 'data/repositories/class_repository.dart';
 import 'data/repositories/payment_repository.dart';
 import 'data/repositories/session_repository.dart';
+import 'data/repositories/forum_repository.dart';
 
 // Providers
 import 'features/auth/providers/auth_provider.dart';
@@ -63,6 +64,9 @@ void main() async {
           ),
           Provider<SessionRepository>(
             create: (_) => SessionRepository(),
+          ),
+          Provider<ForumRepository>(
+            create: (_) => ForumRepository(),
           ),
 
           // Providers/State Management

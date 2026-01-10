@@ -47,6 +47,7 @@ class AuthProvider with ChangeNotifier {
     required String name,
     required String phone,
     required String role,
+    String verificationStatus = 'pending',
     Map<String, dynamic>? roleData,
   }) async {
     try {
@@ -76,6 +77,7 @@ class AuthProvider with ChangeNotifier {
           name: name,
           role: role,
           phone: phone,
+          verificationStatus: verificationStatus,
           createdAt: DateTime.now(),
         ),
         studentData: role == 'student' ? roleData : null,
@@ -83,8 +85,13 @@ class AuthProvider with ChangeNotifier {
         teacherData: role == 'teacher' ? roleData : null,
       );
 
-      // 4. Load user data
-      await initialize();
+      // 4. Load user data only if verified (teacher can login immediately)
+      if (verificationStatus == 'verified') {
+        await initialize();
+      } else {
+        // For pending users, sign them out
+        await auth.signOut();
+      }
 
       return true;
     } on FirebaseAuthException catch (e) {
@@ -113,7 +120,42 @@ class AuthProvider with ChangeNotifier {
         password: password,
       );
 
-      // 2. Load user data
+      // 2. Check user verification status
+      final user = await _userRepository.getCurrentUser();
+      if (user != null) {
+        // For teachers: always allow login (they don't need verification)
+        // If old teacher account has 'pending' status, update it to 'verified'
+        if (user.role == 'teacher' || user.role == 'pengajar') {
+          if (user.verificationStatus == 'pending' || user.verificationStatus.isEmpty) {
+            // Update the user's verificationStatus to 'verified' in Firestore
+            // This is a one-time migration for old teacher accounts
+            try {
+              await _userRepository.updateUserVerificationStatus(
+                user.userId!,
+                'verified',
+                verifiedBy: 'system', // Mark as system migration
+              );
+            } catch (e) {
+              // If update fails, continue anyway - teacher should be able to login
+              print('Warning: Could not update teacher verification status: $e');
+            }
+          }
+          // Teachers can always login, skip verification check
+        } else {
+          // For students and parents: check verification status
+          if (user.verificationStatus == 'pending') {
+            await auth.signOut();
+            _error = 'Akun Anda masih menunggu verifikasi dari Pengajar. Silakan tunggu hingga akun Anda diverifikasi.';
+            return false;
+          } else if (user.verificationStatus == 'rejected') {
+            await auth.signOut();
+            _error = 'Akun Anda telah ditolak. Silakan hubungi administrator.';
+            return false;
+          }
+        }
+      }
+
+      // 3. Load user data
       await initialize();
 
       return true;

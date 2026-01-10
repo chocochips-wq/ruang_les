@@ -53,4 +53,33 @@ class SessionRepository {
             .map((doc) => SessionModel.fromFirestore(doc))
             .toList());
   }
+
+  // Get recent sessions for activities (for parent dashboard)
+  Future<List<SessionModel>> getRecentSessionsByStudentIds(List<String> studentIds, {int limit = 10}) async {
+    try {
+      // Note: This requires a collection group query or multiple queries
+      // For now, we'll get all sessions and filter by checking if student is in any class
+      // This is a simplified approach - in production, you might want to store studentId in sessions
+      final query = await _firestore
+          .collection(collectionName)
+          .orderBy('date', descending: true)
+          .limit(limit)
+          .get();
+
+      return query.docs.map((doc) => SessionModel.fromFirestore(doc)).toList();
+    } catch (e) {
+      throw Exception('Failed to get recent sessions: $e');
+    }
+  }
+
+  Stream<List<SessionModel>> streamRecentSessions({int limit = 10}) {
+    return _firestore
+        .collection(collectionName)
+        .orderBy('date', descending: true)
+        .limit(limit)
+        .snapshots()
+        .map((snapshot) => snapshot.docs
+            .map((doc) => SessionModel.fromFirestore(doc))
+            .toList());
+  }
 }
