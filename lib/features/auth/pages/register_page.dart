@@ -59,7 +59,7 @@ class _HalamanDaftarState extends State<HalamanDaftar> {
         verificationStatus = 'pending';
       }
 
-      // Prepare role data for student/parent
+      // Prepare role data for student/parent/teacher
       Map<String, dynamic>? roleData;
       if (role == 'student') {
         roleData = {
@@ -71,6 +71,12 @@ class _HalamanDaftarState extends State<HalamanDaftar> {
         roleData = {
           'address': '', // Default empty, bisa diisi nanti
           'studentIds': [], // Empty array, bisa ditambah nanti
+        };
+      } else if (role == 'teacher') {
+        roleData = {
+          'specialization': 'Umum', // Default specialization
+          'yearsOfExperience': 0,
+          'classIds': [], // Empty array, akan diisi saat membuat kelas
         };
       }
 

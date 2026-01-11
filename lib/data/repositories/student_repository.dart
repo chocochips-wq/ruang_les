@@ -117,6 +117,16 @@ class StudentRepository {
         .map((doc) => doc.exists ? StudentModel.fromFirestore(doc) : null);
   }
 
+  // Get all students (for teacher/admin)
+  Future<List<StudentModel>> getAllStudents() async {
+    try {
+      final query = await _firestore.collection(collectionName).get();
+      return query.docs.map((doc) => StudentModel.fromFirestore(doc)).toList();
+    } catch (e) {
+      throw Exception('Failed to get all students: $e');
+    }
+  }
+
   // Stream all students (for teacher/admin)
   Stream<List<StudentModel>> streamAllStudents() {
     return _firestore.collection(collectionName).snapshots().map((snapshot) =>

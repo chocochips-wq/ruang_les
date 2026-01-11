@@ -115,7 +115,7 @@ class AppRoutes {
         return MaterialPageRoute(builder: (_) => const PengajarNilai());
 
       case pengajarLaporanAnak:
-        return MaterialPageRoute(builder: (_) => const HalamanKelolaMurid());
+        return MaterialPageRoute(builder: (_) => const HalamanKelolaAkun());
 
       case pengajarPembayaran:
         return MaterialPageRoute(builder: (_) => const PengajarPembayaran());

@@ -100,33 +100,33 @@ class _ProfileMuridState extends State<ProfileMurid> {
                       final averageScore = totalPoints > 0 ? (80 + (totalPoints % 20)) : 0;
 
                       return SingleChildScrollView(
-                        child: Column(
-                          children: [
+          child: Column(
+            children: [
                             _buildHeader(userName, fullName, gradeLevel, avatarUrl),
-                            const SizedBox(height: 20),
-                            Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 20),
-                              child: Column(
-                                children: [
+              const SizedBox(height: 20),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Column(
+                  children: [
                                   _buildProgressSection(
                                       completedTasks, averageScore),
-                                  const SizedBox(height: 20),
+                    const SizedBox(height: 20),
                                   _buildBadges(badges),
-                                  const SizedBox(height: 20),
+                    const SizedBox(height: 20),
                                   _buildInfoCard(userName, phone, gradeLevel),
-                                  const SizedBox(height: 20),
-                                  _buildActionButtons(),
-                                  const SizedBox(height: 20),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
+                    const SizedBox(height: 20),
+                    _buildActionButtons(),
+                    const SizedBox(height: 20),
+                  ],
+                ),
+              ),
+            ],
+          ),
                       );
                     },
                   );
                 },
-              ),
+        ),
         bottomNavigationBar: const FooterMurid(selectedIndex: 2));
   }
 

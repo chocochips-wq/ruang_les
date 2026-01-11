@@ -18,15 +18,65 @@ class SessionRepository {
 
   Future<List<SessionModel>> getSessionsByClassId(String classId) async {
     try {
-      final query = await _firestore
-          .collection(collectionName)
-          .where('classId', isEqualTo: classId)
-          .orderBy('sessionNumber', descending: false)
-          .get();
+      // Try with orderBy first (requires composite index)
+      try {
+        final query = await _firestore
+            .collection(collectionName)
+            .where('classId', isEqualTo: classId)
+            .orderBy('sessionNumber', descending: false)
+            .get();
 
-      return query.docs.map((doc) => SessionModel.fromFirestore(doc)).toList();
+        return query.docs.map((doc) => SessionModel.fromFirestore(doc)).toList();
+      } catch (e) {
+        // If index error, fallback to query without orderBy and sort in memory
+        if (e.toString().contains('index')) {
+          final query = await _firestore
+              .collection(collectionName)
+              .where('classId', isEqualTo: classId)
+              .get();
+
+          final sessions = query.docs
+              .map((doc) => SessionModel.fromFirestore(doc))
+              .toList();
+          
+          // Sort by sessionNumber in memory
+          sessions.sort((a, b) => a.sessionNumber.compareTo(b.sessionNumber));
+          return sessions;
+        }
+        rethrow;
+      }
     } catch (e) {
       throw Exception('Failed to get sessions by class ID: $e');
+    }
+  }
+
+  Future<SessionModel?> getSessionById(String sessionId) async {
+    try {
+      final doc = await _firestore.collection(collectionName).doc(sessionId).get();
+      if (doc.exists) {
+        return SessionModel.fromFirestore(doc);
+      }
+      return null;
+    } catch (e) {
+      throw Exception('Failed to get session by ID: $e');
+    }
+  }
+
+  Future<void> updateSession(String sessionId, SessionModel session) async {
+    try {
+      await _firestore.collection(collectionName).doc(sessionId).update(
+        session.toMap(),
+      );
+    } catch (e) {
+      throw Exception('Failed to update session: $e');
+    }
+  }
+
+  Future<void> deleteSession(String sessionId) async {
+    try {
+      await _firestore.collection(collectionName).doc(sessionId).delete();
+    } catch (e) {
+      throw Exception('Failed to delete session: $e');
     }
   }
 
@@ -47,11 +97,15 @@ class SessionRepository {
     return _firestore
         .collection(collectionName)
         .where('classId', isEqualTo: classId)
-        .orderBy('sessionNumber', descending: false)
         .snapshots()
-        .map((snapshot) => snapshot.docs
-            .map((doc) => SessionModel.fromFirestore(doc))
-            .toList());
+        .map((snapshot) {
+          final sessions = snapshot.docs
+              .map((doc) => SessionModel.fromFirestore(doc))
+              .toList();
+          // Sort by sessionNumber in memory
+          sessions.sort((a, b) => a.sessionNumber.compareTo(b.sessionNumber));
+          return sessions;
+        });
   }
 
   // Get recent sessions for activities (for parent dashboard)

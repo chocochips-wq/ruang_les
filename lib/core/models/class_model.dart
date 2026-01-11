@@ -60,4 +60,32 @@ class ClassModel {
       createdAt: (data['createdAt'] as Timestamp).toDate(),
     );
   }
+
+  ClassModel copyWith({
+    String? classId,
+    String? className,
+    String? gradeLevel,
+    String? type,
+    String? teacherId,
+    List<String>? studentIds,
+    int? maxStudents,
+    int? pricePerSession,
+    int? totalSessions,
+    String? schedule,
+    DateTime? createdAt,
+  }) {
+    return ClassModel(
+      classId: classId ?? this.classId,
+      className: className ?? this.className,
+      gradeLevel: gradeLevel ?? this.gradeLevel,
+      type: type ?? this.type,
+      teacherId: teacherId ?? this.teacherId,
+      studentIds: studentIds ?? this.studentIds,
+      maxStudents: maxStudents ?? this.maxStudents,
+      pricePerSession: pricePerSession ?? this.pricePerSession,
+      totalSessions: totalSessions ?? this.totalSessions,
+      schedule: schedule ?? this.schedule,
+      createdAt: createdAt ?? this.createdAt,
+    );
+  }
 }

@@ -4,6 +4,7 @@ import '../../../core/utils/colors.dart';
 import '../widgets/teacher_app_bar.dart';
 import '../providers/teacher_provider.dart';
 import '../../../core/models/class_model.dart';
+import 'teacher_class_detail.dart';
 
 class PengajarKelas extends StatefulWidget {
   const PengajarKelas({super.key});
@@ -136,10 +137,13 @@ class _PengajarKelasState extends State<PengajarKelas> {
               width: double.infinity,
               child: OutlinedButton(
                 onPressed: () {
-                  // TODO: Navigate to class detail or edit
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                        content: Text('Detail kelas akan segera hadir')),
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => TeacherClassDetailPage(
+                        classModel: classModel,
+                      ),
+                    ),
                   );
                 },
                 child: const Text('Lihat Detail'),
@@ -176,6 +180,9 @@ class _PengajarKelasState extends State<PengajarKelas> {
     final nameController = TextEditingController();
     final gradeController = TextEditingController();
     final scheduleController = TextEditingController();
+    final maxStudentsController = TextEditingController(text: '10');
+    final priceController = TextEditingController(text: '0');
+    final totalSessionsController = TextEditingController(text: '0');
     String selectedType = 'regular'; // default
 
     showDialog(
@@ -193,27 +200,30 @@ class _PengajarKelasState extends State<PengajarKelas> {
                     TextFormField(
                       controller: nameController,
                       decoration:
-                          const InputDecoration(labelText: 'Nama Kelas'),
+                          const InputDecoration(labelText: 'Nama Kelas *'),
                       validator: (v) =>
                           (v == null || v.isEmpty) ? 'Wajib diisi' : null,
                     ),
+                    const SizedBox(height: 16),
                     TextFormField(
                       controller: gradeController,
                       decoration: const InputDecoration(
-                          labelText: 'Jenjang (misal: SD Kelas 1)'),
+                          labelText: 'Jenjang *', hintText: 'Contoh: SD Kelas 1, SMP Kelas 7'),
                       validator: (v) =>
                           (v == null || v.isEmpty) ? 'Wajib diisi' : null,
                     ),
+                    const SizedBox(height: 16),
                     TextFormField(
                       controller: scheduleController,
                       decoration: const InputDecoration(
-                          labelText: 'Jadwal (misal: Senin 15:00)'),
+                          labelText: 'Jadwal *', hintText: 'Contoh: Senin 15:00-16:00'),
                       validator: (v) =>
                           (v == null || v.isEmpty) ? 'Wajib diisi' : null,
                     ),
+                    const SizedBox(height: 16),
                     DropdownButtonFormField<String>(
                       value: selectedType,
-                      decoration: const InputDecoration(labelText: 'Tipe'),
+                      decoration: const InputDecoration(labelText: 'Tipe Kelas *'),
                       items: const [
                         DropdownMenuItem(
                             value: 'regular', child: Text('Reguler')),
@@ -228,6 +238,45 @@ class _PengajarKelasState extends State<PengajarKelas> {
                             selectedType = v;
                           });
                         }
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    TextFormField(
+                      controller: maxStudentsController,
+                      decoration: const InputDecoration(
+                          labelText: 'Maksimal Murid *', hintText: 'Contoh: 10'),
+                      keyboardType: TextInputType.number,
+                      validator: (v) {
+                        if (v == null || v.isEmpty) return 'Wajib diisi';
+                        final num = int.tryParse(v);
+                        if (num == null || num <= 0) return 'Harus angka positif';
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    TextFormField(
+                      controller: priceController,
+                      decoration: const InputDecoration(
+                          labelText: 'Biaya per Sesi (Rp) *', hintText: 'Contoh: 50000'),
+                      keyboardType: TextInputType.number,
+                      validator: (v) {
+                        if (v == null || v.isEmpty) return 'Wajib diisi';
+                        final num = int.tryParse(v);
+                        if (num == null || num < 0) return 'Harus angka >= 0';
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    TextFormField(
+                      controller: totalSessionsController,
+                      decoration: const InputDecoration(
+                          labelText: 'Total Sesi *', hintText: 'Contoh: 12'),
+                      keyboardType: TextInputType.number,
+                      validator: (v) {
+                        if (v == null || v.isEmpty) return 'Wajib diisi';
+                        final num = int.tryParse(v);
+                        if (num == null || num <= 0) return 'Harus angka positif';
+                        return null;
                       },
                     ),
                   ],
@@ -250,9 +299,9 @@ class _PengajarKelasState extends State<PengajarKelas> {
                       type: selectedType,
                       teacherId: teacherProvider.currentTeacher?.teacherId ??
                           'unknown',
-                      maxStudents: 10,
-                      pricePerSession: 0,
-                      totalSessions: 0,
+                      maxStudents: int.parse(maxStudentsController.text),
+                      pricePerSession: int.parse(priceController.text),
+                      totalSessions: int.parse(totalSessionsController.text),
                       schedule: scheduleController.text,
                       createdAt: DateTime.now(),
                     );

@@ -50,11 +50,30 @@ class TeacherProvider with ChangeNotifier {
       notifyListeners();
 
       // 1. Load teacher info
-      final teacher = await _teacherRepository.getTeacherByUserId(userId);
+      var teacher = await _teacherRepository.getTeacherByUserId(userId);
+      
+      // If teacher document doesn't exist, create it automatically
       if (teacher == null) {
-        _error = 'Data pengajar tidak ditemukan';
-        return;
+        // Create default teacher document
+        final newTeacher = TeacherModel(
+          userId: userId,
+          specialization: 'Umum',
+          yearsOfExperience: 0,
+          classIds: [],
+          createdAt: DateTime.now(),
+        );
+        
+        // Create teacher document in Firestore
+        final teacherId = await _teacherRepository.createTeacher(newTeacher);
+        
+        // Reload the teacher with the new ID
+        teacher = await _teacherRepository.getTeacherById(teacherId);
+        if (teacher == null) {
+          _error = 'Gagal membuat data pengajar';
+          return;
+        }
       }
+      
       _currentTeacher = teacher;
 
       // 2. Load classes
@@ -134,19 +153,28 @@ class TeacherProvider with ChangeNotifier {
       _isLoading = true;
       notifyListeners();
 
-      final classId = await _classRepository.createClass(classModel);
+      // Ensure teacher is loaded
+      if (_currentTeacher?.teacherId == null) {
+        _error = 'Data pengajar tidak ditemukan. Silakan refresh halaman.';
+        return false;
+      }
+
+      // Update classModel with correct teacherId
+      final classModelWithTeacherId = classModel.copyWith(
+        teacherId: _currentTeacher!.teacherId!,
+      );
+
+      final classId = await _classRepository.createClass(classModelWithTeacherId);
 
       // Add to teacher's classIds
-      if (_currentTeacher?.teacherId != null) {
-        final updatedTeacher = _currentTeacher!.copyWith(
-          classIds: [..._currentTeacher!.classIds, classId],
-        );
-        await _teacherRepository.updateTeacher(
-          _currentTeacher!.teacherId!,
-          updatedTeacher,
-        );
-        _currentTeacher = updatedTeacher;
-      }
+      final updatedTeacher = _currentTeacher!.copyWith(
+        classIds: [..._currentTeacher!.classIds, classId],
+      );
+      await _teacherRepository.updateTeacher(
+        _currentTeacher!.teacherId!,
+        updatedTeacher,
+      );
+      _currentTeacher = updatedTeacher;
 
       // Reload classes
       await _loadClasses(_currentTeacher!.teacherId!);

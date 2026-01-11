@@ -34,6 +34,7 @@ class SessionModel {
   final int sessionNumber;
   final DateTime date;
   final String material;
+  final String? learningObjective; // Tujuan pembelajaran
   final String? teacherNotes;
   final List<Attendance> attendance;
   final DateTime createdAt;
@@ -44,6 +45,7 @@ class SessionModel {
     required this.sessionNumber,
     required this.date,
     required this.material,
+    this.learningObjective,
     this.teacherNotes,
     this.attendance = const [],
     required this.createdAt,
@@ -55,6 +57,7 @@ class SessionModel {
       'sessionNumber': sessionNumber,
       'date': Timestamp.fromDate(date),
       'material': material,
+      'learningObjective': learningObjective,
       'teacherNotes': teacherNotes,
       'attendance': attendance.map((a) => a.toMap()).toList(),
       'createdAt': Timestamp.fromDate(createdAt),
@@ -69,6 +72,7 @@ class SessionModel {
       sessionNumber: data['sessionNumber'] ?? 1,
       date: (data['date'] as Timestamp).toDate(),
       material: data['material'] ?? '',
+      learningObjective: data['learningObjective'],
       teacherNotes: data['teacherNotes'],
       attendance: (data['attendance'] as List? ?? [])
           .map((a) => Attendance.fromMap(a))
@@ -83,6 +87,7 @@ class SessionModel {
     int? sessionNumber,
     DateTime? date,
     String? material,
+    String? learningObjective,
     String? teacherNotes,
     List<Attendance>? attendance,
     DateTime? createdAt,
@@ -93,6 +98,7 @@ class SessionModel {
       sessionNumber: sessionNumber ?? this.sessionNumber,
       date: date ?? this.date,
       material: material ?? this.material,
+      learningObjective: learningObjective ?? this.learningObjective,
       teacherNotes: teacherNotes ?? this.teacherNotes,
       attendance: attendance ?? this.attendance,
       createdAt: createdAt ?? this.createdAt,

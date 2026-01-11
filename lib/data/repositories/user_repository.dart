@@ -345,34 +345,40 @@ class UserRepository {
           _firestore.collection(collectionName).doc(userModel.userId);
       batch.set(userRef, userModel.toMap());
 
-      // 2. Create role-specific document jika ada data
-      if (userModel.role == AppConstants.roleStudent && studentData != null) {
+      // 2. Create role-specific document
+      if (userModel.role == AppConstants.roleStudent) {
         final studentRef = _firestore
             .collection(AppConstants.studentsCollection)
             .doc(userModel.userId);
         batch.set(studentRef, {
-          ...studentData,
+          ...(studentData ?? {}),
           'userId': userModel.userId,
+          'nickname': studentData?['nickname'] ?? userModel.name.split(' ').first,
+          'fullName': studentData?['fullName'] ?? userModel.name,
+          'gradeLevel': studentData?['gradeLevel'] ?? 'SD 1-3',
           'createdAt': Timestamp.now(),
         });
-      } else if (userModel.role == AppConstants.roleParent &&
-          parentData != null) {
+      } else if (userModel.role == AppConstants.roleParent) {
         final parentRef = _firestore
             .collection(AppConstants.parentsCollection)
             .doc(userModel.userId);
         batch.set(parentRef, {
-          ...parentData,
+          ...(parentData ?? {}),
           'userId': userModel.userId,
+          'address': parentData?['address'] ?? '',
+          'studentIds': parentData?['studentIds'] ?? [],
           'createdAt': Timestamp.now(),
         });
-      } else if (userModel.role == AppConstants.roleTeacher &&
-          teacherData != null) {
+      } else if (userModel.role == AppConstants.roleTeacher) {
         final teacherRef = _firestore
             .collection(AppConstants.teachersCollection)
             .doc(userModel.userId);
         batch.set(teacherRef, {
-          ...teacherData,
+          ...(teacherData ?? {}),
           'userId': userModel.userId,
+          'specialization': teacherData?['specialization'] ?? 'Umum',
+          'yearsOfExperience': teacherData?['yearsOfExperience'] ?? 0,
+          'classIds': teacherData?['classIds'] ?? [],
           'createdAt': Timestamp.now(),
         });
       }
