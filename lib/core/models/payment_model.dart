@@ -6,6 +6,8 @@ class PaymentModel {
   final String parentId;
   final String classId;
   final int amount;
+  final String currency;
+  final String description; // Added description field
   final String status; // 'pending', 'paid', 'overdue'
   final int sessionsPaid;
   final DateTime dueDate;
@@ -18,6 +20,8 @@ class PaymentModel {
     required this.parentId,
     required this.classId,
     required this.amount,
+    this.currency = 'IDR',
+    required this.description,
     this.status = 'pending',
     this.sessionsPaid = 0,
     required this.dueDate,
@@ -31,6 +35,8 @@ class PaymentModel {
       'parentId': parentId,
       'classId': classId,
       'amount': amount,
+      'currency': currency,
+      'description': description,
       'status': status,
       'sessionsPaid': sessionsPaid,
       'dueDate': Timestamp.fromDate(dueDate),
@@ -47,6 +53,8 @@ class PaymentModel {
       parentId: data['parentId'] ?? '',
       classId: data['classId'] ?? '',
       amount: data['amount'] ?? 0,
+      currency: data['currency'] ?? 'IDR',
+      description: data['description'] ?? 'Pembayaran',
       status: data['status'] ?? 'pending',
       sessionsPaid: data['sessionsPaid'] ?? 0,
       dueDate: (data['dueDate'] as Timestamp).toDate(),
@@ -63,6 +71,8 @@ class PaymentModel {
     String? parentId,
     String? classId,
     int? amount,
+    String? currency,
+    String? description,
     String? status,
     int? sessionsPaid,
     DateTime? dueDate,
@@ -75,6 +85,8 @@ class PaymentModel {
       parentId: parentId ?? this.parentId,
       classId: classId ?? this.classId,
       amount: amount ?? this.amount,
+      currency: currency ?? this.currency,
+      description: description ?? this.description,
       status: status ?? this.status,
       sessionsPaid: sessionsPaid ?? this.sessionsPaid,
       dueDate: dueDate ?? this.dueDate,

@@ -18,7 +18,7 @@ class PaymentNotificationService {
     try {
       // Get all sessions for this class
       final sessions = await _sessionRepository.getSessionsByClassId(classId);
-      
+
       // Count completed sessions (where student was present)
       int completedSessions = 0;
       for (final session in sessions) {
@@ -34,7 +34,7 @@ class PaymentNotificationService {
       // Check if we've reached exactly 8 sessions
       if (completedSessions == 8) {
         final existingPayment = await _checkExistingPayment(studentId, classId);
-        
+
         if (existingPayment == null) {
           // Get class info for payment amount
           final classModel = await _classRepository.getClassById(classId);
@@ -55,11 +55,12 @@ class PaymentNotificationService {
     String classId,
   ) async {
     try {
-      final payments = await _paymentRepository.getPaymentsByStudentId(studentId);
-      
+      final payments =
+          await _paymentRepository.getPaymentsByStudentId(studentId);
+
       // Check if there's a pending payment for this class with 8 sessions
       for (final payment in payments) {
-        if (payment.classId == classId && 
+        if (payment.classId == classId &&
             payment.status == 'pending' &&
             payment.sessionsPaid == 8) {
           return payment;
@@ -81,12 +82,13 @@ class PaymentNotificationService {
     try {
       // Calculate amount (8 sessions * price per session)
       final amount = 8 * classModel.pricePerSession;
-      
+
       // Due date is 7 days from now
       final dueDate = DateTime.now().add(const Duration(days: 7));
 
       // Get parent ID from student
-      final studentDoc = await _firestore.collection('students').doc(studentId).get();
+      final studentDoc =
+          await _firestore.collection('students').doc(studentId).get();
       if (studentDoc.exists) {
         final parentId = studentDoc.data()?['parentId'];
         if (parentId != null) {
@@ -98,14 +100,16 @@ class PaymentNotificationService {
             status: 'pending',
             sessionsPaid: 8,
             dueDate: dueDate,
+            description: 'Tagihan 8 Pertemuan',
             notificationSent: false,
           );
 
           await _paymentRepository.createPayment(payment);
-          
+
           // You can also send push notification here using Firebase Cloud Messaging
           // For now, we'll just create the payment record
-          print('Payment notification created for student $studentId after 8 sessions');
+          print(
+              'Payment notification created for student $studentId after 8 sessions');
         }
       }
     } catch (e) {
@@ -119,12 +123,13 @@ class PaymentNotificationService {
     try {
       // Get all classes
       final classesSnapshot = await _firestore.collection('classes').get();
-      
+
       for (final classDoc in classesSnapshot.docs) {
         final classId = classDoc.id;
         final classData = classDoc.data();
-        final studentIds = (classData['studentIds'] as List<dynamic>?)?.cast<String>() ?? [];
-        
+        final studentIds =
+            (classData['studentIds'] as List<dynamic>?)?.cast<String>() ?? [];
+
         for (final studentId in studentIds) {
           await checkAndNotifyPayment(studentId, classId);
         }

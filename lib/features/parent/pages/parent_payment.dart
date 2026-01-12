@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../../core/utils/colors.dart';
 import '../../../data/repositories/payment_repository.dart';
 import '../../../data/repositories/parent_repository.dart';
@@ -11,7 +10,6 @@ import '../../../core/models/payment_model.dart';
 import '../../../core/models/student_model.dart';
 import '../../../core/models/class_model.dart';
 import '../widgets/parent_drawer.dart';
-import '../widgets/parent_bottom_nav.dart';
 
 class PembayaranOrangtua extends StatefulWidget {
   const PembayaranOrangtua({super.key});
@@ -114,7 +112,8 @@ class _PembayaranOrangtuaState extends State<PembayaranOrangtua> {
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(Icons.payment, size: 64, color: Colors.grey.shade400),
+                            Icon(Icons.payment,
+                                size: 64, color: Colors.grey.shade400),
                             const SizedBox(height: 16),
                             Text(
                               'Tidak ada tagihan aktif',
@@ -173,7 +172,8 @@ class _PembayaranOrangtuaState extends State<PembayaranOrangtua> {
 
   Future<Map<String, dynamic>> _getPackageInfo(PaymentModel payment) async {
     try {
-      final student = await _studentRepository.getStudentById(payment.studentId);
+      final student =
+          await _studentRepository.getStudentById(payment.studentId);
       final classModel = await _classRepository.getClassById(payment.classId);
 
       return {
@@ -472,7 +472,8 @@ class _PembayaranOrangtuaState extends State<PembayaranOrangtua> {
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
-                      color: isSelected ? AppColors.primary : AppColors.textDark,
+                      color:
+                          isSelected ? AppColors.primary : AppColors.textDark,
                     ),
                   ),
                   const SizedBox(height: 4),

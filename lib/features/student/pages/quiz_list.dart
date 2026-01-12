@@ -6,6 +6,7 @@ import '../../../data/repositories/quiz_repository.dart';
 import '../../../core/models/quiz_model.dart';
 import '../widgets/student_drawer.dart';
 import '../widgets/student_bottom_nav.dart';
+import 'quiz_play.dart';
 
 class QuizListPage extends StatefulWidget {
   const QuizListPage({super.key});
@@ -268,25 +269,25 @@ class _QuizListPageState extends State<QuizListPage> {
               width: double.infinity,
               child: ElevatedButton.icon(
                 onPressed: () {
-                  // TODO: Navigate to quiz detail/answer page
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(quiz.isCompleted
-                          ? 'Lihat ulang: ${quiz.title}'
-                          : 'Mulai: ${quiz.title}'),
+                  // Navigate to quiz play demo
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => QuizPlayPage(
+                        quizId: quiz.quizId ?? 'demo',
+                        quizTitle: quiz.title,
+                      ),
                     ),
                   );
                 },
-                icon: Icon(quiz.isCompleted
-                    ? Icons.visibility
-                    : Icons.play_arrow),
+                icon: Icon(
+                    quiz.isCompleted ? Icons.visibility : Icons.play_arrow),
                 label: Text(
                   quiz.isCompleted ? 'Lihat Ulang' : 'Mulai Kuis',
                 ),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: quiz.isCompleted
-                      ? Colors.blue
-                      : AppColors.primary,
+                  backgroundColor:
+                      quiz.isCompleted ? Colors.blue : AppColors.primary,
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 12),
                 ),

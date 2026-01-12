@@ -39,7 +39,7 @@ class _BerandaOrangtuaState extends State<BerandaOrangtua> {
 
   Future<void> _loadParentId() async {
     if (currentUserId == null) return;
-    
+
     try {
       // Get parent document by userId
       final query = await FirebaseFirestore.instance
@@ -47,7 +47,7 @@ class _BerandaOrangtuaState extends State<BerandaOrangtua> {
           .where('userId', isEqualTo: currentUserId)
           .limit(1)
           .get();
-      
+
       if (query.docs.isNotEmpty) {
         setState(() {
           _parentId = query.docs.first.id;
@@ -94,7 +94,7 @@ class _BerandaOrangtuaState extends State<BerandaOrangtua> {
             : null,
         builder: (context, userSnapshot) {
           final userName = userSnapshot.data?.get('name') ?? 'Orang Tua';
-          
+
           return SingleChildScrollView(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -136,15 +136,42 @@ class _BerandaOrangtuaState extends State<BerandaOrangtua> {
                 const SizedBox(height: 24),
 
                 // Data Anak
-                const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 24),
-                  child: Text(
-                    'Anak Saya',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.textDark,
-                    ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        'Anak Saya',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.textDark,
+                        ),
+                      ),
+                      GestureDetector(
+                        onTap: () => _showAddChildDialog(context),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 10, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: AppColors.primary,
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Row(
+                            children: const [
+                              Icon(Icons.add, color: Colors.white, size: 14),
+                              SizedBox(width: 4),
+                              Text('Tambah',
+                                  style: TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 11)),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
 
@@ -153,7 +180,8 @@ class _BerandaOrangtuaState extends State<BerandaOrangtua> {
                 // Children List - Real-time
                 if (_parentId != null)
                   StreamBuilder<List<StudentModel>>(
-                    stream: _studentRepository.streamStudentsByParentId(_parentId!),
+                    stream:
+                        _studentRepository.streamStudentsByParentId(_parentId!),
                     builder: (context, snapshot) {
                       if (snapshot.connectionState == ConnectionState.waiting) {
                         return const Padding(
@@ -260,18 +288,25 @@ class _BerandaOrangtuaState extends State<BerandaOrangtua> {
                 // Academic Progress - Real-time from classes
                 if (_parentId != null)
                   StreamBuilder<List<StudentModel>>(
-                    stream: _studentRepository.streamStudentsByParentId(_parentId!),
+                    stream:
+                        _studentRepository.streamStudentsByParentId(_parentId!),
                     builder: (context, studentsSnapshot) {
-                      if (!studentsSnapshot.hasData || studentsSnapshot.data!.isEmpty) {
+                      if (!studentsSnapshot.hasData ||
+                          studentsSnapshot.data!.isEmpty) {
                         return const SizedBox.shrink();
                       }
 
-                      final studentIds = studentsSnapshot.data!.map((s) => s.studentId).whereType<String>().toList();
-                      
+                      final studentIds = studentsSnapshot.data!
+                          .map((s) => s.studentId)
+                          .whereType<String>()
+                          .toList();
+
                       return FutureBuilder<List<ClassModel>>(
                         future: Future.wait(
-                          studentIds.map((id) => _classRepository.getClassesByStudentId(id)),
-                        ).then((lists) => lists.expand((list) => list).toList()),
+                          studentIds.map((id) =>
+                              _classRepository.getClassesByStudentId(id)),
+                        ).then(
+                            (lists) => lists.expand((list) => list).toList()),
                         builder: (context, classesSnapshot) {
                           if (!classesSnapshot.hasData) {
                             return const Padding(
@@ -281,7 +316,7 @@ class _BerandaOrangtuaState extends State<BerandaOrangtua> {
                           }
 
                           final classes = classesSnapshot.data!;
-                          
+
                           if (classes.isEmpty) {
                             return const Padding(
                               padding: EdgeInsets.symmetric(horizontal: 24),
@@ -294,11 +329,12 @@ class _BerandaOrangtuaState extends State<BerandaOrangtua> {
                             future: _getAcademicProgress(classes, studentIds),
                             builder: (context, progressSnapshot) {
                               final progressList = progressSnapshot.data ?? [];
-                              
+
                               return ListView.builder(
                                 shrinkWrap: true,
                                 physics: const NeverScrollableScrollPhysics(),
-                                padding: const EdgeInsets.symmetric(horizontal: 24),
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 24),
                                 itemCount: progressList.length,
                                 itemBuilder: (context, index) {
                                   final progress = progressList[index];
@@ -385,12 +421,13 @@ class _BerandaOrangtuaState extends State<BerandaOrangtua> {
 
     for (final classModel in classes) {
       try {
-        final sessions = await _sessionRepository.getSessionsByClassId(classModel.classId!);
-        
+        final sessions =
+            await _sessionRepository.getSessionsByClassId(classModel.classId!);
+
         // Calculate attendance for students in this class
         int totalSessions = sessions.length;
         int attendedSessions = 0;
-        
+
         for (final session in sessions) {
           for (final attendance in session.attendance) {
             if (studentIds.contains(attendance.studentId) &&
@@ -406,7 +443,8 @@ class _BerandaOrangtuaState extends State<BerandaOrangtua> {
             : 0;
 
         // Calculate average (simplified - you might want to get actual grades from a separate collection)
-        final averageScore = 75 + (attendancePercentage ~/ 10); // Simplified calculation
+        final averageScore =
+            75 + (attendancePercentage ~/ 10); // Simplified calculation
         final completedTasks = (totalSessions * 0.8).round(); // Simplified
 
         progressList.add({
@@ -428,9 +466,11 @@ class _BerandaOrangtuaState extends State<BerandaOrangtua> {
     final subjectLower = subject.toLowerCase();
     if (subjectLower.contains('matematika') || subjectLower.contains('math')) {
       return Colors.blue;
-    } else if (subjectLower.contains('bahasa') || subjectLower.contains('english')) {
+    } else if (subjectLower.contains('bahasa') ||
+        subjectLower.contains('english')) {
       return Colors.green;
-    } else if (subjectLower.contains('fisika') || subjectLower.contains('physics')) {
+    } else if (subjectLower.contains('fisika') ||
+        subjectLower.contains('physics')) {
       return Colors.orange;
     } else {
       return Colors.purple;
@@ -633,7 +673,7 @@ class _BerandaOrangtuaState extends State<BerandaOrangtua> {
     IconData icon;
     Color color;
     String title;
-    
+
     if (session.teacherNotes != null && session.teacherNotes!.isNotEmpty) {
       icon = Icons.note;
       color = Colors.blue;
@@ -647,7 +687,7 @@ class _BerandaOrangtuaState extends State<BerandaOrangtua> {
     final now = DateTime.now();
     final difference = now.difference(session.date);
     String timeAgo;
-    
+
     if (difference.inDays > 0) {
       timeAgo = '${difference.inDays} hari yang lalu';
     } else if (difference.inHours > 0) {
@@ -710,5 +750,258 @@ class _BerandaOrangtuaState extends State<BerandaOrangtua> {
         ],
       ),
     );
+  }
+
+  void _showAddChildDialog(BuildContext context) {
+    final formKey = GlobalKey<FormState>();
+    String fullName = '';
+    String nickname = '';
+
+    // Default values
+    String selectedLevel = 'SD';
+    String selectedClassNumber = '1';
+    String? selectedClassId;
+
+    // Helper to get category for class filtering
+    String getGradeCategory(String level, String number) {
+      if (level == 'TK') return 'TK';
+      if (level == 'SMP') return 'SMP';
+      if (level == 'SMA') return 'SMA';
+
+      // For SD
+      int n = int.tryParse(number) ?? 1;
+      if (n <= 3) return 'SD 1-3';
+      return 'SD 4-6';
+    }
+
+    showDialog(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setState) {
+          final gradeCategory =
+              getGradeCategory(selectedLevel, selectedClassNumber);
+
+          return AlertDialog(
+            title: const Text('Tambah Anak'),
+            content: SingleChildScrollView(
+              child: Form(
+                key: formKey,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    TextFormField(
+                      decoration: InputDecoration(
+                        labelText: 'Nama Lengkap',
+                        border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8)),
+                      ),
+                      onChanged: (v) => fullName = v,
+                      validator: (v) =>
+                          v?.isEmpty ?? true ? 'Nama harus diisi' : null,
+                    ),
+                    const SizedBox(height: 12),
+                    TextFormField(
+                      decoration: InputDecoration(
+                        labelText: 'Nama Panggilan',
+                        border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8)),
+                      ),
+                      onChanged: (v) => nickname = v,
+                    ),
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        Expanded(
+                          flex: 2,
+                          child: DropdownButtonFormField<String>(
+                            value: selectedLevel,
+                            items: ['TK', 'SD', 'SMP']
+                                .map((g) =>
+                                    DropdownMenuItem(value: g, child: Text(g)))
+                                .toList(),
+                            onChanged: (v) {
+                              if (v != null) {
+                                setState(() {
+                                  selectedLevel = v;
+                                  if (v == 'SMP') {
+                                    // If moving to SMP, default to 7 if current is not in 7-9 range
+                                    int current =
+                                        int.tryParse(selectedClassNumber) ?? 1;
+                                    if (current < 7) selectedClassNumber = '7';
+                                  } else if (v == 'SD') {
+                                    // If moving to SD, default to 1 if current is > 6
+                                    int current =
+                                        int.tryParse(selectedClassNumber) ?? 7;
+                                    if (current > 6) selectedClassNumber = '1';
+                                  }
+                                });
+                              }
+                            },
+                            decoration: InputDecoration(
+                              labelText: 'Jenjang',
+                              border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8)),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          flex: 1,
+                          child: DropdownButtonFormField<String>(
+                            value: selectedClassNumber,
+                            items: ['1', '2', '3', '4', '5', '6', '7', '8', '9']
+                                .map((g) {
+                              // Determine if this item should be enabled based on level
+                              // BUT user requested bidirectional: selecting 7-9 switches to SMP
+                              return DropdownMenuItem(value: g, child: Text(g));
+                            }).toList(),
+                            onChanged: selectedLevel == 'TK'
+                                ? null
+                                : (v) {
+                                    if (v != null) {
+                                      setState(() {
+                                        selectedClassNumber = v;
+                                        int n = int.parse(v);
+                                        // Auto-switch Level based on Class Number
+                                        if (n >= 7 && n <= 9) {
+                                          selectedLevel = 'SMP';
+                                        } else if (n >= 1 && n <= 6) {
+                                          // If current level is not SD (e.g. was SMP), switch to SD
+                                          // Note: This logic assumes SD is 1-6.
+                                          // If we support other levels in future we might need more checks
+                                          selectedLevel = 'SD';
+                                        }
+                                      });
+                                    }
+                                  },
+                            decoration: InputDecoration(
+                              labelText: 'Kelas',
+                              border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8)),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    StreamBuilder<List<ClassModel>>(
+                      stream: FirebaseFirestore.instance
+                          .collection('classes')
+                          .where('gradeLevel', isEqualTo: gradeCategory)
+                          .snapshots()
+                          .map((snapshot) => snapshot.docs
+                              .map((doc) => ClassModel.fromJson(
+                                  {...doc.data(), 'classId': doc.id}))
+                              .toList()),
+                      builder: (context, snapshot) {
+                        final classes = snapshot.data ?? [];
+                        return DropdownButtonFormField<String>(
+                          hint: const Text('Pilih Kelas (Opsional)'),
+                          value: selectedClassId,
+                          items: classes
+                              .map((c) => DropdownMenuItem(
+                                  value: c.classId,
+                                  child:
+                                      Text('${c.className} - ${c.gradeLevel}')))
+                              .toList(),
+                          onChanged: (v) => selectedClassId = v,
+                          decoration: InputDecoration(
+                            border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8)),
+                          ),
+                        );
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Batal'),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  if (formKey.currentState!.validate()) {
+                    final fullGrade = selectedLevel == 'TK'
+                        ? 'TK'
+                        : '$selectedLevel - Kelas $selectedClassNumber';
+
+                    _createChildAccount(
+                            fullName: fullName,
+                            nickname: nickname,
+                            gradeLevel: fullGrade,
+                            classId: selectedClassId)
+                        .then((_) => Navigator.pop(context));
+                  }
+                },
+                child: const Text('Simpan'),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+
+  Future<void> _createChildAccount({
+    required String fullName,
+    required String nickname,
+    required String gradeLevel,
+    String? classId,
+  }) async {
+    if (_parentId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Error: Parent ID not found')),
+      );
+      return;
+    }
+
+    try {
+      final studentId =
+          FirebaseFirestore.instance.collection('students').doc().id;
+
+      final student = StudentModel(
+        studentId: studentId,
+        userId:
+            studentId, // Use studentId as placeholder userId for non-auth students
+        parentId: _parentId!,
+        fullName: fullName,
+        nickname: nickname.isNotEmpty ? nickname : fullName.split(' ').first,
+        gradeLevel: gradeLevel,
+        createdAt: DateTime.now(),
+        // Default values for others
+        learningLevel: 1,
+        totalPoints: 0,
+        badges: [],
+      );
+
+      // Save to students collection
+      await FirebaseFirestore.instance
+          .collection('students')
+          .doc(studentId)
+          .set(student.toMap());
+
+      // If class is selected, add student to class
+      if (classId != null) {
+        await FirebaseFirestore.instance
+            .collection('classes')
+            .doc(classId)
+            .update({
+          'studentIds': FieldValue.arrayUnion([studentId])
+        });
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            content: Text('Data anak berhasil ditambahkan'),
+            backgroundColor: Colors.green),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error membuat data anak: $e')),
+      );
+    }
   }
 }

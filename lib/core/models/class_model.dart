@@ -88,4 +88,22 @@ class ClassModel {
       createdAt: createdAt ?? this.createdAt,
     );
   }
+
+  factory ClassModel.fromJson(Map<String, dynamic> json) {
+    return ClassModel(
+      classId: json['classId'],
+      className: json['className'] ?? '',
+      gradeLevel: json['gradeLevel'] ?? 'SD 1-3',
+      type: json['type'] ?? 'regular',
+      teacherId: json['teacherId'] ?? '',
+      studentIds: List<String>.from(json['studentIds'] ?? []),
+      maxStudents: json['maxStudents'] ?? 6,
+      pricePerSession: json['pricePerSession'] ?? 15000,
+      totalSessions: json['totalSessions'] ?? 8,
+      schedule: json['schedule'] ?? '',
+      createdAt: json['createdAt'] is Timestamp
+          ? (json['createdAt'] as Timestamp).toDate()
+          : DateTime.now(),
+    );
+  }
 }

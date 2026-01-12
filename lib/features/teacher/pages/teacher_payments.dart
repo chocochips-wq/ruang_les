@@ -67,8 +67,7 @@ class _PengajarPembayaranState extends State<PengajarPembayaran> {
                                         : Colors.white,
                                     borderRadius: BorderRadius.circular(6),
                                     border: Border.all(
-                                        color: AppColors.primary,
-                                        width: 1),
+                                        color: AppColors.primary, width: 1),
                                   ),
                                   child: Text(
                                     _getFilterLabel(filter),
@@ -109,9 +108,8 @@ class _PengajarPembayaranState extends State<PengajarPembayaran> {
 
         // Apply filter
         if (_selectedFilter != 'all') {
-          payments = payments
-              .where((p) => p.status == _selectedFilter)
-              .toList();
+          payments =
+              payments.where((p) => p.status == _selectedFilter).toList();
         }
 
         if (payments.isEmpty) {
@@ -222,8 +220,7 @@ class _PengajarPembayaranState extends State<PengajarPembayaran> {
               Row(
                 children: [
                   GestureDetector(
-                    onTap: () =>
-                        _showEditPaymentDialog(context, payment),
+                    onTap: () => _showEditPaymentDialog(context, payment),
                     child: Container(
                       padding: const EdgeInsets.symmetric(
                           horizontal: 8, vertical: 4),
@@ -284,8 +281,8 @@ class _PengajarPembayaranState extends State<PengajarPembayaran> {
               children: [
                 // Select Class
                 StreamBuilder<List<ClassModel>>(
-                  stream: _classRepository
-                      .streamClassesByTeacherId(_teacherId!),
+                  stream:
+                      _classRepository.streamClassesByTeacherId(_teacherId!),
                   builder: (context, snapshot) {
                     final classes = snapshot.data ?? [];
                     return DropdownButtonFormField<String>(
@@ -410,11 +407,13 @@ class _PengajarPembayaranState extends State<PengajarPembayaran> {
                 try {
                   await _paymentRepository.createPayment(
                     PaymentModel(
-                      paymentId: DateTime.now().millisecondsSinceEpoch.toString(),
+                      paymentId:
+                          DateTime.now().millisecondsSinceEpoch.toString(),
                       studentId: selectedStudentId!,
                       parentId: selectedParentId!,
                       classId: selectedClassId!,
                       amount: amount,
+                      description: 'Pembayaran SPP',
                       dueDate: dueDate,
                     ),
                   );
@@ -436,8 +435,7 @@ class _PengajarPembayaranState extends State<PengajarPembayaran> {
     );
   }
 
-  void _showEditPaymentDialog(
-      BuildContext context, PaymentModel payment) {
+  void _showEditPaymentDialog(BuildContext context, PaymentModel payment) {
     final formKey = GlobalKey<FormState>();
     late int amount = payment.amount;
     late DateTime dueDate = payment.dueDate;
@@ -528,7 +526,8 @@ class _PengajarPembayaranState extends State<PengajarPembayaran> {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Hapus Pembayaran'),
-        content: const Text('Apakah Anda yakin ingin menghapus pembayaran ini?'),
+        content:
+            const Text('Apakah Anda yakin ingin menghapus pembayaran ini?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
