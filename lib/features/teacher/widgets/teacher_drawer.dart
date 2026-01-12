@@ -103,7 +103,7 @@ class TeacherDrawer extends StatelessWidget {
                 _buildMenuItem(
                   context,
                   icon: Icons.group,
-                  title: 'Kelola Murid',
+                  title: 'Kelola Akun',
                   index: 4,
                   route: AppRoutes.pengajarLaporanAnak,
                 ),

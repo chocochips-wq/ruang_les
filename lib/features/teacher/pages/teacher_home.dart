@@ -15,6 +15,7 @@ class HalamanBeranda extends StatefulWidget {
 
 class _HalamanBerandaState extends State<HalamanBeranda> {
   int _selectedMenuIndex = 0;
+  String _selectedPeriod = 'Hari Ini'; // 'Hari Ini', 'Minggu Ini', 'Bulan Ini'
 
   @override
   void initState() {
@@ -97,9 +98,8 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
 
                             const SizedBox(height: 24),
 
-                            // Jadwal Mengajar Hari Ini
-                            // Logic: Filter classes that contain today's day name in schedule string
-                            _buildTodaySchedule(teacherProvider.classes),
+                            // Jadwal Mengajar dengan Filter Periode
+                            _buildScheduleSection(teacherProvider.classes),
 
                             const SizedBox(height: 24),
 
@@ -169,8 +169,7 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
     );
   }
 
-  Widget _buildTodaySchedule(List<ClassModel> classes) {
-    // Determine today's day name in Indonesian
+  Widget _buildScheduleSection(List<ClassModel> classes) {
     final now = DateTime.now();
     final dayNames = [
       'Senin',
@@ -181,11 +180,31 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
       'Sabtu',
       'Minggu'
     ];
-    final todayName = dayNames[now.weekday - 1];
 
-    // Filter classes
-    final todayClasses =
-        classes.where((c) => c.schedule.contains(todayName)).toList();
+    // Filter classes based on selected period
+    List<ClassModel> filteredClasses = [];
+    String periodTitle = 'Jadwal';
+
+    if (_selectedPeriod == 'Hari Ini') {
+      final todayName = dayNames[now.weekday - 1];
+      filteredClasses = classes.where((c) => c.schedule.contains(todayName)).toList();
+      periodTitle = 'Jadwal Hari Ini ($todayName)';
+    } else if (_selectedPeriod == 'Minggu Ini') {
+      // Get all days in current week
+      final startOfWeek = now.subtract(Duration(days: now.weekday - 1));
+      final weekDays = List.generate(7, (i) {
+        final day = startOfWeek.add(Duration(days: i));
+        return dayNames[day.weekday - 1];
+      });
+      filteredClasses = classes.where((c) {
+        return weekDays.any((day) => c.schedule.contains(day));
+      }).toList();
+      periodTitle = 'Jadwal Minggu Ini';
+    } else if (_selectedPeriod == 'Bulan Ini') {
+      // Show all classes (since schedule is recurring weekly)
+      filteredClasses = classes;
+      periodTitle = 'Jadwal Bulan Ini';
+    }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -193,27 +212,81 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(
-              'Jadwal Hari Ini ($todayName)',
-              style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: AppColors.textDark,
-              ),
-            ),
-            if (todayClasses.isEmpty)
-              Text(
-                'Tidak ada jadwal',
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.grey.shade500,
-                  fontStyle: FontStyle.italic,
+            Expanded(
+              child: Text(
+                periodTitle,
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.textDark,
                 ),
               ),
+            ),
+            // Dropdown untuk memilih periode
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              decoration: BoxDecoration(
+                color: AppColors.primary.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: AppColors.primary.withOpacity(0.3)),
+              ),
+              child: DropdownButton<String>(
+                value: _selectedPeriod,
+                underline: const SizedBox(),
+                icon: const Icon(Icons.arrow_drop_down, color: AppColors.primary),
+                style: const TextStyle(
+                  color: AppColors.primary,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 14,
+                ),
+                items: const [
+                  DropdownMenuItem(
+                    value: 'Hari Ini',
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.today, size: 18, color: AppColors.primary),
+                        SizedBox(width: 4),
+                        Text('Hari Ini'),
+                      ],
+                    ),
+                  ),
+                  DropdownMenuItem(
+                    value: 'Minggu Ini',
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.date_range, size: 18, color: AppColors.primary),
+                        SizedBox(width: 4),
+                        Text('Minggu Ini'),
+                      ],
+                    ),
+                  ),
+                  DropdownMenuItem(
+                    value: 'Bulan Ini',
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.calendar_month, size: 18, color: AppColors.primary),
+                        SizedBox(width: 4),
+                        Text('Bulan Ini'),
+                      ],
+                    ),
+                  ),
+                ],
+                onChanged: (value) {
+                  if (value != null) {
+                    setState(() {
+                      _selectedPeriod = value;
+                    });
+                  }
+                },
+              ),
+            ),
           ],
         ),
         const SizedBox(height: 12),
-        if (todayClasses.isNotEmpty)
+        if (filteredClasses.isNotEmpty)
           Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
@@ -222,7 +295,7 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
               border: Border.all(color: Colors.grey.shade300),
             ),
             child: Column(
-              children: todayClasses.asMap().entries.map((entry) {
+              children: filteredClasses.asMap().entries.map((entry) {
                 final index = entry.key;
                 final c = entry.value;
                 return Column(
@@ -248,8 +321,23 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
               borderRadius: BorderRadius.circular(12),
               border: Border.all(color: Colors.grey.shade200),
             ),
-            child: const Center(
-              child: Text('Libur mengajar! Istirahat yang cukup ☕'),
+            child: Center(
+              child: Column(
+                children: [
+                  Icon(Icons.event_busy, size: 48, color: Colors.grey.shade400),
+                  const SizedBox(height: 8),
+                  Text(
+                    _selectedPeriod == 'Hari Ini'
+                        ? 'Libur mengajar! Istirahat yang cukup ☕'
+                        : 'Tidak ada jadwal untuk periode ini',
+                    style: TextStyle(
+                      color: Colors.grey.shade600,
+                      fontSize: 14,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+              ),
             ),
           ),
       ],

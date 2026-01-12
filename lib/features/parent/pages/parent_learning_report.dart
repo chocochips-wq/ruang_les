@@ -11,6 +11,7 @@ import '../../../core/models/class_model.dart';
 import '../../../core/models/session_model.dart';
 import '../widgets/parent_drawer.dart';
 import '../widgets/parent_bottom_nav.dart';
+import 'parent_session_detail.dart';
 
 class LaporanBelajarOrangtua extends StatefulWidget {
   const LaporanBelajarOrangtua({super.key});
@@ -153,6 +154,19 @@ class _LaporanBelajarOrangtuaState extends State<LaporanBelajarOrangtua> {
 
                             const SizedBox(height: 16),
 
+                            // Daftar Sesi
+                            FutureBuilder<List<SessionModel>>(
+                              future: _getAllSessions(_selectedStudent!),
+                              builder: (context, sessionsSnapshot) {
+                                if (!sessionsSnapshot.hasData) {
+                                  return const Center(child: CircularProgressIndicator());
+                                }
+                                return _buildSessionsList(sessionsSnapshot.data!);
+                              },
+                            ),
+
+                            const SizedBox(height: 16),
+
                             // Catatan Pengajar - Real-time from sessions
                             FutureBuilder<List<SessionModel>>(
                               future: _getTeacherNotes(_selectedStudent!),
@@ -277,6 +291,25 @@ class _LaporanBelajarOrangtuaState extends State<LaporanBelajarOrangtua> {
       return performanceList;
     } catch (e) {
       print('Error getting performance data: $e');
+      return [];
+    }
+  }
+
+  Future<List<SessionModel>> _getAllSessions(StudentModel student) async {
+    try {
+      final classes = await _classRepository.getClassesByStudentId(student.studentId!);
+      final List<SessionModel> allSessions = [];
+
+      for (final classModel in classes) {
+        final sessions = await _sessionRepository.getSessionsByClassId(classModel.classId!);
+        allSessions.addAll(sessions);
+      }
+
+      // Sort by date, most recent first
+      allSessions.sort((a, b) => b.date.compareTo(a.date));
+      return allSessions;
+    } catch (e) {
+      print('Error getting all sessions: $e');
       return [];
     }
   }
@@ -736,6 +769,193 @@ class _LaporanBelajarOrangtuaState extends State<LaporanBelajarOrangtua> {
               ),
             ],
           ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSessionsList(List<SessionModel> sessions) {
+    if (sessions.isEmpty) {
+      return Container(
+        padding: const EdgeInsets.all(16),
+        decoration: _cardDecoration(),
+        child: const Center(
+          child: Text('Belum ada sesi pertemuan'),
+        ),
+      );
+    }
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: _cardDecoration(),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Row(
+            children: [
+              Icon(Icons.event, size: 20, color: AppColors.primary),
+              SizedBox(width: 8),
+              Text(
+                'Daftar Sesi Pertemuan',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.textDark,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          ...sessions.map((session) {
+            final attendance = session.attendance.firstWhere(
+              (a) => a.studentId == _selectedStudent!.studentId,
+              orElse: () => Attendance(studentId: '', status: 'absent'),
+            );
+            
+            Color statusColor;
+            IconData statusIcon;
+            String statusText;
+            
+            switch (attendance.status) {
+              case 'present':
+                statusColor = Colors.green;
+                statusIcon = Icons.check_circle;
+                statusText = 'Hadir';
+                break;
+              case 'excused':
+                statusColor = Colors.orange;
+                statusIcon = Icons.info;
+                statusText = 'Izin';
+                break;
+              default:
+                statusColor = Colors.red;
+                statusIcon = Icons.cancel;
+                statusText = 'Tidak Hadir';
+            }
+
+            return InkWell(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ParentSessionDetailPage(
+                      session: session,
+                      student: _selectedStudent!,
+                    ),
+                  ),
+                );
+              },
+              child: Container(
+                margin: const EdgeInsets.only(bottom: 12),
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.grey.shade300),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.05),
+                      blurRadius: 4,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 4,
+                      height: 60,
+                      decoration: BoxDecoration(
+                        color: statusColor,
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Text(
+                                'Sesi ${session.sessionNumber}',
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  color: AppColors.textDark,
+                                ),
+                              ),
+                              const Spacer(),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: statusColor.withOpacity(0.1),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(statusIcon, size: 14, color: statusColor),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      statusText,
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w600,
+                                        color: statusColor,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                          Row(
+                            children: [
+                              Icon(Icons.book, size: 14, color: Colors.grey.shade600),
+                              const SizedBox(width: 4),
+                              Expanded(
+                                child: Text(
+                                  session.material,
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.grey.shade600,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 4),
+                          Row(
+                            children: [
+                              Icon(Icons.calendar_today, size: 14, color: Colors.grey.shade600),
+                              const SizedBox(width: 4),
+                              Text(
+                                '${session.date.day} ${_getMonthName(session.date.month)} ${session.date.year}',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.grey.shade600,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Icon(
+                      Icons.arrow_forward_ios,
+                      size: 16,
+                      color: Colors.grey.shade400,
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }),
         ],
       ),
     );
