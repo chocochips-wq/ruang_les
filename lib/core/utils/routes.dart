@@ -121,10 +121,11 @@ class AppRoutes {
         return MaterialPageRoute(builder: (_) => const PengajarPembayaran());
 
       case pengajarPengaturan:
-        return MaterialPageRoute(builder: (_) => const PengajarPengaturan());
+        return MaterialPageRoute(builder: (_) => const TeacherSettings());
 
       case pengajarVerifikasi:
-        return MaterialPageRoute(builder: (_) => const TeacherVerificationPage());
+        return MaterialPageRoute(
+            builder: (_) => const TeacherVerificationPage());
 
       // ========== ROUTES MURID ==========
       case muridBeranda:
@@ -137,7 +138,7 @@ class AppRoutes {
         return MaterialPageRoute(builder: (_) => const ProfileMurid());
 
       case muridPengaturan:
-        return MaterialPageRoute(builder: (_) => const PengaturanMurid());
+        return MaterialPageRoute(builder: (_) => const StudentSettings());
 
       // ========== ROUTES ORANG TUA ==========
       case orangtuaBeranda:
