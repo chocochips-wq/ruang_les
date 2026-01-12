@@ -15,33 +15,79 @@ class _PengajarMateriState extends State<PengajarMateri> {
   int _selectedMenuIndex = 0;
 
   final List<Map<String, dynamic>> _materiList = [
+    // TK
     {
-      'mata_pelajaran': 'Matematika',
-      'jumlah': 5,
+      'mata_pelajaran': 'Calistung (TK)',
+      'jumlah': 0,
+      'icon': Icons.child_care,
+      'color': Colors.pink,
+      'deskripsi': 'Baca, Tulis, Hitung untuk TK',
+    },
+    // SD - Umum
+    {
+      'mata_pelajaran': 'Bahasa Indonesia (SD)',
+      'jumlah': 0,
+      'icon': Icons.menu_book,
+      'color': Colors.red,
+      'deskripsi': 'Membaca, Menulis, Tata Bahasa',
+    },
+    {
+      'mata_pelajaran': 'Matematika (SD)',
+      'jumlah': 0,
       'icon': Icons.calculate,
       'color': Colors.blue,
+      'deskripsi': 'Aritmatika, Geometri Dasar',
+    },
+    {
+      'mata_pelajaran': 'IPAS (SD)',
+      'jumlah': 0,
+      'icon': Icons.science,
+      'color': Colors.green,
+      'deskripsi': 'Ilmu Pengetahuan Alam & Sosial',
+    },
+    {
+      'mata_pelajaran': 'Pendidikan Pancasila (SD)',
+      'jumlah': 0,
+      'icon': Icons.flag,
+      'color': Colors.amber,
+      'deskripsi': 'Kewarganegaraan, Nilai Pancasila',
+    },
+    {
+      'mata_pelajaran': 'TKA (SD)',
+      'jumlah': 0,
+      'icon': Icons.star,
+      'color': Colors.purple,
+      'deskripsi': 'Tes Kemampuan Akademik',
+    },
+    {
+      'mata_pelajaran': 'English (SD)',
+      'jumlah': 0,
+      'icon': Icons.language,
+      'color': Colors.teal,
+      'deskripsi': 'Basic English for Elementary',
+    },
+    // SMP
+    {
+      'mata_pelajaran': 'Matematika (SMP)',
+      'jumlah': 0,
+      'icon': Icons.functions,
+      'color': Colors.indigo,
       'deskripsi': 'Aljabar, Geometri, Statistika',
     },
     {
-      'mata_pelajaran': 'IPA',
-      'jumlah': 3,
-      'icon': Icons.science,
-      'color': Colors.green,
-      'deskripsi': 'Biologi, Fisika, Kimia',
-    },
-    {
-      'mata_pelajaran': 'Bahasa Inggris',
-      'jumlah': 4,
-      'icon': Icons.language,
+      'mata_pelajaran': 'English (SMP)',
+      'jumlah': 0,
+      'icon': Icons.translate,
       'color': Colors.orange,
-      'deskripsi': 'Grammar, Vocabulary, Reading',
+      'deskripsi': 'Grammar, Reading, Writing',
     },
+    // Konsultasi PR
     {
-      'mata_pelajaran': 'Bahasa Indonesia',
-      'jumlah': 6,
-      'icon': Icons.book,
-      'color': Colors.purple,
-      'deskripsi': 'Tata Bahasa, Sastra, Menulis',
+      'mata_pelajaran': 'Konsultasi PR',
+      'jumlah': 0,
+      'icon': Icons.help_outline,
+      'color': Colors.brown,
+      'deskripsi': 'Semua pelajaran (Online/Offline)',
     },
   ];
 

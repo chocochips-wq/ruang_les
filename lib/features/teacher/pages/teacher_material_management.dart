@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../core/utils/colors.dart';
+import '../../general/services/file_upload_service.dart';
 
 class TeacherMaterialManagement extends StatefulWidget {
   final String mataPelajaran;
@@ -26,6 +27,11 @@ class _TeacherMaterialManagementState extends State<TeacherMaterialManagement> {
 
   final List<Map<String, dynamic>> _materiList = [];
   String? _selectedFileName;
+  String? _uploadedFileUrl;
+  String? _uploadedFileType;
+  int _uploadedFileSize = 0;
+  double _uploadProgress = 0.0;
+  final FileUploadService _uploadService = FileUploadService();
 
   @override
   void dispose() {
@@ -653,27 +659,6 @@ class _TeacherMaterialManagementState extends State<TeacherMaterialManagement> {
     );
   }
 
-  void _pilihFile() {
-    // Simulasi pemilihan file
-    setState(() {
-      _selectedFileName = 'Materi_Pembelajaran.pdf';
-    });
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: const Row(
-          children: [
-            Icon(Icons.check_circle, color: Colors.white),
-            SizedBox(width: 12),
-            Text('File berhasil dipilih'),
-          ],
-        ),
-        backgroundColor: Colors.green,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-      ),
-    );
-  }
-
   void _tambahMateri() {
     if (_formKey.currentState!.validate()) {
       if (_selectedFileName == null) {
@@ -851,5 +836,86 @@ class _TeacherMaterialManagementState extends State<TeacherMaterialManagement> {
         ],
       ),
     );
+  }
+
+  Future<void> _pilihFile() async {
+    try {
+      // Show loading dialog with progress
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (_) => StatefulBuilder(
+          builder: (context, setState) => AlertDialog(
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                CircularProgressIndicator(
+                  value: _uploadProgress > 0 ? _uploadProgress : null,
+                  color: widget.warna,
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  _uploadProgress > 0
+                      ? 'Uploading ${(_uploadProgress * 100).toInt()}%'
+                      : 'Memilih file...',
+                  style: const TextStyle(fontSize: 14),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+
+      // Pick and upload document
+      final downloadUrl = await _uploadService.pickAndUploadDocument(
+        folder: 'materials/documents',
+        onProgress: (progress) {
+          if (mounted) {
+            setState(() => _uploadProgress = progress);
+          }
+        },
+      );
+
+      // Close loading
+      if (mounted) Navigator.pop(context);
+
+      if (downloadUrl != null) {
+        setState(() {
+          _uploadedFileUrl = downloadUrl;
+          _selectedFileName = 'Dokumen berhasil diupload';
+          _uploadedFileType = _uploadService.getFileExtension(downloadUrl);
+          _uploadProgress = 0.0;
+        });
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: const Text('File berhasil diupload!'),
+              backgroundColor: widget.warna,
+            ),
+          );
+        }
+      } else {
+        // User cancelled
+        setState(() {
+          _uploadProgress = 0.0;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        Navigator.pop(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Upload gagal: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+      setState(() {
+        _uploadProgress = 0.0;
+      });
+    }
   }
 }

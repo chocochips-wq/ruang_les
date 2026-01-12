@@ -7,6 +7,11 @@ class TeacherModel {
   final String specialization; // 'TK', 'SD', 'SMP', 'Umum'
   final String? educationBackground;
   final int yearsOfExperience;
+  final String? gender; // 'Laki-laki', 'Perempuan'
+  final DateTime? birthDate;
+  final String? phone;
+  final String? address;
+  final String? profilePictureUrl;
   final DateTime createdAt;
 
   TeacherModel({
@@ -16,6 +21,11 @@ class TeacherModel {
     required this.specialization,
     this.educationBackground,
     this.yearsOfExperience = 0,
+    this.gender,
+    this.birthDate,
+    this.phone,
+    this.address,
+    this.profilePictureUrl,
     required this.createdAt,
   });
 
@@ -26,6 +36,11 @@ class TeacherModel {
       'specialization': specialization,
       'educationBackground': educationBackground,
       'yearsOfExperience': yearsOfExperience,
+      'gender': gender,
+      'birthDate': birthDate != null ? Timestamp.fromDate(birthDate!) : null,
+      'phone': phone,
+      'address': address,
+      'profilePictureUrl': profilePictureUrl,
       'createdAt': Timestamp.fromDate(createdAt),
     };
   }
@@ -39,6 +54,13 @@ class TeacherModel {
       specialization: data['specialization'] ?? 'Umum',
       educationBackground: data['educationBackground'],
       yearsOfExperience: data['yearsOfExperience'] ?? 0,
+      gender: data['gender'],
+      birthDate: data['birthDate'] != null
+          ? (data['birthDate'] as Timestamp).toDate()
+          : null,
+      phone: data['phone'],
+      address: data['address'],
+      profilePictureUrl: data['profilePictureUrl'],
       createdAt: (data['createdAt'] as Timestamp).toDate(),
     );
   }
@@ -50,6 +72,11 @@ class TeacherModel {
     String? specialization,
     String? educationBackground,
     int? yearsOfExperience,
+    String? gender,
+    DateTime? birthDate,
+    String? phone,
+    String? address,
+    String? profilePictureUrl,
     DateTime? createdAt,
   }) {
     return TeacherModel(
@@ -59,6 +86,11 @@ class TeacherModel {
       specialization: specialization ?? this.specialization,
       educationBackground: educationBackground ?? this.educationBackground,
       yearsOfExperience: yearsOfExperience ?? this.yearsOfExperience,
+      gender: gender ?? this.gender,
+      birthDate: birthDate ?? this.birthDate,
+      phone: phone ?? this.phone,
+      address: address ?? this.address,
+      profilePictureUrl: profilePictureUrl ?? this.profilePictureUrl,
       createdAt: createdAt ?? this.createdAt,
     );
   }

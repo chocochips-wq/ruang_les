@@ -117,7 +117,8 @@ class _HalamanKelolaAkunState extends State<HalamanKelolaAkun> {
               color: AppColors.primary.withOpacity(0.2),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: const Icon(Icons.account_circle, color: AppColors.primary, size: 32),
+            child: const Icon(Icons.account_circle,
+                color: AppColors.primary, size: 32),
           ),
           const SizedBox(width: 16),
           Expanded(
@@ -222,7 +223,9 @@ class _HalamanKelolaAkunState extends State<HalamanKelolaAkun> {
       final matchesSearch = user.name
               .toLowerCase()
               .contains(_searchController.text.toLowerCase()) ||
-          user.email.toLowerCase().contains(_searchController.text.toLowerCase());
+          user.email
+              .toLowerCase()
+              .contains(_searchController.text.toLowerCase());
       final matchesFilter = _filterRole == 'Semua' || user.role == _filterRole;
       return matchesSearch && matchesFilter;
     }).toList();
@@ -286,7 +289,8 @@ class _HalamanKelolaAkunState extends State<HalamanKelolaAkun> {
         leading: CircleAvatar(
           backgroundColor: roleColor.withOpacity(0.1),
           radius: 28,
-          backgroundImage: user.photoUrl != null ? NetworkImage(user.photoUrl!) : null,
+          backgroundImage:
+              user.photoUrl != null ? NetworkImage(user.photoUrl!) : null,
           child: user.photoUrl == null
               ? Icon(roleIcon, color: roleColor, size: 28)
               : null,
@@ -311,7 +315,8 @@ class _HalamanKelolaAkunState extends State<HalamanKelolaAkun> {
             Row(
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                   decoration: BoxDecoration(
                     color: roleColor.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(4),
@@ -327,7 +332,8 @@ class _HalamanKelolaAkunState extends State<HalamanKelolaAkun> {
                 ),
                 const SizedBox(width: 8),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                   decoration: BoxDecoration(
                     color: verificationColor.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(4),
@@ -360,6 +366,16 @@ class _HalamanKelolaAkunState extends State<HalamanKelolaAkun> {
               ),
             ),
             PopupMenuItem(
+              value: 'edit',
+              child: Row(
+                children: [
+                  Icon(Icons.edit, size: 20, color: Colors.green.shade700),
+                  const SizedBox(width: 12),
+                  const Text('Edit'),
+                ],
+              ),
+            ),
+            PopupMenuItem(
               value: 'delete',
               child: Row(
                 children: [
@@ -374,6 +390,8 @@ class _HalamanKelolaAkunState extends State<HalamanKelolaAkun> {
           onSelected: (value) {
             if (value == 'detail') {
               _showDetailDialog(user);
+            } else if (value == 'edit') {
+              _showEditDialog(user);
             } else if (value == 'delete') {
               _showDeleteDialog(user);
             }
@@ -408,7 +426,8 @@ class _HalamanKelolaAkunState extends State<HalamanKelolaAkun> {
           children: [
             CircleAvatar(
               backgroundColor: roleColor.withOpacity(0.1),
-              backgroundImage: user.photoUrl != null ? NetworkImage(user.photoUrl!) : null,
+              backgroundImage:
+                  user.photoUrl != null ? NetworkImage(user.photoUrl!) : null,
               child: user.photoUrl == null
                   ? Icon(roleIcon, color: roleColor)
                   : null,
@@ -427,7 +446,8 @@ class _HalamanKelolaAkunState extends State<HalamanKelolaAkun> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _buildDetailRow(Icons.email, 'Email', user.email),
-            _buildDetailRow(Icons.phone, 'No. HP', user.phone.isNotEmpty ? user.phone : '-'),
+            _buildDetailRow(Icons.phone, 'No. HP',
+                user.phone.isNotEmpty ? user.phone : '-'),
             _buildDetailRow(Icons.badge, 'Role', roleName),
             _buildDetailRow(
               Icons.verified_user,
@@ -489,6 +509,164 @@ class _HalamanKelolaAkunState extends State<HalamanKelolaAkun> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  void _showEditDialog(UserModel user) {
+    final nameCtrl = TextEditingController(text: user.name);
+    final emailCtrl = TextEditingController(text: user.email);
+    final phoneCtrl = TextEditingController(text: user.phone);
+    String selectedRole = user.role;
+    String selectedVerification = user.verificationStatus;
+    final formKey = GlobalKey<FormState>();
+
+    showDialog(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setState) => AlertDialog(
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: const Row(
+            children: [
+              Icon(Icons.edit, color: AppColors.primary, size: 24),
+              SizedBox(width: 12),
+              Text('Edit Akun'),
+            ],
+          ),
+          content: SingleChildScrollView(
+            child: Form(
+              key: formKey,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextFormField(
+                    controller: nameCtrl,
+                    decoration: InputDecoration(
+                      labelText: 'Nama Lengkap',
+                      prefixIcon: const Icon(Icons.person),
+                      border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8)),
+                    ),
+                    validator: (v) => v?.isEmpty ?? true ? 'Wajib diisi' : null,
+                  ),
+                  const SizedBox(height: 12),
+                  TextFormField(
+                    controller: emailCtrl,
+                    decoration: InputDecoration(
+                      labelText: 'Email',
+                      prefixIcon: const Icon(Icons.email),
+                      border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8)),
+                    ),
+                    validator: (v) => v?.isEmpty ?? true ? 'Wajib diisi' : null,
+                  ),
+                  const SizedBox(height: 12),
+                  TextFormField(
+                    controller: phoneCtrl,
+                    decoration: InputDecoration(
+                      labelText: 'No. Telepon',
+                      prefixIcon: const Icon(Icons.phone),
+                      border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8)),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  DropdownButtonFormField<String>(
+                    value: selectedRole,
+                    decoration: InputDecoration(
+                      labelText: 'Role',
+                      prefixIcon: const Icon(Icons.badge),
+                      border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8)),
+                    ),
+                    items: const [
+                      DropdownMenuItem(value: 'student', child: Text('Murid')),
+                      DropdownMenuItem(
+                          value: 'parent', child: Text('Orang Tua')),
+                      DropdownMenuItem(value: 'teacher', child: Text('Guru')),
+                    ],
+                    onChanged: (v) => setState(() => selectedRole = v!),
+                  ),
+                  const SizedBox(height: 12),
+                  DropdownButtonFormField<String>(
+                    value: selectedVerification,
+                    decoration: InputDecoration(
+                      labelText: 'Status Verifikasi',
+                      prefixIcon: const Icon(Icons.verified_user),
+                      border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8)),
+                    ),
+                    items: const [
+                      DropdownMenuItem(
+                          value: 'pending', child: Text('Menunggu')),
+                      DropdownMenuItem(
+                          value: 'verified', child: Text('Terverifikasi')),
+                      DropdownMenuItem(
+                          value: 'rejected', child: Text('Ditolak')),
+                    ],
+                    onChanged: (v) => setState(() => selectedVerification = v!),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Batal'),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                if (formKey.currentState!.validate()) {
+                  try {
+                    if (user.userId == null) {
+                      throw Exception('User ID tidak valid');
+                    }
+
+                    // Update user in Firestore
+                    await _userRepository.updateUser(
+                      user.userId!,
+                      {
+                        'name': nameCtrl.text,
+                        'email': emailCtrl.text,
+                        'phone': phoneCtrl.text,
+                        'role': selectedRole,
+                        'verificationStatus': selectedVerification,
+                      },
+                    );
+
+                    // Reload data
+                    await _loadAllUsers();
+
+                    if (context.mounted) {
+                      Navigator.pop(context);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Akun berhasil diperbarui'),
+                          backgroundColor: Colors.green,
+                        ),
+                      );
+                    }
+                  } catch (e) {
+                    if (context.mounted) {
+                      Navigator.pop(context);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Gagal memperbarui: $e'),
+                          backgroundColor: Colors.red,
+                        ),
+                      );
+                    }
+                  }
+                }
+              },
+              style:
+                  ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
+              child: const Text('Simpan'),
+            ),
+          ],
+        ),
       ),
     );
   }

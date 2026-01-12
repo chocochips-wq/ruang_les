@@ -54,6 +54,9 @@ class _PengajarProfilState extends State<PengajarProfil> {
                               email: user.email,
                               phone: user.phone,
                               specialization: teacher?.specialization ?? '-',
+                              gender: teacher?.gender,
+                              birthDate: teacher?.birthDate,
+                              address: teacher?.address,
                             ),
                             const SizedBox(height: 16),
                             _buildEditButton(
@@ -61,6 +64,9 @@ class _PengajarProfilState extends State<PengajarProfil> {
                               currentPhone: user.phone,
                               currentSpecialization:
                                   teacher?.specialization ?? '',
+                              currentGender: teacher?.gender,
+                              currentBirthDate: teacher?.birthDate,
+                              currentAddress: teacher?.address,
                             ),
                             const SizedBox(height: 16),
                             _buildLogoutButton(context),
@@ -187,6 +193,9 @@ class _PengajarProfilState extends State<PengajarProfil> {
     required String email,
     required String phone,
     required String specialization,
+    String? gender,
+    DateTime? birthDate,
+    String? address,
   }) {
     return Container(
       padding: const EdgeInsets.all(16),
@@ -226,6 +235,22 @@ class _PengajarProfilState extends State<PengajarProfil> {
           _buildInfoRow(Icons.phone, 'No. Telepon', phone),
           const SizedBox(height: 12),
           _buildInfoRow(Icons.work, 'Spesialisasi', specialization),
+          if (gender != null) ...[
+            const SizedBox(height: 12),
+            _buildInfoRow(Icons.wc, 'Jenis Kelamin', gender),
+          ],
+          if (birthDate != null) ...[
+            const SizedBox(height: 12),
+            _buildInfoRow(
+              Icons.cake,
+              'Tanggal Lahir',
+              '${birthDate.day}/${birthDate.month}/${birthDate.year}',
+            ),
+          ],
+          if (address != null && address.isNotEmpty) ...[
+            const SizedBox(height: 12),
+            _buildInfoRow(Icons.home, 'Alamat', address),
+          ],
         ],
       ),
     );
@@ -272,13 +297,22 @@ class _PengajarProfilState extends State<PengajarProfil> {
     required String currentName,
     required String currentPhone,
     required String currentSpecialization,
+    String? currentGender,
+    DateTime? currentBirthDate,
+    String? currentAddress,
   }) {
     return SizedBox(
       width: double.infinity,
       height: 50,
       child: ElevatedButton.icon(
-        onPressed: () =>
-            _showEditDialog(currentName, currentPhone, currentSpecialization),
+        onPressed: () => _showEditDialog(
+          currentName,
+          currentPhone,
+          currentSpecialization,
+          currentGender,
+          currentBirthDate,
+          currentAddress,
+        ),
         icon: const Icon(Icons.edit, size: 20),
         label: const Text(
           'Edit Profile',
@@ -328,7 +362,7 @@ class _PengajarProfilState extends State<PengajarProfil> {
 
             if (context.mounted) {
               Navigator.of(context).pushNamedAndRemoveUntil(
-                AppRoutes.login,
+                AppRoutes.roleSelector,
                 (route) => false,
               );
             }
@@ -354,88 +388,153 @@ class _PengajarProfilState extends State<PengajarProfil> {
     String currentName,
     String currentPhone,
     String currentSpecialization,
+    String? currentGender,
+    DateTime? currentBirthDate,
+    String? currentAddress,
   ) {
     final namaCtrl = TextEditingController(text: currentName);
     final noHpCtrl = TextEditingController(text: currentPhone);
     final specCtrl = TextEditingController(text: currentSpecialization);
+    final alamatCtrl = TextEditingController(text: currentAddress);
+    String? selectedGender = currentGender;
+    DateTime? selectedBirthDate = currentBirthDate;
     final formKey = GlobalKey<FormState>();
 
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        title: const Text('Edit Profile',
-            style: TextStyle(fontWeight: FontWeight.bold)),
-        content: SingleChildScrollView(
-          child: Form(
-            key: formKey,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                _buildTextField(namaCtrl, 'Nama Lengkap', Icons.person),
-                const SizedBox(height: 12),
-                _buildTextField(noHpCtrl, 'No. Telepon', Icons.phone,
-                    inputType: TextInputType.phone),
-                const SizedBox(height: 12),
-                _buildTextField(specCtrl, 'Spesialisasi', Icons.work),
-              ],
+      builder: (context) => StatefulBuilder(
+        builder: (context, setState) => AlertDialog(
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          title: const Text('Edit Profile',
+              style: TextStyle(fontWeight: FontWeight.bold)),
+          content: SingleChildScrollView(
+            child: Form(
+              key: formKey,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  _buildTextField(namaCtrl, 'Nama Lengkap', Icons.person),
+                  const SizedBox(height: 12),
+                  _buildTextField(noHpCtrl, 'No. Telepon', Icons.phone,
+                      inputType: TextInputType.phone),
+                  const SizedBox(height: 12),
+                  _buildTextField(specCtrl, 'Spesialisasi', Icons.work),
+                  const SizedBox(height: 12),
+                  DropdownButtonFormField<String>(
+                    value: selectedGender,
+                    decoration: InputDecoration(
+                      labelText: 'Jenis Kelamin',
+                      prefixIcon:
+                          const Icon(Icons.wc, color: AppColors.primary),
+                      border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8)),
+                    ),
+                    items: const [
+                      DropdownMenuItem(
+                          value: 'Laki-laki', child: Text('Laki-laki')),
+                      DropdownMenuItem(
+                          value: 'Perempuan', child: Text('Perempuan')),
+                    ],
+                    onChanged: (v) => setState(() => selectedGender = v),
+                  ),
+                  const SizedBox(height: 12),
+                  InkWell(
+                    onTap: () async {
+                      final picked = await showDatePicker(
+                        context: context,
+                        initialDate: selectedBirthDate ?? DateTime(1990),
+                        firstDate: DateTime(1950),
+                        lastDate: DateTime.now(),
+                      );
+                      if (picked != null) {
+                        setState(() => selectedBirthDate = picked);
+                      }
+                    },
+                    child: InputDecorator(
+                      decoration: InputDecoration(
+                        labelText: 'Tanggal Lahir',
+                        prefixIcon:
+                            const Icon(Icons.cake, color: AppColors.primary),
+                        border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8)),
+                      ),
+                      child: Text(
+                        selectedBirthDate != null
+                            ? '${selectedBirthDate!.day}/${selectedBirthDate!.month}/${selectedBirthDate!.year}'
+                            : 'Pilih tanggal',
+                        style: TextStyle(
+                          color: selectedBirthDate != null
+                              ? Colors.black
+                              : Colors.grey,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  _buildTextField(alamatCtrl, 'Alamat', Icons.home,
+                      maxLines: 2),
+                ],
+              ),
             ),
           ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Batal'),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              if (formKey.currentState!.validate()) {
-                final authProvider = context.read<AuthProvider>();
-                final teacherProvider = context.read<TeacherProvider>();
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Batal'),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                if (formKey.currentState!.validate()) {
+                  final authProvider = context.read<AuthProvider>();
+                  final teacherProvider = context.read<TeacherProvider>();
 
-                // 1. Update User Profile (Auth)
-                final successAuth = await authProvider.updateProfile(
-                  name: namaCtrl.text,
-                  phone: noHpCtrl.text,
-                );
-
-                // 2. Update Teacher Profile (Specialization)
-                bool successTeacher = true;
-                final currentTeacher = teacherProvider.currentTeacher;
-                if (currentTeacher != null &&
-                    specCtrl.text != currentSpecialization) {
-                  final updatedTeacher = currentTeacher.copyWith(
-                    specialization: specCtrl.text,
+                  // 1. Update User Profile (Auth)
+                  final successAuth = await authProvider.updateProfile(
+                    name: namaCtrl.text,
+                    phone: noHpCtrl.text,
                   );
-                  successTeacher =
-                      await teacherProvider.updateTeacher(updatedTeacher);
-                }
 
-                if (context.mounted) {
-                  Navigator.pop(context);
-                  if (successAuth && successTeacher) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                          content: Text('Profile berhasil diperbarui')),
+                  // 2. Update Teacher Profile (Specialization + biodata)
+                  bool successTeacher = true;
+                  final currentTeacher = teacherProvider.currentTeacher;
+                  if (currentTeacher != null) {
+                    final updatedTeacher = currentTeacher.copyWith(
+                      specialization: specCtrl.text,
+                      gender: selectedGender,
+                      birthDate: selectedBirthDate,
+                      address: alamatCtrl.text,
                     );
-                  } else {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(authProvider.error ??
-                            teacherProvider.error ??
-                            'Gagal update profile'),
-                      ),
-                    );
+                    successTeacher =
+                        await teacherProvider.updateTeacher(updatedTeacher);
+                  }
+
+                  if (context.mounted) {
+                    Navigator.pop(context);
+                    if (successAuth && successTeacher) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                            content: Text('Profile berhasil diperbarui')),
+                      );
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(authProvider.error ??
+                              teacherProvider.error ??
+                              'Gagal update profile'),
+                        ),
+                      );
+                    }
                   }
                 }
-              }
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primary,
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+              ),
+              child: const Text('Simpan'),
             ),
-            child: const Text('Simpan'),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

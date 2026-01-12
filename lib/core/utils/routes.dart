@@ -4,6 +4,7 @@ import '../../features/auth/pages/role_selection_page.dart';
 import '../../features/auth/pages/login_page.dart';
 import '../../features/auth/pages/register_page.dart';
 import '../../features/auth/pages/forgot_password_page.dart';
+import '../../features/auth/pages/role_selector_page.dart';
 
 // Import Teacher
 import '../../features/teacher/pages/teacher_home.dart';
@@ -39,6 +40,7 @@ class AppRoutes {
   static const String login = '/login';
   static const String daftar = '/daftar';
   static const String lupaPassword = '/lupa-password';
+  static const String roleSelector = '/role-selector';
 
   // ========== ROUTES PENGAJAR ==========
   static const String pengajarBeranda = '/pengajar/beranda';
@@ -92,6 +94,9 @@ class AppRoutes {
 
       case lupaPassword:
         return MaterialPageRoute(builder: (_) => const HalamanLupaPassword());
+
+      case roleSelector:
+        return MaterialPageRoute(builder: (_) => const RoleSelectorPage());
 
       // ========== ROUTES PENGAJAR ==========
       case pengajarBeranda:

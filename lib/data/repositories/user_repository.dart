@@ -113,6 +113,21 @@ class UserRepository {
     }
   }
 
+  // 5b. UPDATE USER (flexible update for any fields)
+  Future<void> updateUser(
+      String userId, Map<String, dynamic> updateData) async {
+    try {
+      if (updateData.isNotEmpty) {
+        await _firestore
+            .collection(collectionName)
+            .doc(userId)
+            .update(updateData);
+      }
+    } catch (e) {
+      throw Exception('Failed to update user: $e');
+    }
+  }
+
   // 6. UPDATE USER ROLE (untuk admin)
   Future<void> updateUserRole(String userId, String newRole) async {
     try {
@@ -235,11 +250,12 @@ class UserRepository {
       }
 
       final snapshot = await query.get();
-      final users = snapshot.docs.map((doc) => UserModel.fromFirestore(doc)).toList();
-      
+      final users =
+          snapshot.docs.map((doc) => UserModel.fromFirestore(doc)).toList();
+
       // Sort by createdAt on client side
       users.sort((a, b) => a.createdAt.compareTo(b.createdAt));
-      
+
       return users;
     } catch (e) {
       throw Exception('Failed to get pending users: $e');
@@ -256,7 +272,8 @@ class UserRepository {
           .where('role', whereIn: roles);
 
       return query.snapshots().map((snapshot) {
-        final users = snapshot.docs.map((doc) => UserModel.fromFirestore(doc)).toList();
+        final users =
+            snapshot.docs.map((doc) => UserModel.fromFirestore(doc)).toList();
         // Sort by createdAt on client side
         users.sort((a, b) => a.createdAt.compareTo(b.createdAt));
         return users;
@@ -268,7 +285,8 @@ class UserRepository {
           .where('verificationStatus', isEqualTo: 'pending');
 
       return query.snapshots().map((snapshot) {
-        final users = snapshot.docs.map((doc) => UserModel.fromFirestore(doc)).toList();
+        final users =
+            snapshot.docs.map((doc) => UserModel.fromFirestore(doc)).toList();
         // Filter by roles if needed (client-side filtering)
         final filteredUsers = roles != null && roles.isNotEmpty
             ? users.where((user) => roles.contains(user.role)).toList()
@@ -316,15 +334,19 @@ class UserRepository {
       final updateData = <String, dynamic>{
         'verificationStatus': verificationStatus,
       };
-      
-      if (verificationStatus == 'verified' || verificationStatus == 'rejected') {
+
+      if (verificationStatus == 'verified' ||
+          verificationStatus == 'rejected') {
         updateData['verifiedAt'] = Timestamp.now();
         if (verifiedBy != null) {
           updateData['verifiedBy'] = verifiedBy;
         }
       }
-      
-      await _firestore.collection(collectionName).doc(userId).update(updateData);
+
+      await _firestore
+          .collection(collectionName)
+          .doc(userId)
+          .update(updateData);
     } catch (e) {
       throw Exception('Failed to update user verification status: $e');
     }
@@ -355,7 +377,8 @@ class UserRepository {
         batch.set(studentRef, {
           ...(studentData ?? {}),
           'userId': userModel.userId,
-          'nickname': studentData?['nickname'] ?? userModel.name.split(' ').first,
+          'nickname':
+              studentData?['nickname'] ?? userModel.name.split(' ').first,
           'fullName': studentData?['fullName'] ?? userModel.name,
           'gradeLevel': studentData?['gradeLevel'] ?? 'SD 1-3',
           'parentId': parentId ?? studentData?['parentId'], // Link to parent
@@ -365,7 +388,7 @@ class UserRepository {
           'learningLevel': studentData?['learningLevel'] ?? 1,
           'createdAt': Timestamp.now(),
         });
-        
+
         // 2b. Update parent's studentIds array if parentId provided
         if (parentId != null) {
           final parentRef = _firestore

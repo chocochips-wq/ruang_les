@@ -890,33 +890,20 @@ class _BerandaOrangtuaState extends State<BerandaOrangtua> {
                       ],
                     ),
                     const SizedBox(height: 12),
-                    StreamBuilder<List<ClassModel>>(
-                      stream: FirebaseFirestore.instance
-                          .collection('classes')
-                          .where('gradeLevel', isEqualTo: gradeCategory)
-                          .snapshots()
-                          .map((snapshot) => snapshot.docs
-                              .map((doc) => ClassModel.fromJson(
-                                  {...doc.data(), 'classId': doc.id}))
-                              .toList()),
-                      builder: (context, snapshot) {
-                        final classes = snapshot.data ?? [];
-                        return DropdownButtonFormField<String>(
-                          hint: const Text('Pilih Kelas (Opsional)'),
-                          value: selectedClassId,
-                          items: classes
-                              .map((c) => DropdownMenuItem(
-                                  value: c.classId,
-                                  child:
-                                      Text('${c.className} - ${c.gradeLevel}')))
-                              .toList(),
-                          onChanged: (v) => selectedClassId = v,
-                          decoration: InputDecoration(
-                            border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(8)),
-                          ),
-                        );
-                      },
+                    DropdownButtonFormField<String>(
+                      decoration: InputDecoration(
+                        labelText: 'Jenis Kelas (Opsional)',
+                        border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8)),
+                      ),
+                      items: const [
+                        DropdownMenuItem(value: 'P', child: Text('Privat (P)')),
+                        DropdownMenuItem(
+                            value: 'SP', child: Text('Semi Privat (SP)')),
+                        DropdownMenuItem(
+                            value: 'R', child: Text('Reguler (R)')),
+                      ],
+                      onChanged: (v) => setState(() => selectedClassId = v),
                     ),
                   ],
                 ),
@@ -935,11 +922,12 @@ class _BerandaOrangtuaState extends State<BerandaOrangtua> {
                         : '$selectedLevel - Kelas $selectedClassNumber';
 
                     _createChildAccount(
-                            fullName: fullName,
-                            nickname: nickname,
-                            gradeLevel: fullGrade,
-                            classId: selectedClassId)
-                        .then((_) => Navigator.pop(context));
+                      fullName: fullName,
+                      nickname: nickname,
+                      gradeLevel: fullGrade,
+                      classType: selectedClassId, // Now stores P, SP, or R
+                    );
+                    Navigator.pop(context);
                   }
                 },
                 child: const Text('Simpan'),
@@ -955,7 +943,7 @@ class _BerandaOrangtuaState extends State<BerandaOrangtua> {
     required String fullName,
     required String nickname,
     required String gradeLevel,
-    String? classId,
+    String? classType,
   }) async {
     if (_parentId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -976,6 +964,7 @@ class _BerandaOrangtuaState extends State<BerandaOrangtua> {
         fullName: fullName,
         nickname: nickname.isNotEmpty ? nickname : fullName.split(' ').first,
         gradeLevel: gradeLevel,
+        classType: classType, // Store P, SP, or R
         createdAt: DateTime.now(),
         // Default values for others
         learningLevel: 1,
@@ -989,19 +978,23 @@ class _BerandaOrangtuaState extends State<BerandaOrangtua> {
           .doc(studentId)
           .set(student.toMap());
 
-      // If class is selected, add student to class
-      if (classId != null) {
-        await FirebaseFirestore.instance
-            .collection('classes')
-            .doc(classId)
-            .update({
-          'studentIds': FieldValue.arrayUnion([studentId])
-        });
-      }
+      // CRITICAL FIX: Also create user entry for verification notification
+      final currentUser = FirebaseAuth.instance.currentUser;
+      await FirebaseFirestore.instance.collection('users').doc(studentId).set({
+        'email': currentUser?.email ?? 'no-email@temp.com', // Temporary email
+        'name': fullName,
+        'role': 'student',
+        'phone': '', // No phone for data-only accounts
+        'verificationStatus': 'pending', // Will trigger teacher verification
+        'createdAt': Timestamp.fromDate(DateTime.now()),
+        'verifiedAt': null,
+        'verifiedBy': null,
+      });
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-            content: Text('Data anak berhasil ditambahkan'),
+            content: Text(
+                'Data anak berhasil ditambahkan dan menunggu verifikasi guru'),
             backgroundColor: Colors.green),
       );
     } catch (e) {

@@ -7,6 +7,7 @@ class StudentModel {
   final String nickname;
   final String fullName;
   final String gradeLevel; // 'TK', 'SD 1-3', 'SD 4-6', 'SMP'
+  final String? classType; // 'P' (Privat), 'SP' (Semi Privat), 'R' (Reguler)
   final String? avatarUrl;
   final int learningLevel;
   final int totalPoints;
@@ -21,6 +22,7 @@ class StudentModel {
     required this.nickname,
     required this.fullName,
     required this.gradeLevel,
+    this.classType,
     this.avatarUrl,
     this.learningLevel = 1,
     this.totalPoints = 0,
@@ -37,6 +39,7 @@ class StudentModel {
       'nickname': nickname,
       'fullName': fullName,
       'gradeLevel': gradeLevel,
+      'classType': classType,
       'avatarUrl': avatarUrl,
       'learningLevel': learningLevel,
       'totalPoints': totalPoints,
@@ -57,6 +60,7 @@ class StudentModel {
       nickname: data['nickname'] ?? '',
       fullName: data['fullName'] ?? '',
       gradeLevel: data['gradeLevel'] ?? 'SD 1-3',
+      classType: data['classType'],
       avatarUrl: data['avatarUrl'],
       learningLevel: data['learningLevel'] ?? 1,
       totalPoints: data['totalPoints'] ?? 0,
@@ -76,6 +80,7 @@ class StudentModel {
     String? nickname,
     String? fullName,
     String? gradeLevel,
+    String? classType,
     String? avatarUrl,
     int? learningLevel,
     int? totalPoints,
@@ -90,6 +95,7 @@ class StudentModel {
       nickname: nickname ?? this.nickname,
       fullName: fullName ?? this.fullName,
       gradeLevel: gradeLevel ?? this.gradeLevel,
+      classType: classType ?? this.classType,
       avatarUrl: avatarUrl ?? this.avatarUrl,
       learningLevel: learningLevel ?? this.learningLevel,
       totalPoints: totalPoints ?? this.totalPoints,

@@ -178,7 +178,9 @@ class _ForumOrangtuaState extends State<ForumOrangtua> {
                 ),
                 child: Center(
                   child: Text(
-                    post.authorName.isNotEmpty ? post.authorName[0].toUpperCase() : '?',
+                    post.authorName.isNotEmpty
+                        ? post.authorName[0].toUpperCase()
+                        : '?',
                     style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
@@ -261,7 +263,7 @@ class _ForumOrangtuaState extends State<ForumOrangtua> {
                 icon: Icons.chat_bubble_outline,
                 label: '${post.replies} Balasan',
                 color: Colors.blue,
-                onTap: () {},
+                onTap: () => _showRepliesPanel(post),
               ),
             ],
           ),
@@ -616,9 +618,10 @@ class _ForumOrangtuaState extends State<ForumOrangtua> {
                       content: isiController.text,
                       updatedAt: DateTime.now(),
                     );
-                    
-                    await _forumRepository.updatePost(post.postId!, updatedPost);
-                    
+
+                    await _forumRepository.updatePost(
+                        post.postId!, updatedPost);
+
                     if (!mounted) return;
                     Navigator.pop(context);
 
@@ -730,7 +733,7 @@ class _ForumOrangtuaState extends State<ForumOrangtua> {
                     );
 
                     await _forumRepository.createPost(newPost);
-                    
+
                     if (!mounted) return;
                     Navigator.pop(context);
 
@@ -773,5 +776,325 @@ class _ForumOrangtuaState extends State<ForumOrangtua> {
         );
       },
     );
+  }
+
+  void _showRepliesPanel(ForumPostModel post) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (BuildContext context) {
+        return DraggableScrollableSheet(
+          initialChildSize: 0.9,
+          minChildSize: 0.5,
+          maxChildSize: 0.95,
+          builder: (_, controller) {
+            return Container(
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+              ),
+              child: Column(
+                children: [
+                  // Handle bar
+                  Container(
+                    width: 40,
+                    height: 4,
+                    margin: const EdgeInsets.symmetric(vertical: 12),
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade300,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+
+                  // Header
+                  Padding(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    child: Row(
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.close),
+                          onPressed: () => Navigator.pop(context),
+                        ),
+                        Expanded(
+                          child: Text(
+                            'Balasan (${post.replies})',
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const Divider(height: 1),
+
+                  // Original Post Summary
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    color: Colors.grey.shade50,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          post.title,
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          post.content,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.grey.shade600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const Divider(height: 1),
+
+                  // Replies List
+                  Expanded(
+                    child: StreamBuilder<QuerySnapshot>(
+                      stream: FirebaseFirestore.instance
+                          .collection('forum_posts')
+                          .doc(post.postId)
+                          .collection('replies')
+                          .orderBy('createdAt', descending: false)
+                          .snapshots(),
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
+                          return const Center(
+                              child: CircularProgressIndicator());
+                        }
+
+                        if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                          return Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.chat_bubble_outline,
+                                    size: 60, color: Colors.grey.shade300),
+                                const SizedBox(height: 12),
+                                Text(
+                                  'Belum ada balasan',
+                                  style: TextStyle(color: Colors.grey.shade600),
+                                ),
+                              ],
+                            ),
+                          );
+                        }
+
+                        return ListView.builder(
+                          controller: controller,
+                          padding: const EdgeInsets.all(16),
+                          itemCount: snapshot.data!.docs.length,
+                          itemBuilder: (context, index) {
+                            final reply = snapshot.data!.docs[index].data()
+                                as Map<String, dynamic>;
+                            return _buildReplyCard(reply);
+                          },
+                        );
+                      },
+                    ),
+                  ),
+
+                  // Reply Input
+                  Container(
+                    padding: EdgeInsets.only(
+                      left: 16,
+                      right: 16,
+                      top: 12,
+                      bottom: MediaQuery.of(context).viewInsets.bottom + 12,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      border:
+                          Border(top: BorderSide(color: Colors.grey.shade300)),
+                    ),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: TextField(
+                            decoration: InputDecoration(
+                              hintText: 'Tulis balasan...',
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(24),
+                              ),
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 10,
+                              ),
+                            ),
+                            onSubmitted: (value) {
+                              if (value.isNotEmpty) {
+                                _submitReply(post, value);
+                              }
+                            },
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        CircleAvatar(
+                          backgroundColor: AppColors.primary,
+                          child: IconButton(
+                            icon: const Icon(Icons.send,
+                                color: Colors.white, size: 20),
+                            onPressed: () {
+                              // Handle send from button
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildReplyCard(Map<String, dynamic> reply) {
+    final timestamp = reply['createdAt'] as Timestamp?;
+    final timeAgo =
+        timestamp != null ? _getTimeAgo(timestamp.toDate()) : 'Baru saja';
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.grey.shade50,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey.shade200),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 32,
+                height: 32,
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withOpacity(0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: Center(
+                  child: Text(
+                    (reply['authorName'] as String?)?.isNotEmpty == true
+                        ? reply['authorName'][0].toUpperCase()
+                        : '?',
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.primary,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      reply['authorName'] ?? 'Anonymous',
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Text(
+                      timeAgo,
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey.shade600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            reply['content'] ?? '',
+            style: const TextStyle(fontSize: 14),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _getTimeAgo(DateTime dateTime) {
+    final now = DateTime.now();
+    final difference = now.difference(dateTime);
+
+    if (difference.inDays > 0) {
+      return '${difference.inDays} hari yang lalu';
+    } else if (difference.inHours > 0) {
+      return '${difference.inHours} jam yang lalu';
+    } else if (difference.inMinutes > 0) {
+      return '${difference.inMinutes} menit yang lalu';
+    } else {
+      return 'Baru saja';
+    }
+  }
+
+  Future<void> _submitReply(ForumPostModel post, String content) async {
+    if (_currentUserId == null ||
+        _currentUserName == null ||
+        post.postId == null) return;
+
+    try {
+      await FirebaseFirestore.instance
+          .collection('forum_posts')
+          .doc(post.postId)
+          .collection('replies')
+          .add({
+        'userId': _currentUserId,
+        'authorName': _currentUserName,
+        'content': content,
+        'createdAt': Timestamp.now(),
+      });
+
+      // Increment reply count
+      await FirebaseFirestore.instance
+          .collection('forum_posts')
+          .doc(post.postId)
+          .update({
+        'replies': FieldValue.increment(1),
+      });
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Balasan berhasil dikirim'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 }
