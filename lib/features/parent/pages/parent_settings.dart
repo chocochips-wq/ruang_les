@@ -11,7 +11,7 @@ class PengaturanOrangtua extends StatefulWidget {
 }
 
 class _PengaturanOrangtuaState extends State<PengaturanOrangtua> {
-  bool _isDarkMode = false;
+  String _selectedLanguage = 'Indonesia';
 
   @override
   Widget build(BuildContext context) {
@@ -68,7 +68,7 @@ class _PengaturanOrangtuaState extends State<PengaturanOrangtua> {
                     iconColor: Colors.blue,
                     title: 'Ubah Foto Profil',
                     subtitle: 'Perbarui foto profil Anda',
-                    onTap: () {},
+                    onTap: _showChangePhotoDialog,
                   ),
                   _buildSettingItem(
                     context,
@@ -76,19 +76,8 @@ class _PengaturanOrangtuaState extends State<PengaturanOrangtua> {
                     iconColor: Colors.orange,
                     title: 'Ubah Kata Sandi',
                     subtitle: 'Amankan akun Anda',
-                    onTap: () {},
+                    onTap: _showChangePasswordDialog,
                   ),
-                ],
-              ),
-
-              const SizedBox(height: 16),
-
-              // Pilih Tema Section
-              _buildSectionCard(
-                title: 'Pilih Tema',
-                icon: Icons.palette_outlined,
-                items: [
-                  _buildThemeToggle(),
                 ],
               ),
 
@@ -104,8 +93,8 @@ class _PengaturanOrangtuaState extends State<PengaturanOrangtua> {
                     icon: Icons.language,
                     iconColor: Colors.green,
                     title: 'Bahasa',
-                    subtitle: 'Indonesia',
-                    onTap: () {},
+                    subtitle: _selectedLanguage,
+                    onTap: _showLanguageDialog,
                   ),
                   _buildSettingItem(
                     context,
@@ -113,7 +102,13 @@ class _PengaturanOrangtuaState extends State<PengaturanOrangtua> {
                     iconColor: Colors.red,
                     title: 'Notifikasi',
                     subtitle: 'Kelola pemberitahuan',
-                    onTap: () {},
+                    onTap: () {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Fitur notifikasi segera hadir'),
+                        ),
+                      );
+                    },
                   ),
                 ],
               ),
@@ -131,7 +126,13 @@ class _PengaturanOrangtuaState extends State<PengaturanOrangtua> {
                     iconColor: Colors.purple,
                     title: 'Pusat Bantuan',
                     subtitle: 'FAQ dan panduan',
-                    onTap: () {},
+                    onTap: () {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Pusat bantuan segera hadir'),
+                        ),
+                      );
+                    },
                   ),
                   _buildSettingItem(
                     context,
@@ -139,7 +140,7 @@ class _PengaturanOrangtuaState extends State<PengaturanOrangtua> {
                     iconColor: Colors.grey,
                     title: 'Tentang Aplikasi',
                     subtitle: 'Versi 1.0.0',
-                    onTap: () {},
+                    onTap: _showAboutDialog,
                   ),
                 ],
               ),
@@ -149,6 +150,7 @@ class _PengaturanOrangtuaState extends State<PengaturanOrangtua> {
           ),
         ),
       ),
+      bottomNavigationBar: const ParentBottomNav(selectedIndex: 4),
     );
   }
 
@@ -257,55 +259,170 @@ class _PengaturanOrangtuaState extends State<PengaturanOrangtua> {
     );
   }
 
-  Widget _buildThemeToggle() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: Colors.indigo.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Icon(
-              _isDarkMode ? Icons.dark_mode : Icons.light_mode,
-              color: Colors.indigo,
-              size: 24,
-            ),
+  void _showChangePhotoDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text('Ubah Foto Profil'),
+        content: const Text('Fitur ubah foto profil akan segera tersedia.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Tutup'),
           ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'Mode Gelap',
-                  style: TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w500,
-                    color: AppColors.textDark,
-                  ),
+        ],
+      ),
+    );
+  }
+
+  void _showChangePasswordDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Row(
+          children: [
+            Icon(Icons.lock, color: Colors.orange),
+            const SizedBox(width: 8),
+            const Text('Ubah Kata Sandi'),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              obscureText: true,
+              decoration: InputDecoration(
+                labelText: 'Kata Sandi Lama',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
                 ),
-                const SizedBox(height: 2),
-                Text(
-                  _isDarkMode ? 'Aktif' : 'Nonaktif',
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: Colors.grey.shade600,
-                  ),
-                ),
-              ],
+              ),
             ),
+            const SizedBox(height: 12),
+            TextField(
+              obscureText: true,
+              decoration: InputDecoration(
+                labelText: 'Kata Sandi Baru',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              obscureText: true,
+              decoration: InputDecoration(
+                labelText: 'Konfirmasi Kata Sandi',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Batal'),
           ),
-          Switch(
-            value: _isDarkMode,
-            onChanged: (value) {
-              setState(() {
-                _isDarkMode = value;
-              });
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context);
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Kata sandi berhasil diubah')),
+              );
             },
-            activeThumbColor: AppColors.primary,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primary,
+            ),
+            child: const Text('Simpan'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showLanguageDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text('Pilih Bahasa'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            RadioListTile<String>(
+              title: const Text('Indonesia'),
+              value: 'Indonesia',
+              groupValue: _selectedLanguage,
+              onChanged: (value) {
+                setState(() {
+                  _selectedLanguage = value!;
+                });
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Bahasa diubah ke Indonesia')),
+                );
+              },
+            ),
+            RadioListTile<String>(
+              title: const Text('English'),
+              value: 'English',
+              groupValue: _selectedLanguage,
+              onChanged: (value) {
+                setState(() {
+                  _selectedLanguage = value!;
+                });
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Language changed to English')),
+                );
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showAboutDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Row(
+          children: [
+            Icon(Icons.school, color: AppColors.primary),
+            SizedBox(width: 8),
+            Text('Tentang Aplikasi'),
+          ],
+        ),
+        content: const Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Ruang Les',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            SizedBox(height: 8),
+            Text('Versi 1.0.0'),
+            SizedBox(height: 16),
+            Text(
+              'Aplikasi manajemen pembelajaran untuk guru, orang tua, dan siswa.',
+              style: TextStyle(fontSize: 14),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Tutup'),
           ),
         ],
       ),

@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../../../core/utils/colors.dart';
+import '../../../core/utils/routes.dart';
 import '../../../data/repositories/student_repository.dart';
 import '../../../data/repositories/class_repository.dart';
 import '../../../data/repositories/session_repository.dart';
@@ -549,7 +550,13 @@ class _BerandaOrangtuaState extends State<BerandaOrangtua> {
           ),
           IconButton(
             icon: const Icon(Icons.arrow_forward_ios, size: 20),
-            onPressed: () {},
+            onPressed: () {
+              Navigator.pushNamed(
+                context,
+                AppRoutes.orangtuaLaporan,
+                arguments: anak,
+              );
+            },
           ),
         ],
       ),
