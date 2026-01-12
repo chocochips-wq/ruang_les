@@ -7,6 +7,8 @@ import '../../../data/repositories/class_repository.dart';
 import '../../../core/models/class_model.dart';
 import '../../../core/models/payment_model.dart';
 import '../../../core/models/student_model.dart';
+import '../widgets/teacher_app_bar.dart';
+import '../widgets/teacher_bottom_nav.dart';
 
 class PengajarPembayaran extends StatefulWidget {
   const PengajarPembayaran({super.key});
@@ -21,6 +23,7 @@ class _PengajarPembayaranState extends State<PengajarPembayaran> {
   final ClassRepository _classRepository = ClassRepository();
   String? _teacherId;
   String? _selectedFilter = 'all'; // all, pending, paid, overdue
+  int _selectedMenuIndex = 6; // Index for Pembayaran in drawer
 
   @override
   void initState() {
@@ -30,16 +33,19 @@ class _PengajarPembayaranState extends State<PengajarPembayaran> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
+    return TeacherScaffold(
+      title: 'Kelola Pembayaran',
+      selectedMenuIndex: _selectedMenuIndex,
+      onMenuSelected: (index) {
+        setState(() {
+          _selectedMenuIndex = index;
+        });
+      },
+      bottomNavigationBar: const TeacherBottomNav(currentIndex: 1),
+      floatingActionButton: FloatingActionButton(
         backgroundColor: AppColors.primary,
-        title: const Text('Kelola Pembayaran',
-            style: TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-                fontSize: 18)),
-        elevation: 0,
+        onPressed: () => _showCreatePaymentDialog(context),
+        child: const Icon(Icons.add, color: Colors.white),
       ),
       body: _teacherId == null
           ? const Center(child: Text('Tidak ada pengguna yang login'))
@@ -88,11 +94,6 @@ class _PengajarPembayaranState extends State<PengajarPembayaran> {
                 Expanded(child: _buildPaymentsList()),
               ],
             ),
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: AppColors.primary,
-        onPressed: () => _showCreatePaymentDialog(context),
-        child: const Icon(Icons.add, color: Colors.white),
-      ),
     );
   }
 
@@ -102,6 +103,33 @@ class _PengajarPembayaranState extends State<PengajarPembayaran> {
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());
+        }
+
+        // Handle error - show message instead of crashing/logout
+        if (snapshot.hasError) {
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.error_outline, size: 64, color: Colors.red[300]),
+                const SizedBox(height: 16),
+                Text(
+                  'Gagal memuat data pembayaran',
+                  style: TextStyle(color: Colors.grey[600], fontSize: 14),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Pastikan Firestore index sudah dibuat',
+                  style: TextStyle(color: Colors.grey[500], fontSize: 12),
+                ),
+                const SizedBox(height: 16),
+                ElevatedButton(
+                  onPressed: () => setState(() {}),
+                  child: const Text('Coba Lagi'),
+                ),
+              ],
+            ),
+          );
         }
 
         var payments = snapshot.data ?? [];
@@ -409,12 +437,14 @@ class _PengajarPembayaranState extends State<PengajarPembayaran> {
                     PaymentModel(
                       paymentId:
                           DateTime.now().millisecondsSinceEpoch.toString(),
+                      teacherId: _teacherId, // Add teacherId
                       studentId: selectedStudentId!,
                       parentId: selectedParentId!,
                       classId: selectedClassId!,
                       amount: amount,
                       description: 'Pembayaran SPP',
                       dueDate: dueDate,
+                      createdAt: DateTime.now(),
                     ),
                   );
                   Navigator.pop(context);

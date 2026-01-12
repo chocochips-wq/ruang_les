@@ -19,7 +19,7 @@ You can create it here: https://console.firebase.google.com/...
 
 **Query Usage:** Used when loading sessions for a specific class, ordered by date.
 
-### Index 2: Payment Queries
+### Index 2: Payment Queries by Student
 **Collection:** `payments`
 **Fields to Index:**
 - `studentId` (Ascending)
@@ -27,7 +27,15 @@ You can create it here: https://console.firebase.google.com/...
 
 **Query Usage:** Used when loading payment history for students.
 
-### Index 3: Progress Notes
+### Index 3: Payment Queries by Teacher
+**Collection:** `payments`
+**Fields to Index:**
+- `teacherId` (Ascending)
+- `createdAt` (Descending)
+
+**Query Usage:** Used when loading payments created by a specific teacher.
+
+### Index 4: Progress Notes
 **Collection:** `progressNotes`
 **Fields to Index:**
 - `sessionId` (Ascending)

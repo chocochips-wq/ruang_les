@@ -2,20 +2,23 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 class PaymentModel {
   final String? paymentId;
+  final String? teacherId; // Added teacherId field
   final String studentId;
   final String parentId;
   final String classId;
   final int amount;
   final String currency;
-  final String description; // Added description field
+  final String description;
   final String status; // 'pending', 'paid', 'overdue'
   final int sessionsPaid;
   final DateTime dueDate;
   final DateTime? paidAt;
+  final DateTime? createdAt;
   final bool notificationSent;
 
   PaymentModel({
     this.paymentId,
+    this.teacherId,
     required this.studentId,
     required this.parentId,
     required this.classId,
@@ -26,11 +29,13 @@ class PaymentModel {
     this.sessionsPaid = 0,
     required this.dueDate,
     this.paidAt,
+    this.createdAt,
     this.notificationSent = false,
   });
 
   Map<String, dynamic> toMap() {
     return {
+      'teacherId': teacherId,
       'studentId': studentId,
       'parentId': parentId,
       'classId': classId,
@@ -41,6 +46,8 @@ class PaymentModel {
       'sessionsPaid': sessionsPaid,
       'dueDate': Timestamp.fromDate(dueDate),
       'paidAt': paidAt != null ? Timestamp.fromDate(paidAt!) : null,
+      'createdAt':
+          createdAt != null ? Timestamp.fromDate(createdAt!) : Timestamp.now(),
       'notificationSent': notificationSent,
     };
   }
@@ -49,6 +56,7 @@ class PaymentModel {
     final data = doc.data() as Map<String, dynamic>;
     return PaymentModel(
       paymentId: doc.id,
+      teacherId: data['teacherId'],
       studentId: data['studentId'] ?? '',
       parentId: data['parentId'] ?? '',
       classId: data['classId'] ?? '',
@@ -57,9 +65,14 @@ class PaymentModel {
       description: data['description'] ?? 'Pembayaran',
       status: data['status'] ?? 'pending',
       sessionsPaid: data['sessionsPaid'] ?? 0,
-      dueDate: (data['dueDate'] as Timestamp).toDate(),
+      dueDate: data['dueDate'] != null
+          ? (data['dueDate'] as Timestamp).toDate()
+          : DateTime.now(),
       paidAt: data['paidAt'] != null
           ? (data['paidAt'] as Timestamp).toDate()
+          : null,
+      createdAt: data['createdAt'] != null
+          ? (data['createdAt'] as Timestamp).toDate()
           : null,
       notificationSent: data['notificationSent'] ?? false,
     );
@@ -67,6 +80,7 @@ class PaymentModel {
 
   PaymentModel copyWith({
     String? paymentId,
+    String? teacherId,
     String? studentId,
     String? parentId,
     String? classId,
@@ -77,10 +91,12 @@ class PaymentModel {
     int? sessionsPaid,
     DateTime? dueDate,
     DateTime? paidAt,
+    DateTime? createdAt,
     bool? notificationSent,
   }) {
     return PaymentModel(
       paymentId: paymentId ?? this.paymentId,
+      teacherId: teacherId ?? this.teacherId,
       studentId: studentId ?? this.studentId,
       parentId: parentId ?? this.parentId,
       classId: classId ?? this.classId,
@@ -91,6 +107,7 @@ class PaymentModel {
       sessionsPaid: sessionsPaid ?? this.sessionsPaid,
       dueDate: dueDate ?? this.dueDate,
       paidAt: paidAt ?? this.paidAt,
+      createdAt: createdAt ?? this.createdAt,
       notificationSent: notificationSent ?? this.notificationSent,
     );
   }
