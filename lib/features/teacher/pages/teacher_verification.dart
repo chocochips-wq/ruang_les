@@ -11,7 +11,8 @@ class TeacherVerificationPage extends StatefulWidget {
   const TeacherVerificationPage({super.key});
 
   @override
-  State<TeacherVerificationPage> createState() => _TeacherVerificationPageState();
+  State<TeacherVerificationPage> createState() =>
+      _TeacherVerificationPageState();
 }
 
 class _TeacherVerificationPageState extends State<TeacherVerificationPage> {
@@ -66,10 +67,10 @@ class _TeacherVerificationPageState extends State<TeacherVerificationPage> {
                 ? const Center(child: Text('User not logged in'))
                 : StreamBuilder<List<UserModel>>(
                     stream: _selectedFilter == 'all'
-                        ? _userRepository.streamPendingUsers(
-                            roles: ['student', 'parent'])
-                        : _userRepository.streamPendingUsers(
-                            roles: [_selectedFilter]),
+                        ? _userRepository
+                            .streamPendingUsers(roles: ['student', 'parent'])
+                        : _userRepository
+                            .streamPendingUsers(roles: [_selectedFilter]),
                     builder: (context, snapshot) {
                       if (snapshot.connectionState == ConnectionState.waiting) {
                         return const Center(child: CircularProgressIndicator());
@@ -85,33 +86,33 @@ class _TeacherVerificationPageState extends State<TeacherVerificationPage> {
 
                       if (pendingUsers.isEmpty) {
                         return Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                Icons.check_circle_outline,
-                size: 80,
-                color: Colors.grey[400]!,
-              ),
-              const SizedBox(height: 16),
-              Text(
-                'Tidak ada permintaan verifikasi',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.grey[600]!,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Semua akun sudah diverifikasi',
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.grey[500]!,
-                ),
-              ),
-            ],
-          ),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.check_circle_outline,
+                                size: 80,
+                                color: Colors.grey[400]!,
+                              ),
+                              const SizedBox(height: 16),
+                              Text(
+                                'Tidak ada permintaan verifikasi',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.grey[600]!,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                'Semua akun sudah diverifikasi',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: Colors.grey[500]!,
+                                ),
+                              ),
+                            ],
+                          ),
                         );
                       }
 
@@ -169,7 +170,8 @@ class _TeacherVerificationPageState extends State<TeacherVerificationPage> {
 
   Widget _buildVerificationCard(UserModel user, String verifierId) {
     final roleName = user.role == 'student' ? 'Murid' : 'Orang Tua';
-    final roleIcon = user.role == 'student' ? Icons.school : Icons.family_restroom;
+    final roleIcon =
+        user.role == 'student' ? Icons.school : Icons.family_restroom;
     final roleColor = user.role == 'student' ? Colors.blue : Colors.green;
 
     return Container(
@@ -267,7 +269,8 @@ class _TeacherVerificationPageState extends State<TeacherVerificationPage> {
           // User Info
           _buildInfoRow(Icons.email, 'Email', user.email),
           const SizedBox(height: 8),
-          _buildInfoRow(Icons.phone, 'No. HP', user.phone.isNotEmpty ? user.phone : '-'),
+          _buildInfoRow(
+              Icons.phone, 'No. HP', user.phone.isNotEmpty ? user.phone : '-'),
           const SizedBox(height: 8),
           _buildInfoRow(
             Icons.calendar_today,
@@ -330,10 +333,10 @@ class _TeacherVerificationPageState extends State<TeacherVerificationPage> {
         const SizedBox(width: 8),
         Text(
           '$label: ',
-            style: TextStyle(
-              fontSize: 13,
-              color: Colors.grey[600]!,
-            ),
+          style: TextStyle(
+            fontSize: 13,
+            color: Colors.grey[600]!,
+          ),
         ),
         Expanded(
           child: Text(
@@ -417,14 +420,15 @@ class _TeacherVerificationPageState extends State<TeacherVerificationPage> {
   void _showRejectDialog(UserModel user, String verifierId) {
     showDialog(
       context: context,
-      builder: (context) {
+      builder: (dialogContext) {
         return AlertDialog(
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
           title: Row(
             children: [
-              const Icon(Icons.warning_amber_rounded, color: Colors.red, size: 28),
+              const Icon(Icons.warning_amber_rounded,
+                  color: Colors.red, size: 28),
               const SizedBox(width: 8),
               const Text(
                 'Tolak Verifikasi',
@@ -438,7 +442,7 @@ class _TeacherVerificationPageState extends State<TeacherVerificationPage> {
           ),
           actions: [
             TextButton(
-              onPressed: () => Navigator.pop(context),
+              onPressed: () => Navigator.pop(dialogContext),
               child: Text(
                 'Batal',
                 style: TextStyle(
@@ -449,57 +453,7 @@ class _TeacherVerificationPageState extends State<TeacherVerificationPage> {
               ),
             ),
             ElevatedButton(
-              onPressed: () async {
-                Navigator.pop(context); // Close dialog
-
-                if (user.userId == null) return;
-
-                showDialog(
-                  context: context,
-                  barrierDismissible: false,
-                  builder: (context) =>
-                      const Center(child: CircularProgressIndicator()),
-                );
-
-                try {
-                  await _userRepository.rejectUser(user.userId!, verifierId);
-
-                  if (!mounted) return;
-                  Navigator.pop(context); // Close loading dialog
-
-                  if (mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: const Row(
-                          children: [
-                            Icon(Icons.check_circle, color: Colors.white),
-                            SizedBox(width: 12),
-                            Text('Verifikasi ditolak'),
-                          ],
-                        ),
-                        backgroundColor: Colors.orange,
-                        behavior: SnackBarBehavior.floating,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        duration: const Duration(seconds: 2),
-                      ),
-                    );
-                  }
-                } catch (e) {
-                  if (!mounted) return;
-                  Navigator.pop(context); // Close loading dialog
-
-                  if (mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('Error: $e'),
-                        backgroundColor: Colors.red,
-                      ),
-                    );
-                  }
-                }
-              },
+              onPressed: () => _rejectUser(user, verifierId, dialogContext),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.red,
                 foregroundColor: Colors.white,
@@ -518,5 +472,62 @@ class _TeacherVerificationPageState extends State<TeacherVerificationPage> {
         );
       },
     );
+  }
+
+  Future<void> _rejectUser(
+      UserModel user, String verifierId, BuildContext dialogContext) async {
+    // Close the confirmation dialog first
+    Navigator.pop(dialogContext);
+
+    if (user.userId == null) return;
+
+    // Show loading dialog using the widget's context (not dialog context)
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (loadingContext) =>
+          const Center(child: CircularProgressIndicator()),
+    );
+
+    try {
+      await _userRepository.rejectUser(user.userId!, verifierId);
+
+      if (!mounted) return;
+      // Use rootNavigator to ensure we close the loading dialog
+      Navigator.of(context, rootNavigator: true).pop();
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Row(
+              children: [
+                Icon(Icons.check_circle, color: Colors.white),
+                SizedBox(width: 12),
+                Text('Verifikasi ditolak'),
+              ],
+            ),
+            backgroundColor: Colors.orange,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
+      // Use rootNavigator to ensure we close the loading dialog
+      Navigator.of(context, rootNavigator: true).pop();
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 }
