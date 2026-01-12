@@ -481,7 +481,11 @@ class _TeacherVerificationPageState extends State<TeacherVerificationPage> {
 
     if (user.userId == null) return;
 
-    // Show loading dialog using the widget's context (not dialog context)
+    // Store navigator reference before async operation
+    final navigator = Navigator.of(context, rootNavigator: true);
+    final scaffoldMessenger = ScaffoldMessenger.of(context);
+
+    // Show loading dialog
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -492,42 +496,40 @@ class _TeacherVerificationPageState extends State<TeacherVerificationPage> {
     try {
       await _userRepository.rejectUser(user.userId!, verifierId);
 
-      if (!mounted) return;
-      // Use rootNavigator to ensure we close the loading dialog
-      Navigator.of(context, rootNavigator: true).pop();
+      // Close loading dialog first, before any mounted check
+      navigator.pop();
 
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Row(
-              children: [
-                Icon(Icons.check_circle, color: Colors.white),
-                SizedBox(width: 12),
-                Text('Verifikasi ditolak'),
-              ],
-            ),
-            backgroundColor: Colors.orange,
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10),
-            ),
-            duration: const Duration(seconds: 2),
+      if (!mounted) return;
+
+      scaffoldMessenger.showSnackBar(
+        SnackBar(
+          content: const Row(
+            children: [
+              Icon(Icons.check_circle, color: Colors.white),
+              SizedBox(width: 12),
+              Text('Verifikasi ditolak'),
+            ],
           ),
-        );
-      }
+          backgroundColor: Colors.orange,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+          duration: const Duration(seconds: 2),
+        ),
+      );
     } catch (e) {
-      if (!mounted) return;
-      // Use rootNavigator to ensure we close the loading dialog
-      Navigator.of(context, rootNavigator: true).pop();
+      // Close loading dialog first, before any mounted check
+      navigator.pop();
 
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
+      if (!mounted) return;
+
+      scaffoldMessenger.showSnackBar(
+        SnackBar(
+          content: Text('Error: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
     }
   }
 }
