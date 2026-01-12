@@ -311,14 +311,35 @@ class UserRepository {
     }
   }
 
-  // 19. REJECT USER (reject user account)
+  // 19. REJECT USER (delete user account completely)
   Future<void> rejectUser(String userId, String rejectedBy) async {
     try {
-      await _firestore.collection(collectionName).doc(userId).update({
-        'verificationStatus': 'rejected',
-        'verifiedAt': Timestamp.now(),
-        'verifiedBy': rejectedBy,
-      });
+      // First, get the user to know their role
+      final userDoc =
+          await _firestore.collection(collectionName).doc(userId).get();
+
+      if (!userDoc.exists) {
+        throw Exception('User not found');
+      }
+
+      final role = userDoc.data()?['role'] as String?;
+
+      // Use batch to delete from multiple collections
+      final batch = _firestore.batch();
+
+      // Delete from users collection
+      batch.delete(_firestore.collection(collectionName).doc(userId));
+
+      // Delete from role-specific collection
+      if (role == AppConstants.roleStudent) {
+        batch.delete(
+            _firestore.collection(AppConstants.studentsCollection).doc(userId));
+      } else if (role == AppConstants.roleParent) {
+        batch.delete(
+            _firestore.collection(AppConstants.parentsCollection).doc(userId));
+      }
+
+      await batch.commit();
     } catch (e) {
       throw Exception('Failed to reject user: $e');
     }
