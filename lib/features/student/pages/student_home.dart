@@ -1,18 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../../core/utils/colors.dart';
 import '../../../data/repositories/student_repository.dart';
 import '../../../data/repositories/class_repository.dart';
 import '../../../data/repositories/session_repository.dart';
-import '../../../data/repositories/user_repository.dart';
-import '../../../core/models/student_model.dart';
+import '../../../data/repositories/progress_repository.dart';
 import '../../../core/models/class_model.dart';
 import '../../../core/models/session_model.dart';
 import '../widgets/student_drawer.dart';
 import '../widgets/student_bottom_nav.dart';
-import '../providers/student_provider.dart';
+import '../widgets/student_progress_widget.dart';
 
 class BerandaMurid extends StatefulWidget {
   const BerandaMurid({super.key});
@@ -22,12 +20,11 @@ class BerandaMurid extends StatefulWidget {
 }
 
 class _BerandaMuridState extends State<BerandaMurid> {
-  int _selectedIndex = 0;
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final StudentRepository _studentRepository = StudentRepository();
   final ClassRepository _classRepository = ClassRepository();
   final SessionRepository _sessionRepository = SessionRepository();
-  final UserRepository _userRepository = UserRepository();
+  final ProgressRepository _progressRepository = ProgressRepository();
   String? _studentId;
 
   @override
@@ -128,6 +125,10 @@ class _BerandaMuridState extends State<BerandaMurid> {
                       _buildWelcomeCard(userName),
                       const SizedBox(height: 20),
                       _buildStatistikCards(),
+                      const SizedBox(height: 20),
+                      _buildStudentProgress(),
+                      const SizedBox(height: 20),
+                      _buildAchievementsBadges(),
                       const SizedBox(height: 20),
                       _buildKelasAktif(),
                       const SizedBox(height: 20),
@@ -236,16 +237,12 @@ class _BerandaMuridState extends State<BerandaMurid> {
                 ],
               );
             }
-
             final classes = classSnapshot.data ?? [];
             final classIds = classes.map((c) => c.classId).whereType<String>().toList();
             
             // Count completed quizzes/tasks from sessions
             int completedTasks = 0;
             int activeTasks = 0;
-            double averageScore = 0.0;
-            int totalScores = 0;
-            int scoreCount = 0;
 
             for (final session in allSessions) {
               if (classIds.contains(session.classId)) {
@@ -272,7 +269,11 @@ class _BerandaMuridState extends State<BerandaMurid> {
             return StreamBuilder<DocumentSnapshot>(
               stream: studentDoc,
               builder: (context, studentSnapshot) {
-                final totalPoints = studentSnapshot.data?.get('totalPoints') ?? 0;
+                final studentData = studentSnapshot.data?.data() as Map<String, dynamic>? ?? {};
+                final totalPointsValue = studentData['totalPoints'];
+                final totalPoints = totalPointsValue is int
+                    ? totalPointsValue
+                    : (totalPointsValue is num ? totalPointsValue.toInt() : 0);
                 // Simplified: use points as proxy for performance
                 final avgScore = totalPoints > 0 ? (totalPoints / 10).round() : 0;
 
@@ -731,6 +732,37 @@ class _BerandaMuridState extends State<BerandaMurid> {
               ),
             );
           },
+        );
+      },
+    );
+  }
+
+  Widget _buildStudentProgress() {
+    if (_studentId == null) {
+      return const SizedBox.shrink();
+    }
+
+    return StreamBuilder(
+      stream: _progressRepository.streamProgressByStudentId(_studentId!),
+      builder: (context, snapshot) {
+        final progress = snapshot.data;
+        return StudentProgressCard(progress: progress);
+      },
+    );
+  }
+
+  Widget _buildAchievementsBadges() {
+    if (_studentId == null) {
+      return const SizedBox.shrink();
+    }
+
+    return StreamBuilder(
+      stream: _progressRepository.streamUnlockedAchievements(_studentId!),
+      builder: (context, snapshot) {
+        final achievements = snapshot.data ?? [];
+        return AchievementBadges(
+          achievements: achievements,
+          maxDisplay: 6,
         );
       },
     );

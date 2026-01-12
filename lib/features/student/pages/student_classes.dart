@@ -253,7 +253,8 @@ class _HalamanKelasState extends State<HalamanKelas> {
               .doc(class_.teacherId)
               .snapshots(),
           builder: (context, teacherSnapshot) {
-            final teacherName = teacherSnapshot.data?.get('fullName') ?? 'Guru';
+            final teacherData = teacherSnapshot.data?.data() as Map<String, dynamic>? ?? {};
+            final teacherName = teacherData['fullName'] ?? teacherData['name'] ?? 'Guru';
 
             // Get sessions for this class
             return StreamBuilder<List<SessionModel>>(

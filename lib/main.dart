@@ -20,6 +20,8 @@ import 'data/repositories/class_repository.dart';
 import 'data/repositories/payment_repository.dart';
 import 'data/repositories/session_repository.dart';
 import 'data/repositories/forum_repository.dart';
+import 'data/repositories/progress_repository.dart';
+import 'data/repositories/quiz_repository.dart';
 
 // Providers
 import 'features/auth/providers/auth_provider.dart';
@@ -68,6 +70,12 @@ void main() async {
           Provider<ForumRepository>(
             create: (_) => ForumRepository(),
           ),
+          Provider<ProgressRepository>(
+            create: (_) => ProgressRepository(),
+          ),
+          Provider<QuizRepository>(
+            create: (_) => QuizRepository(),
+          ),
 
           // Providers/State Management
           ChangeNotifierProvider<AuthProvider>(
@@ -82,6 +90,7 @@ void main() async {
               context.read<StudentRepository>(),
               context.read<ClassRepository>(),
               context.read<SessionRepository>(),
+              context.read<ProgressRepository>(),
             ),
             update: (context, auth, studentProvider) {
               if (auth.isAuthenticated && auth.user?.role == 'student') {

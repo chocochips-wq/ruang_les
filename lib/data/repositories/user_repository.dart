@@ -331,11 +331,13 @@ class UserRepository {
   }
 
   // 15. BATCH OPERATION: Create user with related data
+  // Note: parentId parameter added for Option A flow (parent creates child)
   Future<void> createUserWithRoleData({
     required UserModel userModel,
     Map<String, dynamic>? studentData,
     Map<String, dynamic>? parentData,
     Map<String, dynamic>? teacherData,
+    String? parentId, // For linking student to parent
   }) async {
     try {
       final batch = _firestore.batch();
@@ -356,8 +358,23 @@ class UserRepository {
           'nickname': studentData?['nickname'] ?? userModel.name.split(' ').first,
           'fullName': studentData?['fullName'] ?? userModel.name,
           'gradeLevel': studentData?['gradeLevel'] ?? 'SD 1-3',
+          'parentId': parentId ?? studentData?['parentId'], // Link to parent
+          'classId': studentData?['classId'], // Link to class
+          'totalPoints': studentData?['totalPoints'] ?? 0,
+          'badges': studentData?['badges'] ?? [],
+          'learningLevel': studentData?['learningLevel'] ?? 1,
           'createdAt': Timestamp.now(),
         });
+        
+        // 2b. Update parent's studentIds array if parentId provided
+        if (parentId != null) {
+          final parentRef = _firestore
+              .collection(AppConstants.parentsCollection)
+              .doc(parentId);
+          batch.update(parentRef, {
+            'studentIds': FieldValue.arrayUnion([userModel.userId]),
+          });
+        }
       } else if (userModel.role == AppConstants.roleParent) {
         final parentRef = _firestore
             .collection(AppConstants.parentsCollection)

@@ -2,9 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../../core/utils/colors.dart';
+import '../../../core/utils/data_seeding_dialog.dart';
 import '../../../data/repositories/student_repository.dart';
+import '../../../data/repositories/progress_repository.dart';
 import '../widgets/student_drawer.dart';
 import '../widgets/student_bottom_nav.dart';
+import '../widgets/student_progress_widget.dart';
 
 class ProfileMurid extends StatefulWidget {
   const ProfileMurid({super.key});
@@ -16,6 +19,7 @@ class ProfileMurid extends StatefulWidget {
 class _ProfileMuridState extends State<ProfileMurid> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final StudentRepository _studentRepository = StudentRepository();
+  final ProgressRepository _progressRepository = ProgressRepository();
   String? _studentId;
 
   @override
@@ -100,28 +104,54 @@ class _ProfileMuridState extends State<ProfileMurid> {
                       final averageScore = totalPoints > 0 ? (80 + (totalPoints % 20)) : 0;
 
                       return SingleChildScrollView(
-          child: Column(
-            children: [
+                        child: Column(
+                          children: [
                             _buildHeader(userName, fullName, gradeLevel, avatarUrl),
-              const SizedBox(height: 20),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: Column(
-                  children: [
-                                  _buildProgressSection(
-                                      completedTasks, averageScore),
-                    const SizedBox(height: 20),
-                                  _buildBadges(badges),
-                    const SizedBox(height: 20),
+                            const SizedBox(height: 20),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 20),
+                              child: Column(
+                                children: [
+                                  // Show realtime progress from Firestore
+                                  StreamBuilder(
+                                    stream: _progressRepository
+                                        .streamProgressByStudentId(_studentId!),
+                                    builder: (context, progressSnapshot) {
+                                      final progress = progressSnapshot.data;
+                                      if (progress != null) {
+                                        return StudentProgressCard(
+                                          progress: progress,
+                                        );
+                                      } else {
+                                        return _buildProgressSection(
+                                            completedTasks, averageScore);
+                                      }
+                                    },
+                                  ),
+                                  const SizedBox(height: 20),
+                                  // Show realtime achievements
+                                  StreamBuilder(
+                                    stream: _progressRepository
+                                        .streamUnlockedAchievements(
+                                            _studentId!),
+                                    builder: (context, achievementSnapshot) {
+                                      final achievements =
+                                          achievementSnapshot.data ?? [];
+                                      return AchievementBadges(
+                                        achievements: achievements,
+                                      );
+                                    },
+                                  ),
+                                  const SizedBox(height: 20),
                                   _buildInfoCard(userName, phone, gradeLevel),
-                    const SizedBox(height: 20),
-                    _buildActionButtons(),
-                    const SizedBox(height: 20),
-                  ],
-                ),
-              ),
-            ],
-          ),
+                                  const SizedBox(height: 20),
+                                  _buildActionButtons(),
+                                  const SizedBox(height: 20),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
                       );
                     },
                   );
@@ -537,6 +567,24 @@ class _ProfileMuridState extends State<ProfileMurid> {
           Icons.help_outline,
           Colors.green,
           () {},
+        ),
+        const SizedBox(height: 12),
+        // Seed data button (development only)
+        _buildBigButton(
+          'Seed Data (Dev)',
+          Icons.data_usage,
+          Colors.purple,
+          () {
+            showDialog(
+              context: context,
+              builder: (context) => FutureBuilder(
+                future: Future.delayed(Duration.zero),
+                builder: (context, snapshot) {
+                  return const DataSeededDialog();
+                },
+              ),
+            );
+          },
         ),
       ],
     );

@@ -2,18 +2,23 @@ import 'package:flutter/foundation.dart';
 import '../../../data/repositories/student_repository.dart';
 import '../../../data/repositories/class_repository.dart';
 import '../../../data/repositories/session_repository.dart';
+import '../../../data/repositories/progress_repository.dart';
 import '../../../core/models/student_model.dart';
 import '../../../core/models/class_model.dart';
 import '../../../core/models/session_model.dart';
+import '../../../core/models/progress_model.dart';
 
 class StudentProvider with ChangeNotifier {
   final StudentRepository _studentRepository;
   final ClassRepository _classRepository;
   final SessionRepository _sessionRepository;
+  final ProgressRepository _progressRepository;
 
   StudentModel? _currentStudent;
   List<ClassModel> _classes = [];
   List<SessionModel> _sessions = [];
+  StudentProgressModel? _currentProgress;
+  List<AchievementModel> _achievements = [];
   bool _isLoading = false;
   String? _error;
 
@@ -21,16 +26,19 @@ class StudentProvider with ChangeNotifier {
     this._studentRepository,
     this._classRepository,
     this._sessionRepository,
+    this._progressRepository,
   );
 
   // Getters
   StudentModel? get currentStudent => _currentStudent;
   List<ClassModel> get classes => _classes;
   List<SessionModel> get sessions => _sessions;
+  StudentProgressModel? get currentProgress => _currentProgress;
+  List<AchievementModel> get achievements => _achievements;
   bool get isLoading => _isLoading;
   String? get error => _error;
 
-  // Load student by user ID
+  // Load student by user ID with realtime progress and achievements
   Future<void> loadStudentByUserId(String userId) async {
     try {
       _isLoading = true;
@@ -47,6 +55,10 @@ class StudentProvider with ChangeNotifier {
       // Load classes and sessions
       await _loadClasses(student.studentId!);
       await _loadSessions();
+      
+      // Load progress and achievements
+      await _loadProgress(student.studentId!);
+      await _loadAchievements(student.studentId!);
 
     } catch (e) {
       _error = 'Gagal memuat data: $e';
@@ -285,11 +297,136 @@ class StudentProvider with ChangeNotifier {
     return _sessions.take(10).toList();
   }
 
+  // Load progress
+  Future<void> _loadProgress(String studentId) async {
+    try {
+      final progress = await _progressRepository.getProgressByStudentId(studentId);
+      _currentProgress = progress;
+    } catch (e) {
+      print('Error loading progress: $e');
+    }
+  }
+
+  // Load achievements
+  Future<void> _loadAchievements(String studentId) async {
+    try {
+      final achievements = await _progressRepository.getAchievementsByStudentId(studentId);
+      _achievements = achievements;
+    } catch (e) {
+      print('Error loading achievements: $e');
+    }
+  }
+
+  // Stream progress for realtime updates
+  Stream<StudentProgressModel?> streamProgress(String studentId) {
+    return _progressRepository.streamProgressByStudentId(studentId);
+  }
+
+  // Stream achievements for realtime updates
+  Stream<List<AchievementModel>> streamAchievements(String studentId) {
+    return _progressRepository.streamAchievementsByStudentId(studentId);
+  }
+
+  // Stream unlocked achievements
+  Stream<List<AchievementModel>> streamUnlockedAchievements(String studentId) {
+    return _progressRepository.streamUnlockedAchievements(studentId);
+  }
+
+  // Add experience points
+  Future<bool> addExperiencePoints(int points) async {
+    try {
+      if (_currentProgress == null || _currentProgress!.progressId == null) {
+        _error = 'Progress siswa tidak ditemukan';
+        return false;
+      }
+
+      await _progressRepository.addExperiencePoints(
+        _currentProgress!.progressId!,
+        points,
+      );
+
+      // Reload progress
+      if (_currentStudent?.studentId != null) {
+        await _loadProgress(_currentStudent!.studentId!);
+      }
+
+      return true;
+    } catch (e) {
+      _error = 'Gagal menambah experience points: $e';
+      return false;
+    }
+  }
+
+  // Complete activity
+  Future<bool> completeActivity(String activityId) async {
+    try {
+      if (_currentProgress == null || _currentProgress!.progressId == null) {
+        _error = 'Progress siswa tidak ditemukan';
+        return false;
+      }
+
+      await _progressRepository.completeActivity(
+        _currentProgress!.progressId!,
+        activityId,
+      );
+
+      // Add experience points
+      await addExperiencePoints(10);
+
+      return true;
+    } catch (e) {
+      _error = 'Gagal menyelesaikan activity: $e';
+      return false;
+    }
+  }
+
+  // Complete topic
+  Future<bool> completeTopic(String topicId) async {
+    try {
+      if (_currentProgress == null || _currentProgress!.progressId == null) {
+        _error = 'Progress siswa tidak ditemukan';
+        return false;
+      }
+
+      await _progressRepository.completeTopic(
+        _currentProgress!.progressId!,
+        topicId,
+      );
+
+      // Add experience points
+      await addExperiencePoints(25);
+
+      return true;
+    } catch (e) {
+      _error = 'Gagal menyelesaikan topic: $e';
+      return false;
+    }
+  }
+
+  // Unlock achievement
+  Future<bool> unlockAchievement(String achievementId) async {
+    try {
+      await _progressRepository.unlockAchievement(achievementId);
+
+      // Reload achievements
+      if (_currentStudent?.studentId != null) {
+        await _loadAchievements(_currentStudent!.studentId!);
+      }
+
+      return true;
+    } catch (e) {
+      _error = 'Gagal membuka achievement: $e';
+      return false;
+    }
+  }
+
   // Clear student data on logout
   void clearStudent() {
     _currentStudent = null;
     _classes.clear();
     _sessions.clear();
+    _currentProgress = null;
+    _achievements.clear();
     _error = null;
     notifyListeners();
   }
