@@ -70,14 +70,44 @@ class _QuizPlayPageState extends State<QuizPlayPage> {
   }
 
   void _nextQuestion() {
+    if (_isReviewMode) {
+      if (_currentQuestionIndex < widget.quiz.questions.length - 1) {
+        setState(() {
+          _currentQuestionIndex++;
+        });
+      } else {
+        Navigator.pop(context);
+      }
+      return;
+    }
+
+    // Play Mode Logic
+    if (_selectedAnswer == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Pilih jawaban terlebih dahulu'),
+          duration: Duration(seconds: 1),
+        ),
+      );
+      return;
+    }
+
+    // Save answer and update score
+    final currentQuestion = widget.quiz.questions[_currentQuestionIndex];
+    currentQuestion.selectedOptionIndex = _selectedAnswer; // Save selection
+
+    if (_selectedAnswer == currentQuestion.correctOptionIndex) {
+      _score += 10; // Assuming 10 points per question, or use logic below
+      // If using dynamic points: _score += (widget.quiz.totalPoints / widget.quiz.questions.length).round();
+    }
+
     if (_currentQuestionIndex < widget.quiz.questions.length - 1) {
       setState(() {
         _currentQuestionIndex++;
+        _selectedAnswer = null; // Reset for next question
       });
     } else {
-      setState(() {
-        _quizCompleted = true;
-      });
+      _submitQuizResult();
     }
   }
 
@@ -87,7 +117,13 @@ class _QuizPlayPageState extends State<QuizPlayPage> {
       return _buildCompletionScreen();
     }
 
-    // ... (rest of build logic same as before until AppBar)
+    // Prepare content
+    if (widget.quiz.questions.isEmpty) {
+      return Scaffold(
+        appBar: AppBar(title: Text(widget.quiz.title)),
+        body: const Center(child: Text("Kuis ini tidak memiliki pertanyaan.")),
+      );
+    }
 
     final currentQuestion = widget.quiz.questions[_currentQuestionIndex];
 
@@ -230,7 +266,7 @@ class _QuizPlayPageState extends State<QuizPlayPage> {
                             ? _nextQuestion
                             : (_selectedAnswer != null
                                 ? () => _nextQuestion()
-                                : null), // Fix recursive call issue
+                                : null),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: _isReviewMode
                               ? Colors.grey[800]
@@ -362,12 +398,44 @@ class _QuizPlayPageState extends State<QuizPlayPage> {
         : widget.quiz.questions.length * 10; // Fallback
     final percentage =
         (totalPoints > 0) ? (_score / totalPoints * 100).round() : 0;
-    final isPassed = percentage >= 60;
+
+    // Determine feedback based on percentage
+    String title;
+    String message;
+    Color color;
+    IconData icon;
+
+    if (percentage <= 20) {
+      title = 'Jangan Menyerah!';
+      message = 'Perbanyak latihan lagi ya. Kamu pasti bisa!';
+      color = Colors.red;
+      icon = Icons.cancel;
+    } else if (percentage <= 40) {
+      title = 'Terus Belajar!';
+      message = 'Masih perlu ditingkatkan. Semangat!';
+      color = Colors.orange;
+      icon = Icons.info;
+    } else if (percentage <= 60) {
+      title = 'Cukup Baik';
+      message = 'Hasil yang lumayan, tapi bisa lebih baik lagi.';
+      color = Colors.amber.shade700;
+      icon = Icons.trending_up;
+    } else if (percentage <= 80) {
+      title = 'Bagus!';
+      message = 'Kamu menjawab sebagian besar dengan benar. Pertahankan!';
+      color = Colors.lightGreen;
+      icon = Icons.thumb_up;
+    } else {
+      title = 'Luar Biasa!';
+      message = 'Hasil yang sempurna! Kerja bagus!';
+      color = Colors.green;
+      icon = Icons.emoji_events;
+    }
 
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        backgroundColor: isPassed ? Colors.green : Colors.orange,
+        backgroundColor: color,
         elevation: 0,
         title: const Text(
           'Quiz Selesai',
@@ -386,26 +454,26 @@ class _QuizPlayPageState extends State<QuizPlayPage> {
                 width: 120,
                 height: 120,
                 decoration: BoxDecoration(
-                  color: (isPassed ? Colors.green : Colors.orange)
-                      .withOpacity(0.1),
+                  color: color.withOpacity(0.1),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
-                  isPassed ? Icons.emoji_events : Icons.celebration,
+                  icon,
                   size: 60,
-                  color: isPassed ? Colors.green : Colors.orange,
+                  color: color,
                 ),
               ),
               const SizedBox(height: 32),
 
               // Title
               Text(
-                isPassed ? 'Selamat!' : 'Bagus!',
+                title,
                 style: const TextStyle(
                   fontSize: 32,
                   fontWeight: FontWeight.bold,
                   color: AppColors.textDark,
                 ),
+                textAlign: TextAlign.center,
               ),
               const SizedBox(height: 16),
 
@@ -435,7 +503,7 @@ class _QuizPlayPageState extends State<QuizPlayPage> {
                           style: TextStyle(
                             fontSize: 64,
                             fontWeight: FontWeight.bold,
-                            color: isPassed ? Colors.green : Colors.orange,
+                            color: color,
                           ),
                         ),
                         Text(
@@ -443,7 +511,7 @@ class _QuizPlayPageState extends State<QuizPlayPage> {
                           style: TextStyle(
                             fontSize: 32,
                             fontWeight: FontWeight.bold,
-                            color: isPassed ? Colors.green : Colors.orange,
+                            color: color,
                           ),
                         ),
                       ],
@@ -458,7 +526,7 @@ class _QuizPlayPageState extends State<QuizPlayPage> {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Kamu menjawab dengan benar.',
+                      message,
                       style: TextStyle(
                         fontSize: 15,
                         color: Colors.grey.shade600,

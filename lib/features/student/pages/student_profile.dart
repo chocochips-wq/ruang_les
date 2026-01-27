@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../../core/utils/colors.dart';
-import '../../../core/utils/data_seeding_dialog.dart';
+
 import '../../../data/repositories/student_repository.dart';
 import '../../../data/repositories/progress_repository.dart';
 import '../widgets/student_drawer.dart';
@@ -73,7 +73,8 @@ class _ProfileMuridState extends State<ProfileMurid> {
                     return const Center(child: CircularProgressIndicator());
                   }
 
-                  final userData = userSnapshot.data?.data() as Map<String, dynamic>? ?? {};
+                  final userData =
+                      userSnapshot.data?.data() as Map<String, dynamic>? ?? {};
                   final userName = userData['name'] ?? 'Siswa';
                   final phone = userData['phone'] ?? '';
 
@@ -88,28 +89,36 @@ class _ProfileMuridState extends State<ProfileMurid> {
                         return const Center(child: CircularProgressIndicator());
                       }
 
-                      final studentData =
-                          studentSnapshot.data?.data() as Map<String, dynamic>? ?? {};
+                      final studentData = studentSnapshot.data?.data()
+                              as Map<String, dynamic>? ??
+                          {};
                       final fullName = studentData['fullName'] ?? '';
                       final gradeLevel = studentData['gradeLevel'] ?? '';
                       final avatarUrl = studentData['avatarUrl'];
-                      final badges = List<String>.from(studentData['badges'] ?? []);
+                      final badges =
+                          List<String>.from(studentData['badges'] ?? []);
                       final totalPointsValue = studentData['totalPoints'];
-                      final totalPoints = totalPointsValue is int 
-                          ? totalPointsValue 
-                          : (totalPointsValue is num ? totalPointsValue.toInt() : 0);
+                      final totalPoints = totalPointsValue is int
+                          ? totalPointsValue
+                          : (totalPointsValue is num
+                              ? totalPointsValue.toInt()
+                              : 0);
 
                       // Calculate statistics
-                      final completedTasks = (totalPoints / 10).round(); // Simplified
-                      final averageScore = totalPoints > 0 ? (80 + (totalPoints % 20)) : 0;
+                      final completedTasks =
+                          (totalPoints / 10).round(); // Simplified
+                      final averageScore =
+                          totalPoints > 0 ? (80 + (totalPoints % 20)) : 0;
 
                       return SingleChildScrollView(
                         child: Column(
                           children: [
-                            _buildHeader(userName, fullName, gradeLevel, avatarUrl),
+                            _buildHeader(
+                                userName, fullName, gradeLevel, avatarUrl),
                             const SizedBox(height: 20),
                             Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 20),
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 20),
                               child: Column(
                                 children: [
                                   // Show realtime progress from Firestore
@@ -156,7 +165,7 @@ class _ProfileMuridState extends State<ProfileMurid> {
                     },
                   );
                 },
-        ),
+              ),
         bottomNavigationBar: const FooterMurid(selectedIndex: 2));
   }
 
@@ -169,10 +178,7 @@ class _ProfileMuridState extends State<ProfileMurid> {
       padding: const EdgeInsets.only(top: 20, bottom: 40),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [
-            AppColors.primary,
-            AppColors.primary.withValues(alpha: 0.8)
-          ],
+          colors: [AppColors.primary, AppColors.primary.withValues(alpha: 0.8)],
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
         ),
@@ -302,7 +308,8 @@ class _ProfileMuridState extends State<ProfileMurid> {
           const SizedBox(height: 20),
           _buildProgressItem('Tugas Selesai', completedTasks, 30, Colors.green),
           const SizedBox(height: 16),
-          _buildProgressItem('Nilai Rata-rata', averageScore, 100, Colors.orange),
+          _buildProgressItem(
+              'Nilai Rata-rata', averageScore, 100, Colors.orange),
         ],
       ),
     );
@@ -352,42 +359,74 @@ class _ProfileMuridState extends State<ProfileMurid> {
   }
 
   Widget _buildBadges(List<String> badges) {
-    // Default badges if empty
-    final defaultBadges = badges.isEmpty
-        ? [
-            {'title': 'Siswa Aktif', 'icon': '🏆', 'color': const Color(0xFFFFD700)},
-            {'title': 'Rajin Belajar', 'icon': '📚', 'color': const Color(0xFF2196F3)},
-          ]
-        : badges.map((badge) {
-            // Map badge names to icons and colors
-            if (badge.toLowerCase().contains('aktif')) {
-              return {
-                'title': badge,
-                'icon': '🏆',
-                'color': const Color(0xFFFFD700)
-              };
-            } else if (badge.toLowerCase().contains('rajin') ||
-                badge.toLowerCase().contains('belajar')) {
-              return {
-                'title': badge,
-                'icon': '📚',
-                'color': const Color(0xFF2196F3)
-              };
-            } else if (badge.toLowerCase().contains('juara') ||
-                badge.toLowerCase().contains('quiz')) {
-              return {
-                'title': badge,
-                'icon': '⭐',
-                'color': const Color(0xFF4CAF50)
-              };
-            } else {
-              return {
-                'title': badge,
-                'icon': '🎖️',
-                'color': const Color(0xFF9C27B0)
-              };
-            }
-          }).toList();
+    if (badges.isEmpty) {
+      return Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey[200]!,
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            )
+          ],
+        ),
+        child: const Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Text(
+                  '🎖️ ',
+                  style: TextStyle(fontSize: 24),
+                ),
+                Text(
+                  'Badge Kamu',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height: 20),
+            Center(
+              child: Text(
+                'Belum ada badge yang didapatkan.\nTerus belajar untuk mendapatkan badge!',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: Colors.grey,
+                  fontSize: 14,
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    final badgeList = badges.map((badge) {
+      // Map badge names to icons and colors
+      if (badge.toLowerCase().contains('aktif')) {
+        return {'title': badge, 'icon': '🏆', 'color': const Color(0xFFFFD700)};
+      } else if (badge.toLowerCase().contains('rajin') ||
+          badge.toLowerCase().contains('belajar')) {
+        return {'title': badge, 'icon': '📚', 'color': const Color(0xFF2196F3)};
+      } else if (badge.toLowerCase().contains('juara') ||
+          badge.toLowerCase().contains('quiz')) {
+        return {'title': badge, 'icon': '⭐', 'color': const Color(0xFF4CAF50)};
+      } else {
+        return {
+          'title': badge,
+          'icon': '🎖️',
+          'color': const Color(0xFF9C27B0)
+        };
+      }
+    }).toList();
 
     return Container(
       padding: const EdgeInsets.all(20),
@@ -422,10 +461,11 @@ class _ProfileMuridState extends State<ProfileMurid> {
             ],
           ),
           const SizedBox(height: 16),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: (defaultBadges.take(3) as List<Map<String, dynamic>>)
-                .map((badge) {
+          Wrap(
+            spacing: 16,
+            runSpacing: 16,
+            alignment: WrapAlignment.center,
+            children: badgeList.map((badge) {
               return Column(
                 children: [
                   Container(
@@ -505,8 +545,8 @@ class _ProfileMuridState extends State<ProfileMurid> {
           const SizedBox(height: 16),
           _buildSimpleInfoRow('👤', 'Nama', name),
           const SizedBox(height: 12),
-          _buildSimpleInfoRow('📞', 'No. Telepon',
-              phone.isNotEmpty ? phone : 'Belum diisi'),
+          _buildSimpleInfoRow(
+              '📞', 'No. Telepon', phone.isNotEmpty ? phone : 'Belum diisi'),
           const SizedBox(height: 12),
           _buildSimpleInfoRow('📖', 'Kelas',
               gradeLevel.isNotEmpty ? gradeLevel : 'Belum ada kelas'),
@@ -569,20 +609,13 @@ class _ProfileMuridState extends State<ProfileMurid> {
           () {},
         ),
         const SizedBox(height: 12),
-        // Seed data button (development only)
         _buildBigButton(
-          'Seed Data (Dev)',
-          Icons.data_usage,
-          Colors.purple,
+          'Butuh Bantuan?',
+          Icons.help_outline,
+          Colors.green,
           () {
-            showDialog(
-              context: context,
-              builder: (context) => FutureBuilder(
-                future: Future.delayed(Duration.zero),
-                builder: (context, snapshot) {
-                  return const DataSeededDialog();
-                },
-              ),
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Fitur bantuan segera hadir!')),
             );
           },
         ),

@@ -1,10 +1,66 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:intl/intl.dart';
 import '../../../core/utils/colors.dart';
 import '../widgets/student_drawer.dart';
 import '../widgets/student_bottom_nav.dart';
+import '../../../data/repositories/student_repository.dart';
+import '../../../data/repositories/progress_repository.dart';
+import '../../../core/models/progress_model.dart';
+import '../../../core/models/student_model.dart';
 
-class StudentRewardsPage extends StatelessWidget {
+class StudentRewardsPage extends StatefulWidget {
   const StudentRewardsPage({super.key});
+
+  @override
+  State<StudentRewardsPage> createState() => _StudentRewardsPageState();
+}
+
+class _StudentRewardsPageState extends State<StudentRewardsPage> {
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final StudentRepository _studentRepository = StudentRepository();
+  final ProgressRepository _progressRepository = ProgressRepository();
+  String? _studentId;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadStudentId();
+  }
+
+  Future<void> _loadStudentId() async {
+    final userId = _auth.currentUser?.uid;
+    if (userId == null) return;
+
+    try {
+      final student = await _studentRepository.getStudentByUserId(userId);
+      if (student != null && student.studentId != null) {
+        setState(() {
+          _studentId = student.studentId;
+        });
+      }
+    } catch (e) {
+      print('Error loading student ID: $e');
+    }
+  }
+
+  String _formatTimeAgo(DateTime date) {
+    final now = DateTime.now();
+    final difference = now.difference(date);
+
+    if (difference.inDays > 7) {
+      return DateFormat('d MMM y', 'id_ID').format(date);
+    } else if (difference.inDays > 0) {
+      return '${difference.inDays} hari yang lalu';
+    } else if (difference.inHours > 0) {
+      return '${difference.inHours} jam yang lalu';
+    } else if (difference.inMinutes > 0) {
+      return '${difference.inMinutes} menit yang lalu';
+    } else {
+      return 'Baru saja';
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -19,38 +75,67 @@ class StudentRewardsPage extends StatelessWidget {
           style: TextStyle(color: Colors.white),
         ),
       ),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            // Header with stats
-            _buildHeaderSection(),
+      body: _studentId == null
+          ? const Center(child: CircularProgressIndicator())
+          : StreamBuilder<StudentProgressModel?>(
+              stream:
+                  _progressRepository.streamProgressByStudentId(_studentId!),
+              builder: (context, progressSnapshot) {
+                final progress = progressSnapshot.data;
+                // Fallback dummy if no progress yet (or create empty model)
+                final totalPoints = progress?.experiencePoints ?? 0;
+                final currentLevel = progress?.currentLevel ?? 1;
 
-            Padding(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Badges section
-                  _buildBadgesSection(),
-                  const SizedBox(height: 24),
+                return StreamBuilder<List<AchievementModel>>(
+                  stream: _progressRepository
+                      .streamAchievementsByStudentId(_studentId!),
+                  builder: (context, achievementSnapshot) {
+                    final achievements = achievementSnapshot.data ?? [];
+                    final unlockedBadgesCount = achievements
+                        .where((a) => a.isUnlocked && a.category == 'badge')
+                        .length;
+                    final unlockedStickersCount = achievements
+                        .where((a) => a.isUnlocked && a.category == 'sticker')
+                        .length;
 
-                  // Recent achievements
-                  _buildRecentAchievements(),
-                  const SizedBox(height: 24),
+                    return SingleChildScrollView(
+                      child: Column(
+                        children: [
+                          // Header with stats
+                          _buildHeaderSection(totalPoints, unlockedBadgesCount,
+                              unlockedStickersCount, currentLevel),
 
-                  // Coming soon notice
-                  _buildComingSoonNotice(),
-                ],
-              ),
+                          Padding(
+                            padding: const EdgeInsets.all(20),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                // Badges section
+                                _buildBadgesSection(achievements),
+                                const SizedBox(height: 24),
+
+                                // Recent achievements
+                                _buildRecentAchievements(achievements),
+                                const SizedBox(height: 24),
+
+                                // Coming soon notice
+                                _buildComingSoonNotice(),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                );
+              },
             ),
-          ],
-        ),
-      ),
       bottomNavigationBar: const FooterMurid(selectedIndex: 3),
     );
   }
 
-  Widget _buildHeaderSection() {
+  Widget _buildHeaderSection(
+      int totalPoints, int badgeCount, int stickerCount, int level) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(24),
@@ -93,9 +178,9 @@ class StudentRewardsPage extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 8),
-          const Text(
-            '250',
-            style: TextStyle(
+          Text(
+            '$totalPoints',
+            style: const TextStyle(
               fontSize: 48,
               fontWeight: FontWeight.bold,
               color: Colors.white,
@@ -107,19 +192,19 @@ class StudentRewardsPage extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              _buildStatItem(Icons.workspace_premium, '5', 'Badge'),
+              _buildStatItem(Icons.workspace_premium, '$badgeCount', 'Badge'),
               Container(
                 width: 1,
                 height: 40,
                 color: Colors.white.withOpacity(0.3),
               ),
-              _buildStatItem(Icons.star, '12', 'Stiker'),
+              _buildStatItem(Icons.star, '$stickerCount', 'Stiker'),
               Container(
                 width: 1,
                 height: 40,
                 color: Colors.white.withOpacity(0.3),
               ),
-              _buildStatItem(Icons.flag, '3', 'Level'),
+              _buildStatItem(Icons.flag, '$level', 'Level'),
             ],
           ),
         ],
@@ -151,7 +236,10 @@ class StudentRewardsPage extends StatelessWidget {
     );
   }
 
-  Widget _buildBadgesSection() {
+  Widget _buildBadgesSection(List<AchievementModel> achievements) {
+    // Filter only badges
+    final badges = achievements.where((a) => a.category == 'badge').toList();
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -164,57 +252,68 @@ class StudentRewardsPage extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 16),
-        GridView.count(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          crossAxisCount: 3,
-          mainAxisSpacing: 16,
-          crossAxisSpacing: 16,
-          children: [
-            _buildBadgeCard(
-              Icons.star,
-              'Bintang Kelas',
-              Colors.amber,
-              true,
+        if (badges.isEmpty)
+          Container(
+            padding: const EdgeInsets.all(20),
+            width: double.infinity,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.grey.shade300),
             ),
-            _buildBadgeCard(
-              Icons.school,
-              'Rajin Belajar',
-              Colors.blue,
-              true,
+            child: const Column(
+              children: [
+                Icon(Icons.info_outline, color: Colors.grey, size: 40),
+                SizedBox(height: 10),
+                Text(
+                  'Belum ada lencana yang tersedia.\nTerus belajar untuk membukanya!',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: Colors.grey),
+                ),
+              ],
             ),
-            _buildBadgeCard(
-              Icons.trending_up,
-              'Progres Hebat',
-              Colors.green,
-              true,
-            ),
-            _buildBadgeCard(
-              Icons.emoji_events,
-              'Juara',
-              Colors.orange,
-              false,
-            ),
-            _buildBadgeCard(
-              Icons.bolt,
-              'Cepat Kilat',
-              Colors.red,
-              false,
-            ),
-            _buildBadgeCard(
-              Icons.psychology,
-              'Cerdas',
-              Colors.purple,
-              false,
-            ),
-          ],
-        ),
+          )
+        else
+          GridView.count(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            crossAxisCount: 3,
+            mainAxisSpacing: 16,
+            crossAxisSpacing: 16,
+            children: badges.map((achievement) {
+              // Determine color based on title/category logic or random/fixed if not stored
+              // Since color isn't in model, we can infer or cycle
+              Color color = Colors.blue;
+              if (achievement.title.toLowerCase().contains('juara'))
+                color = Colors.orange;
+              if (achievement.title.toLowerCase().contains('rajin'))
+                color = Colors.blue;
+              if (achievement.title.toLowerCase().contains('hebat'))
+                color = Colors.green;
+              if (achievement.title.toLowerCase().contains('bintang'))
+                color = Colors.amber;
+
+              // Parse icon string if it's not a standard material icon code (assuming emoji or simple string now)
+              // Since the model says 'icon' string (emoji or url), we handle it.
+              // For now, if it's an emoji string, just display it. Only use IconData if we mapped it.
+
+              return _buildBadgeCard(
+                achievement.icon,
+                achievement.title,
+                color,
+                achievement.isUnlocked,
+              );
+            }).toList(),
+          ),
       ],
     );
   }
 
   Widget _buildBadgeCard(
-      IconData icon, String label, Color color, bool isUnlocked) {
+      String iconString, String label, Color color, bool isUnlocked) {
+    // Helper to detect if iconString is emoji or trying to be an IconData (needs mapping if so)
+    // Assuming simple emoji for MVP or fallback icon
+
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -239,23 +338,32 @@ class StudentRewardsPage extends StatelessWidget {
               color: isUnlocked ? color.withOpacity(0.1) : Colors.grey.shade100,
               shape: BoxShape.circle,
             ),
-            child: Icon(
-              icon,
-              size: 32,
-              color: isUnlocked ? color : Colors.grey.shade400,
+            child: Text(
+              iconString.isNotEmpty ? iconString : '🏆',
+              style: TextStyle(
+                  fontSize: 32,
+                  color: isUnlocked
+                      ? null
+                      : Colors.grey
+                          .withOpacity(0.5) // Emoji color blending? Not really.
+                  // Emoji grayscale is hard, maybe opacity
+                  ),
             ),
           ),
           const SizedBox(height: 8),
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 11,
-              fontWeight: FontWeight.w600,
-              color: isUnlocked ? AppColors.textDark : Colors.grey.shade500,
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4.0),
+            child: Text(
+              label,
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w600,
+                color: isUnlocked ? AppColors.textDark : Colors.grey.shade500,
+              ),
+              textAlign: TextAlign.center,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
             ),
-            textAlign: TextAlign.center,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
           ),
           if (!isUnlocked)
             Icon(
@@ -268,7 +376,13 @@ class StudentRewardsPage extends StatelessWidget {
     );
   }
 
-  Widget _buildRecentAchievements() {
+  Widget _buildRecentAchievements(List<AchievementModel> achievements) {
+    // Show unlocked achievements sorted by date
+    final recent = achievements.where((a) => a.isUnlocked).toList();
+    // Already sorted by query, but double check
+    recent.sort((a, b) => b.unlockedAt.compareTo(a.unlockedAt));
+    final displayList = recent.take(5).toList();
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -283,46 +397,43 @@ class StudentRewardsPage extends StatelessWidget {
                 color: AppColors.textDark,
               ),
             ),
-            Text(
-              'Lihat Semua',
-              style: TextStyle(
-                fontSize: 13,
-                color: AppColors.primary,
-                fontWeight: FontWeight.w600,
+            if (displayList.isNotEmpty)
+              Text(
+                'Lihat Semua',
+                style: TextStyle(
+                  fontSize: 13,
+                  color: AppColors.primary,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
-            ),
           ],
         ),
         const SizedBox(height: 16),
-        _buildAchievementCard(
-          Icons.star,
-          'Bintang Kelas',
-          'Menyelesaikan 10 sesi pembelajaran',
-          Colors.amber,
-          '2 hari yang lalu',
-        ),
-        const SizedBox(height: 12),
-        _buildAchievementCard(
-          Icons.school,
-          'Rajin Belajar',
-          'Hadir 5 kali berturut-turut',
-          Colors.blue,
-          '1 minggu yang lalu',
-        ),
-        const SizedBox(height: 12),
-        _buildAchievementCard(
-          Icons.trending_up,
-          'Progres Hebat',
-          'Meningkatkan nilai rata-rata',
-          Colors.green,
-          '2 minggu yang lalu',
-        ),
+        if (displayList.isEmpty)
+          const Text('Belum ada pencapaian terbaru.',
+              style: TextStyle(color: Colors.grey)),
+        ...displayList.map((a) {
+          Color color = Colors.blue;
+          if (a.title.toLowerCase().contains('juara')) color = Colors.orange;
+          if (a.title.toLowerCase().contains('bintang')) color = Colors.amber;
+
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 12.0),
+            child: _buildAchievementCard(
+              a.icon,
+              a.title,
+              a.description,
+              color,
+              _formatTimeAgo(a.unlockedAt),
+            ),
+          );
+        }),
       ],
     );
   }
 
   Widget _buildAchievementCard(
-    IconData icon,
+    String iconString,
     String title,
     String description,
     Color color,
@@ -350,7 +461,10 @@ class StudentRewardsPage extends StatelessWidget {
               color: color.withOpacity(0.1),
               borderRadius: BorderRadius.circular(10),
             ),
-            child: Icon(icon, color: color, size: 28),
+            child: Text(
+              iconString.isNotEmpty ? iconString : '🏆',
+              style: const TextStyle(fontSize: 28),
+            ),
           ),
           const SizedBox(width: 16),
           Expanded(
