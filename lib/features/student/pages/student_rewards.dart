@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+
 import 'package:intl/intl.dart';
 import '../../../core/utils/colors.dart';
 import '../widgets/student_drawer.dart';
@@ -8,7 +8,6 @@ import '../widgets/student_bottom_nav.dart';
 import '../../../data/repositories/student_repository.dart';
 import '../../../data/repositories/progress_repository.dart';
 import '../../../core/models/progress_model.dart';
-import '../../../core/models/student_model.dart';
 
 class StudentRewardsPage extends StatefulWidget {
   const StudentRewardsPage({super.key});

@@ -262,9 +262,13 @@ class _ParentDrawerState extends State<ParentDrawer> {
               ),
             ),
             ElevatedButton(
-              onPressed: () {
-                Navigator.pop(context); // Tutup dialog
-                Navigator.pushReplacementNamed(context, AppRoutes.login);
+              onPressed: () async {
+                await _auth.signOut();
+                if (context.mounted) {
+                  Navigator.pop(context); // Tutup dialog
+                  Navigator.pushNamedAndRemoveUntil(
+                      context, AppRoutes.pilihRole, (route) => false);
+                }
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.red,

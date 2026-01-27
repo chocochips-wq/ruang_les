@@ -56,7 +56,8 @@ class DrawerMurid extends StatelessWidget {
                               decoration: BoxDecoration(
                                 color: Colors.white,
                                 shape: BoxShape.circle,
-                                border: Border.all(color: Colors.white, width: 3),
+                                border:
+                                    Border.all(color: Colors.white, width: 3),
                               ),
                               child: const Icon(
                                 Icons.person,
@@ -233,7 +234,8 @@ class DrawerMurid extends StatelessWidget {
                 await authProvider.logout();
                 if (context.mounted) {
                   Navigator.pop(context); // Tutup dialog
-                  Navigator.pushReplacementNamed(context, AppRoutes.login);
+                  Navigator.pushNamedAndRemoveUntil(
+                      context, AppRoutes.pilihRole, (route) => false);
                 }
               },
               style: ElevatedButton.styleFrom(

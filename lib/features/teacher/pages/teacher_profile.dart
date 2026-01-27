@@ -362,7 +362,7 @@ class _PengajarProfilState extends State<PengajarProfil> {
 
             if (context.mounted) {
               Navigator.of(context).pushNamedAndRemoveUntil(
-                AppRoutes.roleSelector,
+                AppRoutes.pilihRole,
                 (route) => false,
               );
             }

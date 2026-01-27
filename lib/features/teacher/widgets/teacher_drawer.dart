@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../../../core/utils/routes.dart';
 import '../../../core/utils/colors.dart';
 import '../../../data/repositories/user_repository.dart';
+import 'package:provider/provider.dart';
+import '../../auth/providers/auth_provider.dart';
 
 class TeacherDrawer extends StatelessWidget {
   final int selectedMenuIndex;
@@ -284,8 +286,13 @@ class TeacherDrawer extends StatelessWidget {
     );
   }
 
-  void _logoutUser(BuildContext context) {
-    Navigator.pop(context);
-    Navigator.pushReplacementNamed(context, AppRoutes.login);
+  Future<void> _logoutUser(BuildContext context) async {
+    Navigator.pop(context); // Close dialog
+    final authProvider = context.read<AuthProvider>();
+    await authProvider.logout();
+    if (context.mounted) {
+      Navigator.pushNamedAndRemoveUntil(
+          context, AppRoutes.pilihRole, (route) => false);
+    }
   }
 }
