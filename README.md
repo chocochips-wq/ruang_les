@@ -130,7 +130,15 @@ MIT License - Lihat [LICENSE](LICENSE) untuk detail.
 
 ## 👨‍💻 Contributors
 
-- **Isma** - Developer Utama
+- **Ismaturrohmah** - Onwer
+
+**Developer**
+- Aditya Naik Brahmana
+- Ahmad Fadhel Hafizhuddin
+- Alfito Yudha Pratama
+- Aprillya Indrianingsih
+- Brian Jonathan
+- Fadilaa Achmad
 
 ---
 
