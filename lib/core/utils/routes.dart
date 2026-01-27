@@ -8,7 +8,7 @@ import '../../features/auth/pages/role_selector_page.dart';
 
 // Import Teacher
 import '../../features/teacher/pages/teacher_home.dart';
-// import '../../features/teacher/pages/teacher_quiz.dart'; // File doesn't exist
+import '../../features/teacher/pages/teacher_quiz_management.dart';
 import '../../features/teacher/pages/teacher_classes.dart';
 import '../../features/teacher/pages/teacher_profile.dart';
 import '../../features/teacher/pages/teacher_reports.dart';
@@ -21,6 +21,7 @@ import '../../features/teacher/pages/teacher_verification.dart';
 // Import Student
 import '../../features/student/pages/student_home.dart';
 import '../../features/student/pages/student_classes.dart';
+import '../../features/student/pages/quiz_list_page.dart';
 import '../../features/student/pages/student_profile.dart';
 import '../../features/student/pages/student_settings.dart';
 
@@ -62,6 +63,7 @@ class AppRoutes {
   static const String muridMateri = '/murid/materi';
   static const String muridProfile = '/murid/profile';
   static const String muridPengaturan = '/murid/pengaturan';
+  static const String muridQuiz = '/murid/quiz';
 
   // ========== ROUTES ORANG TUA ==========
   static const String orangtuaBeranda = '/orangtua/beranda';
@@ -103,9 +105,8 @@ class AppRoutes {
         return MaterialPageRoute(builder: (_) => const HalamanBeranda());
 
       case pengajarQuiz:
-        // TODO: Create teacher_quiz.dart or use quiz pages from features/quiz
         return MaterialPageRoute(
-            builder: (_) => const HalamanBeranda()); // Temporary fallback
+            builder: (_) => TeacherQuizManagement());
 
       case pengajarKelas:
         return MaterialPageRoute(builder: (_) => const PengajarKelas());
@@ -144,6 +145,15 @@ class AppRoutes {
 
       case muridPengaturan:
         return MaterialPageRoute(builder: (_) => const StudentSettings());
+
+      case muridQuiz:
+        // TODO: Ambil quiz dari repository, sementara tampilkan dummy
+        return MaterialPageRoute(
+          builder: (_) => QuizListPage(
+            quizzes: const [], // Ganti dengan data dari repository
+            onStartQuiz: (quiz) {},
+          ),
+        );
 
       // ========== ROUTES ORANG TUA ==========
       case orangtuaBeranda:

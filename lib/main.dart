@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:device_preview/device_preview.dart';
+
 import 'package:firebase_core/firebase_core.dart';
 import 'package:provider/provider.dart';
 
@@ -41,106 +41,103 @@ void main() async {
   // await FirestoreService().initializeCollections();
 
   runApp(
-    DevicePreview(
-      enabled: true, // ⬅️ Aktifkan mode HP
-      builder: (context) => MultiProvider(
-        providers: [
-          // Repositories
-          Provider<UserRepository>(
-            create: (_) => UserRepository(),
-          ),
-          Provider<StudentRepository>(
-            create: (_) => StudentRepository(),
-          ),
-          Provider<ParentRepository>(
-            create: (_) => ParentRepository(),
-          ),
-          Provider<TeacherRepository>(
-            create: (_) => TeacherRepository(),
-          ),
-          Provider<ClassRepository>(
-            create: (_) => ClassRepository(),
-          ),
-          Provider<PaymentRepository>(
-            create: (_) => PaymentRepository(),
-          ),
-          Provider<SessionRepository>(
-            create: (_) => SessionRepository(),
-          ),
-          Provider<ForumRepository>(
-            create: (_) => ForumRepository(),
-          ),
-          Provider<ProgressRepository>(
-            create: (_) => ProgressRepository(),
-          ),
-          Provider<QuizRepository>(
-            create: (_) => QuizRepository(),
-          ),
+    MultiProvider(
+      providers: [
+        // Repositories
+        Provider<UserRepository>(
+          create: (_) => UserRepository(),
+        ),
+        Provider<StudentRepository>(
+          create: (_) => StudentRepository(),
+        ),
+        Provider<ParentRepository>(
+          create: (_) => ParentRepository(),
+        ),
+        Provider<TeacherRepository>(
+          create: (_) => TeacherRepository(),
+        ),
+        Provider<ClassRepository>(
+          create: (_) => ClassRepository(),
+        ),
+        Provider<PaymentRepository>(
+          create: (_) => PaymentRepository(),
+        ),
+        Provider<SessionRepository>(
+          create: (_) => SessionRepository(),
+        ),
+        Provider<ForumRepository>(
+          create: (_) => ForumRepository(),
+        ),
+        Provider<ProgressRepository>(
+          create: (_) => ProgressRepository(),
+        ),
+        Provider<QuizRepository>(
+          create: (_) => QuizRepository(),
+        ),
 
-          // Providers/State Management
-          ChangeNotifierProvider<AuthProvider>(
-            create: (context) => AuthProvider(
-              context.read<UserRepository>(),
-            ),
+        // Providers/State Management
+        ChangeNotifierProvider<AuthProvider>(
+          create: (context) => AuthProvider(
+            context.read<UserRepository>(),
           ),
-          
-          // Student Provider
-          ChangeNotifierProxyProvider<AuthProvider, StudentProvider>(
-            create: (context) => StudentProvider(
-              context.read<StudentRepository>(),
-              context.read<ClassRepository>(),
-              context.read<SessionRepository>(),
-              context.read<ProgressRepository>(),
-            ),
-            update: (context, auth, studentProvider) {
-              if (auth.isAuthenticated && auth.user?.role == 'student') {
-                studentProvider?.loadStudentByUserId(auth.user!.userId!);
-              } else {
-                studentProvider?.clearStudent();
-              }
-              return studentProvider!;
-            },
+        ),
+        
+        // Student Provider
+        ChangeNotifierProxyProvider<AuthProvider, StudentProvider>(
+          create: (context) => StudentProvider(
+            context.read<StudentRepository>(),
+            context.read<ClassRepository>(),
+            context.read<SessionRepository>(),
+            context.read<ProgressRepository>(),
           ),
-          
-          // Parent Provider
-          ChangeNotifierProxyProvider<AuthProvider, ParentProvider>(
-            create: (context) => ParentProvider(
-              context.read<ParentRepository>(),
-              context.read<StudentRepository>(),
-              context.read<PaymentRepository>(),
-              context.read<ClassRepository>(),
-            ),
-            update: (context, auth, parentProvider) {
-              if (auth.isAuthenticated && auth.user?.role == 'parent') {
-                parentProvider?.loadParentData(auth.user!.userId!);
-              } else {
-                parentProvider?.clearParentData();
-              }
-              return parentProvider!;
-            },
+          update: (context, auth, studentProvider) {
+            if (auth.isAuthenticated && auth.user?.role == 'student') {
+              studentProvider?.loadStudentByUserId(auth.user!.userId!);
+            } else {
+              studentProvider?.clearStudent();
+            }
+            return studentProvider!;
+          },
+        ),
+        
+        // Parent Provider
+        ChangeNotifierProxyProvider<AuthProvider, ParentProvider>(
+          create: (context) => ParentProvider(
+            context.read<ParentRepository>(),
+            context.read<StudentRepository>(),
+            context.read<PaymentRepository>(),
+            context.read<ClassRepository>(),
           ),
-          
-          // Teacher Provider
-          ChangeNotifierProxyProvider<AuthProvider, TeacherProvider>(
-            create: (context) => TeacherProvider(
-              context.read<TeacherRepository>(),
-              context.read<ClassRepository>(),
-              context.read<StudentRepository>(),
-              context.read<SessionRepository>(),
-              context.read<PaymentRepository>(),
-            ),
-            update: (context, auth, teacherProvider) {
-              if (auth.isAuthenticated && auth.user?.role == 'teacher') {
-                teacherProvider?.loadTeacherData(auth.user!.userId!);
-              } else {
-                teacherProvider?.clearTeacherData();
-              }
-              return teacherProvider!;
-            },
+          update: (context, auth, parentProvider) {
+            if (auth.isAuthenticated && auth.user?.role == 'parent') {
+              parentProvider?.loadParentData(auth.user!.userId!);
+            } else {
+              parentProvider?.clearParentData();
+            }
+            return parentProvider!;
+          },
+        ),
+        
+        // Teacher Provider
+        ChangeNotifierProxyProvider<AuthProvider, TeacherProvider>(
+          create: (context) => TeacherProvider(
+            context.read<TeacherRepository>(),
+            context.read<ClassRepository>(),
+            context.read<StudentRepository>(),
+            context.read<SessionRepository>(),
+            context.read<PaymentRepository>(),
           ),
-        ],
-        child: const MyApp(),
-      ),
+          update: (context, auth, teacherProvider) {
+            if (auth.isAuthenticated && auth.user?.role == 'teacher') {
+              teacherProvider?.loadTeacherData(auth.user!.userId!);
+            } else {
+              teacherProvider?.clearTeacherData();
+            }
+            return teacherProvider!;
+          },
+        ),
+      ],
+      child: const MyApp(),
     ),
   );
 }
@@ -154,10 +151,9 @@ class MyApp extends StatelessWidget {
       title: 'Ruang Les by Ismaturrohmah',
       debugShowCheckedModeBanner: false,
 
-      // Tambahkan DevicePreview supaya bisa ganti ukuran layar
+      // DevicePreview dihapus untuk produksi
       useInheritedMediaQuery: true,
-      locale: DevicePreview.locale(context),
-      builder: DevicePreview.appBuilder,
+      // ...existing code...
 
       theme: ThemeData(
         primaryColor: AppColors.primary,

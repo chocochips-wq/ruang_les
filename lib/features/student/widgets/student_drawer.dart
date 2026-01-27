@@ -125,6 +125,16 @@ class DrawerMurid extends StatelessWidget {
                 ),
                 _buildDrawerItem(
                   context,
+                  icon: Icons.quiz,
+                  title: 'Quiz',
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.pushReplacementNamed(
+                        context, AppRoutes.muridQuiz);
+                  },
+                ),
+                _buildDrawerItem(
+                  context,
                   icon: Icons.settings,
                   title: 'Pengaturan',
                   onTap: () {
