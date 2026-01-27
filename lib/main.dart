@@ -29,6 +29,8 @@ import 'features/student/providers/student_provider.dart';
 import 'features/parent/providers/parent_provider.dart';
 import 'features/teacher/providers/teacher_provider.dart';
 
+import 'package:intl/date_symbol_data_local.dart';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -36,6 +38,9 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+
+  // Initialize Date Formatting for Indonesian locale
+  await initializeDateFormatting('id_ID', null);
 
   // Optional: Initialize Firestore collections dengan data sample
   // await FirestoreService().initializeCollections();
@@ -81,7 +86,7 @@ void main() async {
             context.read<UserRepository>(),
           ),
         ),
-        
+
         // Student Provider
         ChangeNotifierProxyProvider<AuthProvider, StudentProvider>(
           create: (context) => StudentProvider(
@@ -99,7 +104,7 @@ void main() async {
             return studentProvider!;
           },
         ),
-        
+
         // Parent Provider
         ChangeNotifierProxyProvider<AuthProvider, ParentProvider>(
           create: (context) => ParentProvider(
@@ -117,7 +122,7 @@ void main() async {
             return parentProvider!;
           },
         ),
-        
+
         // Teacher Provider
         ChangeNotifierProxyProvider<AuthProvider, TeacherProvider>(
           create: (context) => TeacherProvider(

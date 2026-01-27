@@ -184,11 +184,18 @@ class TeacherDrawer extends StatelessWidget {
       selected: isSelected,
       selectedTileColor: AppColors.accent,
       onTap: () {
-        onMenuSelected(index);
+        // 1. Close drawer first
         Navigator.pop(context);
 
+        // 2. Schedule navigation for next frame
         if (route != null) {
-          Navigator.pushReplacementNamed(context, route);
+          Future.delayed(const Duration(milliseconds: 200), () {
+            if (context.mounted) {
+              onMenuSelected(index);
+              // Reset stack to avoid "no active routes" error
+              Navigator.pushNamedAndRemoveUntil(context, route, (r) => false);
+            }
+          });
         }
       },
     );
@@ -198,9 +205,8 @@ class TeacherDrawer extends StatelessWidget {
     final isSelected = selectedMenuIndex == 6;
 
     return StreamBuilder<int>(
-      stream: UserRepository()
-          .streamPendingUsers(roles: ['student', 'parent'])
-          .map((users) => users.length),
+      stream: UserRepository().streamPendingUsers(
+          roles: ['student', 'parent']).map((users) => users.length),
       builder: (context, snapshot) {
         final pendingCount = snapshot.data ?? 0;
 
@@ -223,7 +229,8 @@ class TeacherDrawer extends StatelessWidget {
               ),
               if (pendingCount > 0)
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                   decoration: BoxDecoration(
                     color: Colors.red,
                     borderRadius: BorderRadius.circular(12),
@@ -244,7 +251,8 @@ class TeacherDrawer extends StatelessWidget {
           onTap: () {
             onMenuSelected(6);
             Navigator.pop(context);
-            Navigator.pushReplacementNamed(context, AppRoutes.pengajarVerifikasi);
+            Navigator.pushReplacementNamed(
+                context, AppRoutes.pengajarVerifikasi);
           },
         );
       },

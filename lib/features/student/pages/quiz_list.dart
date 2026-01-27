@@ -8,14 +8,14 @@ import '../widgets/student_drawer.dart';
 import '../widgets/student_bottom_nav.dart';
 import 'quiz_play.dart';
 
-class QuizListPage extends StatefulWidget {
-  const QuizListPage({super.key});
+class StudentQuizListPage extends StatefulWidget {
+  const StudentQuizListPage({super.key});
 
   @override
-  State<QuizListPage> createState() => _QuizListPageState();
+  State<StudentQuizListPage> createState() => _StudentQuizListPageState();
 }
 
-class _QuizListPageState extends State<QuizListPage> {
+class _StudentQuizListPageState extends State<StudentQuizListPage> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final StudentRepository _studentRepository = StudentRepository();
   final QuizRepository _quizRepository = QuizRepository();
@@ -112,7 +112,7 @@ class _QuizListPageState extends State<QuizListPage> {
                 );
               },
             ),
-      bottomNavigationBar: const FooterMurid(selectedIndex: 3),
+      bottomNavigationBar: const FooterMurid(selectedIndex: 0),
     );
   }
 

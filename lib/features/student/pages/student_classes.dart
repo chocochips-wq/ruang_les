@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 import '../../../core/utils/colors.dart';
+import '../../../core/utils/routes.dart';
 import '../../../data/repositories/student_repository.dart';
 import '../../../data/repositories/class_repository.dart';
 import '../../../data/repositories/session_repository.dart';
@@ -42,7 +43,15 @@ class _HalamanKelasState extends State<HalamanKelas> {
 
   String _getCurrentDay() {
     final now = DateTime.now();
-    final days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+    final days = [
+      'Minggu',
+      'Senin',
+      'Selasa',
+      'Rabu',
+      'Kamis',
+      'Jumat',
+      'Sabtu'
+    ];
     return days[now.weekday % 7];
   }
 
@@ -55,7 +64,8 @@ class _HalamanKelasState extends State<HalamanKelas> {
       if (student != null && student.studentId != null) {
         setState(() {
           _studentId = student.studentId;
-          _studentName = student.fullName.isNotEmpty ? student.fullName : student.nickname;
+          _studentName =
+              student.fullName.isNotEmpty ? student.fullName : student.nickname;
         });
       }
     } catch (e) {
@@ -124,7 +134,9 @@ class _HalamanKelasState extends State<HalamanKelas> {
                         'Jumat',
                         'Sabtu',
                         'Minggu'
-                      ].map((day) => _buildDayChip(day, day == _selectedDay)).toList(),
+                      ]
+                          .map((day) => _buildDayChip(day, day == _selectedDay))
+                          .toList(),
                     ),
                   ),
 
@@ -163,7 +175,8 @@ class _HalamanKelasState extends State<HalamanKelas> {
         }
 
         final classes = classSnapshot.data ?? [];
-        final classIds = classes.map((c) => c.classId).whereType<String>().toList();
+        final classIds =
+            classes.map((c) => c.classId).whereType<String>().toList();
 
         if (classIds.isEmpty) {
           return const Padding(
@@ -253,12 +266,15 @@ class _HalamanKelasState extends State<HalamanKelas> {
               .doc(class_.teacherId)
               .snapshots(),
           builder: (context, teacherSnapshot) {
-            final teacherData = teacherSnapshot.data?.data() as Map<String, dynamic>? ?? {};
-            final teacherName = teacherData['fullName'] ?? teacherData['name'] ?? 'Guru';
+            final teacherData =
+                teacherSnapshot.data?.data() as Map<String, dynamic>? ?? {};
+            final teacherName =
+                teacherData['fullName'] ?? teacherData['name'] ?? 'Guru';
 
             // Get sessions for this class
             return StreamBuilder<List<SessionModel>>(
-              stream: _sessionRepository.streamSessionsByClassId(class_.classId!),
+              stream:
+                  _sessionRepository.streamSessionsByClassId(class_.classId!),
               builder: (context, sessionSnapshot) {
                 final sessions = sessionSnapshot.data ?? [];
                 final completedSessions = sessions.where((s) {
@@ -305,12 +321,15 @@ class _HalamanKelasState extends State<HalamanKelas> {
                         ],
                       ),
                       const SizedBox(height: 12),
-                      _buildInfoRow(Icons.person,
+                      _buildInfoRow(
+                          Icons.person,
                           '${class_.type == 'private' ? 'Private' : class_.type == 'semi_private' ? 'Semi Private' : 'Regular'} - $teacherName'),
                       const SizedBox(height: 6),
-                      _buildInfoRow(Icons.access_time, class_.schedule.isNotEmpty
-                          ? class_.schedule
-                          : 'Jadwal belum ditentukan'),
+                      _buildInfoRow(
+                          Icons.access_time,
+                          class_.schedule.isNotEmpty
+                              ? class_.schedule
+                              : 'Jadwal belum ditentukan'),
                       const SizedBox(height: 6),
                       _buildInfoRow(Icons.analytics,
                           '$completedSessions/${class_.totalSessions} Pertemuan'),
@@ -318,8 +337,11 @@ class _HalamanKelasState extends State<HalamanKelas> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
-                          _buildActionButton('Materi', Icons.description, () {}),
-                          _buildActionButton('Quiz', Icons.quiz, () {}),
+                          _buildActionButton(
+                              'Materi', Icons.description, () {}),
+                          _buildActionButton('Quiz', Icons.quiz, () {
+                            Navigator.pushNamed(context, AppRoutes.muridQuiz);
+                          }),
                           _buildActionButton('Forum', Icons.forum, () {}),
                         ],
                       ),
@@ -350,7 +372,8 @@ class _HalamanKelasState extends State<HalamanKelas> {
         }
 
         final classes = classSnapshot.data ?? [];
-        final classIds = classes.map((c) => c.classId).whereType<String>().toList();
+        final classIds =
+            classes.map((c) => c.classId).whereType<String>().toList();
 
         if (classIds.isEmpty) {
           return const Padding(
@@ -385,7 +408,8 @@ class _HalamanKelasState extends State<HalamanKelas> {
               children: [
                 // Header
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                   decoration: BoxDecoration(
                     color: AppColors.primary.withValues(alpha: 0.05),
                     borderRadius: const BorderRadius.only(
@@ -433,7 +457,8 @@ class _HalamanKelasState extends State<HalamanKelas> {
                           : Colors.red;
 
                   return Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 12, vertical: 12),
                     decoration: BoxDecoration(
                       color: Colors.white,
                       border: Border.all(color: Colors.grey[300]!),
@@ -530,7 +555,8 @@ class _HalamanKelasState extends State<HalamanKelas> {
               color: AppColors.primary.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(8),
             ),
-            child: const Icon(Icons.schedule, color: AppColors.primary, size: 22),
+            child:
+                const Icon(Icons.schedule, color: AppColors.primary, size: 22),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -563,7 +589,8 @@ class _HalamanKelasState extends State<HalamanKelas> {
               onTap: onTap,
               borderRadius: BorderRadius.circular(8),
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 child: Text(
                   buttonText,
                   style: const TextStyle(

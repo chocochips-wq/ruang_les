@@ -15,9 +15,11 @@ class _CreateQuizPageState extends State<CreateQuizPage> {
   final List<Question> _questions = [];
 
   void _addOrEditQuestion({Question? editQuestion, int? editIndex}) async {
-    final questionController = TextEditingController(text: editQuestion?.text ?? '');
-    final List<TextEditingController> answerControllers =
-        List.generate(editQuestion?.answers.length ?? 4, (i) =>
+    final questionController =
+        TextEditingController(text: editQuestion?.text ?? '');
+    final List<TextEditingController> answerControllers = List.generate(
+        editQuestion?.answers.length ?? 4,
+        (i) =>
             TextEditingController(text: editQuestion?.answers[i].text ?? ''));
     int correctIndex = editQuestion?.correctAnswerIndex ?? 0;
 
@@ -25,7 +27,8 @@ class _CreateQuizPageState extends State<CreateQuizPage> {
       context: context,
       builder: (context) {
         return Dialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           child: Container(
             padding: const EdgeInsets.all(24),
             constraints: const BoxConstraints(maxWidth: 400),
@@ -40,7 +43,8 @@ class _CreateQuizPageState extends State<CreateQuizPage> {
                       const SizedBox(width: 8),
                       Text(
                         editQuestion == null ? 'Tambah Soal' : 'Edit Soal',
-                        style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                        style: const TextStyle(
+                            fontSize: 20, fontWeight: FontWeight.bold),
                       ),
                     ],
                   ),
@@ -49,49 +53,60 @@ class _CreateQuizPageState extends State<CreateQuizPage> {
                     controller: questionController,
                     decoration: InputDecoration(
                       labelText: 'Teks Soal',
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                      border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8)),
                       prefixIcon: const Icon(Icons.help_outline),
                     ),
                   ),
                   const SizedBox(height: 18),
-                  Text('Jawaban:', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey[700])),
+                  Text('Jawaban:',
+                      style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: Colors.grey[700])),
                   const SizedBox(height: 8),
-                  ...List.generate(answerControllers.length, (i) => Padding(
-                        padding: const EdgeInsets.only(bottom: 8),
-                        child: Row(
-                          children: [
-                            Radio<int>(
-                              value: i,
-                              groupValue: correctIndex,
-                              onChanged: (val) {
-                                correctIndex = val!;
-                                (context as Element).markNeedsBuild();
-                              },
-                              activeColor: Colors.green,
-                            ),
-                            Expanded(
-                              child: TextField(
-                                controller: answerControllers[i],
-                                decoration: InputDecoration(
-                                  labelText: 'Jawaban ${i + 1}',
-                                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                                  prefixIcon: const Icon(Icons.short_text),
+                  ...List.generate(
+                      answerControllers.length,
+                      (i) => Padding(
+                            padding: const EdgeInsets.only(bottom: 8),
+                            child: Row(
+                              children: [
+                                Radio<int>(
+                                  value: i,
+                                  groupValue: correctIndex,
+                                  onChanged: (val) {
+                                    correctIndex = val!;
+                                    (context as Element).markNeedsBuild();
+                                  },
+                                  activeColor: Colors.green,
                                 ),
-                              ),
+                                Expanded(
+                                  child: TextField(
+                                    controller: answerControllers[i],
+                                    decoration: InputDecoration(
+                                      labelText: 'Jawaban ${i + 1}',
+                                      border: OutlineInputBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(8)),
+                                      prefixIcon: const Icon(Icons.short_text),
+                                    ),
+                                  ),
+                                ),
+                                if (answerControllers.length > 2)
+                                  IconButton(
+                                    icon: const Icon(Icons.delete,
+                                        color: Colors.red),
+                                    tooltip: 'Hapus jawaban',
+                                    onPressed: () {
+                                      answerControllers.removeAt(i);
+                                      if (correctIndex >=
+                                          answerControllers.length)
+                                        correctIndex = 0;
+                                      (context as Element).markNeedsBuild();
+                                    },
+                                  ),
+                              ],
                             ),
-                            if (answerControllers.length > 2)
-                              IconButton(
-                                icon: const Icon(Icons.delete, color: Colors.red),
-                                tooltip: 'Hapus jawaban',
-                                onPressed: () {
-                                  answerControllers.removeAt(i);
-                                  if (correctIndex >= answerControllers.length) correctIndex = 0;
-                                  (context as Element).markNeedsBuild();
-                                },
-                              ),
-                          ],
-                        ),
-                      )),
+                          )),
                   Row(
                     children: [
                       ElevatedButton.icon(
@@ -120,11 +135,26 @@ class _CreateQuizPageState extends State<CreateQuizPage> {
                       const SizedBox(width: 8),
                       ElevatedButton(
                         onPressed: () {
-                          if (questionController.text.trim().isEmpty ||
-                              answerControllers.any((c) => c.text.trim().isEmpty)) return;
+                          if (questionController.text.trim().isEmpty) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                  content:
+                                      Text('Pertanyaan tidak boleh kosong')),
+                            );
+                            return;
+                          }
+                          if (answerControllers
+                              .any((c) => c.text.trim().isEmpty)) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                  content: Text('Semua jawaban harus diisi')),
+                            );
+                            return;
+                          }
                           Navigator.pop(context, {
                             'text': questionController.text,
-                            'answers': answerControllers.map((c) => c.text).toList(),
+                            'answers':
+                                answerControllers.map((c) => c.text).toList(),
                             'correct': correctIndex,
                           });
                         },
@@ -147,8 +177,10 @@ class _CreateQuizPageState extends State<CreateQuizPage> {
       final question = Question(
         id: UniqueKey().toString(),
         text: result['text'],
-        answers: List.generate(result['answers'].length, (i) =>
-            Answer(id: UniqueKey().toString(), text: result['answers'][i])),
+        answers: List.generate(
+            result['answers'].length,
+            (i) =>
+                Answer(id: UniqueKey().toString(), text: result['answers'][i])),
         correctAnswerIndex: result['correct'],
       );
       setState(() {
@@ -168,22 +200,52 @@ class _CreateQuizPageState extends State<CreateQuizPage> {
   }
 
   void _saveQuiz() {
-    if (_titleController.text.trim().isEmpty || _questions.isEmpty) {
+    print('DEBUG: _saveQuiz called');
+    if (_titleController.text.trim().isEmpty) {
+      print('DEBUG: Title empty');
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Judul dan minimal 1 soal wajib diisi!')),
+        const SnackBar(
+          content: Text('Judul Quiz wajib diisi!'),
+          backgroundColor: Colors.red,
+        ),
       );
       return;
     }
-    final quiz = Quiz(
-      id: UniqueKey().toString(),
-      title: _titleController.text,
-      description: _descController.text,
-      teacherId: 'teacherId', // Ganti dengan id pengajar
-      questions: _questions,
-      createdAt: DateTime.now(),
-    );
-    widget.onQuizCreated(quiz);
-    Navigator.pop(context);
+
+    if (_questions.isEmpty) {
+      print('DEBUG: Questions empty');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Minimal harus ada 1 soal!'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    try {
+      final quiz = Quiz(
+        id: UniqueKey().toString(),
+        title: _titleController.text,
+        description: _descController.text,
+        teacherId: 'teacherId',
+        questions: _questions,
+        createdAt: DateTime.now(),
+      );
+
+      // Close the Create Page FIRST
+      Navigator.pop(context);
+
+      // THEN trigger the parent callback (which opens a dialog)
+      widget.onQuizCreated(quiz);
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Terjadi kesalahan: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 
   @override
@@ -207,7 +269,8 @@ class _CreateQuizPageState extends State<CreateQuizPage> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text('Daftar Soal', style: TextStyle(fontWeight: FontWeight.bold)),
+                const Text('Daftar Soal',
+                    style: TextStyle(fontWeight: FontWeight.bold)),
                 ElevatedButton.icon(
                   onPressed: () => _addOrEditQuestion(),
                   icon: const Icon(Icons.add),
@@ -226,34 +289,46 @@ class _CreateQuizPageState extends State<CreateQuizPage> {
                         final q = _questions[index];
                         return Card(
                           elevation: 2,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10)),
                           child: ListTile(
-                            title: Text(q.text, style: const TextStyle(fontWeight: FontWeight.bold)),
+                            title: Text(q.text,
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.bold)),
                             subtitle: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                ...List.generate(q.answers.length, (i) => Row(
-                                  children: [
-                                    Icon(
-                                      i == q.correctAnswerIndex ? Icons.check_circle : Icons.circle_outlined,
-                                      color: i == q.correctAnswerIndex ? Colors.green : Colors.grey,
-                                      size: 18,
-                                    ),
-                                    const SizedBox(width: 4),
-                                    Text(q.answers[i].text),
-                                  ],
-                                )),
+                                ...List.generate(
+                                    q.answers.length,
+                                    (i) => Row(
+                                          children: [
+                                            Icon(
+                                              i == q.correctAnswerIndex
+                                                  ? Icons.check_circle
+                                                  : Icons.circle_outlined,
+                                              color: i == q.correctAnswerIndex
+                                                  ? Colors.green
+                                                  : Colors.grey,
+                                              size: 18,
+                                            ),
+                                            const SizedBox(width: 4),
+                                            Text(q.answers[i].text),
+                                          ],
+                                        )),
                               ],
                             ),
                             trailing: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 IconButton(
-                                  icon: const Icon(Icons.edit, color: Colors.orange),
-                                  onPressed: () => _addOrEditQuestion(editQuestion: q, editIndex: index),
+                                  icon: const Icon(Icons.edit,
+                                      color: Colors.orange),
+                                  onPressed: () => _addOrEditQuestion(
+                                      editQuestion: q, editIndex: index),
                                 ),
                                 IconButton(
-                                  icon: const Icon(Icons.delete, color: Colors.red),
+                                  icon: const Icon(Icons.delete,
+                                      color: Colors.red),
                                   onPressed: () => _deleteQuestion(index),
                                 ),
                               ],

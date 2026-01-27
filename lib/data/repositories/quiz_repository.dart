@@ -24,11 +24,9 @@ class QuizRepository {
     return _firestore
         .collection('quizzes')
         .where('studentId', isEqualTo: studentId)
-        .orderBy('createdAt', descending: true)
         .snapshots()
-        .map((snapshot) => snapshot.docs
-            .map((doc) => QuizModel.fromFirestore(doc))
-            .toList());
+        .map((snapshot) =>
+            snapshot.docs.map((doc) => QuizModel.fromFirestore(doc)).toList());
   }
 
   // Get incomplete quizzes
@@ -131,7 +129,6 @@ class QuizRepository {
       final query = await _firestore
           .collection('quizzes')
           .where('classId', isEqualTo: classId)
-          .orderBy('createdAt', descending: true)
           .get();
 
       return query.docs.map((doc) => QuizModel.fromFirestore(doc)).toList();
@@ -145,10 +142,8 @@ class QuizRepository {
     return _firestore
         .collection('quizzes')
         .where('classId', isEqualTo: classId)
-        .orderBy('createdAt', descending: true)
         .snapshots()
-        .map((snapshot) => snapshot.docs
-            .map((doc) => QuizModel.fromFirestore(doc))
-            .toList());
+        .map((snapshot) =>
+            snapshot.docs.map((doc) => QuizModel.fromFirestore(doc)).toList());
   }
 }

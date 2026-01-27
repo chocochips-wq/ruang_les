@@ -6,6 +6,7 @@ import '../../../data/repositories/parent_repository.dart';
 import '../../../data/repositories/student_repository.dart';
 import '../../../data/repositories/class_repository.dart';
 import '../../../data/repositories/session_repository.dart';
+import '../../../data/repositories/quiz_repository.dart';
 import '../../../core/models/student_model.dart';
 import '../../../core/models/class_model.dart';
 import '../../../core/models/session_model.dart';
@@ -26,6 +27,7 @@ class _LaporanBelajarOrangtuaState extends State<LaporanBelajarOrangtua> {
   final StudentRepository _studentRepository = StudentRepository();
   final ClassRepository _classRepository = ClassRepository();
   final SessionRepository _sessionRepository = SessionRepository();
+  final QuizRepository _quizRepository = QuizRepository();
   String? _parentId;
   StudentModel? _selectedStudent;
 
@@ -76,12 +78,13 @@ class _LaporanBelajarOrangtuaState extends State<LaporanBelajarOrangtua> {
           : StreamBuilder<List<StudentModel>>(
               stream: _studentRepository.streamStudentsByParentId(_parentId!),
               builder: (context, studentsSnapshot) {
-                if (studentsSnapshot.connectionState == ConnectionState.waiting) {
+                if (studentsSnapshot.connectionState ==
+                    ConnectionState.waiting) {
                   return const Center(child: CircularProgressIndicator());
                 }
 
                 final students = studentsSnapshot.data ?? [];
-                
+
                 if (students.isEmpty) {
                   return const Center(child: Text('Belum ada anak terdaftar'));
                 }
@@ -111,8 +114,10 @@ class _LaporanBelajarOrangtuaState extends State<LaporanBelajarOrangtua> {
                                 .snapshots()
                             : null,
                         builder: (context, userSnapshot) {
-                          final userName = userSnapshot.data?.get('name') ?? 'Pak/Bu';
-                          return _buildHeaderSection(userName, _selectedStudent!);
+                          final userName =
+                              userSnapshot.data?.get('name') ?? 'Pak/Bu';
+                          return _buildHeaderSection(
+                              userName, _selectedStudent!);
                         },
                       ),
 
@@ -148,7 +153,8 @@ class _LaporanBelajarOrangtuaState extends State<LaporanBelajarOrangtua> {
                                   return const Center(
                                       child: CircularProgressIndicator());
                                 }
-                                return _buildPerformaSection(perfSnapshot.data!);
+                                return _buildPerformaSection(
+                                    perfSnapshot.data!);
                               },
                             ),
 
@@ -159,9 +165,11 @@ class _LaporanBelajarOrangtuaState extends State<LaporanBelajarOrangtua> {
                               future: _getAllSessions(_selectedStudent!),
                               builder: (context, sessionsSnapshot) {
                                 if (!sessionsSnapshot.hasData) {
-                                  return const Center(child: CircularProgressIndicator());
+                                  return const Center(
+                                      child: CircularProgressIndicator());
                                 }
-                                return _buildSessionsList(sessionsSnapshot.data!);
+                                return _buildSessionsList(
+                                    sessionsSnapshot.data!);
                               },
                             ),
 
@@ -174,7 +182,8 @@ class _LaporanBelajarOrangtuaState extends State<LaporanBelajarOrangtua> {
                                 if (!notesSnapshot.hasData) {
                                   return const SizedBox.shrink();
                                 }
-                                return _buildCatatanPengajar(notesSnapshot.data!);
+                                return _buildCatatanPengajar(
+                                    notesSnapshot.data!);
                               },
                             ),
                           ],
@@ -191,15 +200,19 @@ class _LaporanBelajarOrangtuaState extends State<LaporanBelajarOrangtua> {
 
   Future<Map<String, dynamic>> _getStatistics(StudentModel student) async {
     try {
-      final classes = await _classRepository.getClassesByStudentId(student.studentId!);
+      final classes =
+          await _classRepository.getClassesByStudentId(student.studentId!);
       int totalSessions = 0;
       int attendedSessions = 0;
       int totalStudyHours = 0;
+      int completedQuizzes = 0;
 
+      // 1. Calculate Attendance & Study Hours
       for (final classModel in classes) {
-        final sessions = await _sessionRepository.getSessionsByClassId(classModel.classId!);
+        final sessions =
+            await _sessionRepository.getSessionsByClassId(classModel.classId!);
         totalSessions += sessions.length;
-        
+
         for (final session in sessions) {
           final attendance = session.attendance.firstWhere(
             (a) => a.studentId == student.studentId,
@@ -212,18 +225,39 @@ class _LaporanBelajarOrangtuaState extends State<LaporanBelajarOrangtua> {
         }
       }
 
+      // 2. Calculate Quiz Completion
+      final quizzes =
+          await _quizRepository.getQuizzesByStudentId(student.studentId!);
+      completedQuizzes = quizzes.where((q) => q.isCompleted).length;
+
       final attendancePercentage = totalSessions > 0
           ? ((attendedSessions / totalSessions) * 100).round()
           : 0;
 
-      // Simplified quiz count (you might want to add actual quiz data)
-      final completedQuizzes = (attendedSessions * 0.6).round();
+      // 3. Calculate Global Average Score (from all quizzes)
+      int totalQuizScore = 0;
+      int completedQuizCount = 0;
+      for (var q in quizzes) {
+        if (q.isCompleted) {
+          // Normalize score to 0-100 scale if totalPoints > 0
+          final double normalized =
+              q.totalPoints > 0 ? (q.score / q.totalPoints) * 100 : 0;
+          totalQuizScore += normalized.round();
+          completedQuizCount++;
+        }
+      }
+      final int avgQuizScore = completedQuizCount > 0
+          ? (totalQuizScore / completedQuizCount).round()
+          : 0;
+
+      // Final Average: 40% Attendance + 60% Quiz
+      final combinedScore = (attendancePercentage * 0.4) + (avgQuizScore * 0.6);
 
       return {
         'completedQuizzes': completedQuizzes,
         'totalStudyHours': totalStudyHours,
         'attendancePercentage': attendancePercentage,
-        'averageScore': 75 + (attendancePercentage ~/ 10), // Simplified
+        'averageScore': combinedScore.round(),
       };
     } catch (e) {
       print('Error getting statistics: $e');
@@ -236,13 +270,20 @@ class _LaporanBelajarOrangtuaState extends State<LaporanBelajarOrangtua> {
     }
   }
 
-  Future<List<Map<String, dynamic>>> _getPerformanceData(StudentModel student) async {
+  Future<List<Map<String, dynamic>>> _getPerformanceData(
+      StudentModel student) async {
     try {
-      final classes = await _classRepository.getClassesByStudentId(student.studentId!);
+      final classes =
+          await _classRepository.getClassesByStudentId(student.studentId!);
+      final allQuizzes =
+          await _quizRepository.getQuizzesByStudentId(student.studentId!);
+
       final List<Map<String, dynamic>> performanceList = [];
 
       for (final classModel in classes) {
-        final sessions = await _sessionRepository.getSessionsByClassId(classModel.classId!);
+        // Attendance
+        final sessions =
+            await _sessionRepository.getSessionsByClassId(classModel.classId!);
         int totalSessions = sessions.length;
         int attendedSessions = 0;
 
@@ -256,22 +297,43 @@ class _LaporanBelajarOrangtuaState extends State<LaporanBelajarOrangtua> {
           }
         }
 
-        final attendancePercentage = totalSessions > 0
+        final attendancePct = totalSessions > 0
             ? ((attendedSessions / totalSessions) * 100).round()
             : 0;
 
-        final averageScore = 75 + (attendancePercentage ~/ 10);
-        final completedQuizzes = (totalSessions * 0.6).round();
+        // Quizzes for this specific class
+        final classQuizzes = allQuizzes
+            .where((q) => q.classId == classModel.classId && q.isCompleted)
+            .toList();
+        final int completedCount = classQuizzes.length;
+
+        int totalQuizScore = 0;
+        for (var q in classQuizzes) {
+          final double normalized =
+              q.totalPoints > 0 ? (q.score / q.totalPoints) * 100 : 0;
+          totalQuizScore += normalized.round();
+        }
+        final int avgQuizScore =
+            completedCount > 0 ? (totalQuizScore / completedCount).round() : 0;
+
+        // Combined Score: 40% Attendance, 60% Quiz (if any quiz exists), else 100% Attendance
+        int finalScore;
+        if (completedCount > 0) {
+          finalScore = ((attendancePct * 0.4) + (avgQuizScore * 0.6)).round();
+        } else {
+          // If no quizzes yet, base entirely on attendance (capped at 100) or default to attendance score
+          finalScore = attendancePct;
+        }
 
         String grade;
         Color color;
-        if (averageScore >= 85) {
+        if (finalScore >= 85) {
           grade = 'A';
           color = Colors.blue;
-        } else if (averageScore >= 75) {
+        } else if (finalScore >= 75) {
           grade = 'B+';
           color = Colors.amber;
-        } else if (averageScore >= 65) {
+        } else if (finalScore >= 65) {
           grade = 'B';
           color = Colors.orange;
         } else {
@@ -282,8 +344,8 @@ class _LaporanBelajarOrangtuaState extends State<LaporanBelajarOrangtua> {
         performanceList.add({
           'subject': classModel.className,
           'grade': grade,
-          'score': averageScore,
-          'subtitle': 'Quiz Diselesaikan $completedQuizzes/${totalSessions}',
+          'score': finalScore,
+          'subtitle': 'Quiz Diselesaikan: $completedCount',
           'color': color,
         });
       }
@@ -297,11 +359,13 @@ class _LaporanBelajarOrangtuaState extends State<LaporanBelajarOrangtua> {
 
   Future<List<SessionModel>> _getAllSessions(StudentModel student) async {
     try {
-      final classes = await _classRepository.getClassesByStudentId(student.studentId!);
+      final classes =
+          await _classRepository.getClassesByStudentId(student.studentId!);
       final List<SessionModel> allSessions = [];
 
       for (final classModel in classes) {
-        final sessions = await _sessionRepository.getSessionsByClassId(classModel.classId!);
+        final sessions =
+            await _sessionRepository.getSessionsByClassId(classModel.classId!);
         allSessions.addAll(sessions);
       }
 
@@ -316,13 +380,16 @@ class _LaporanBelajarOrangtuaState extends State<LaporanBelajarOrangtua> {
 
   Future<List<SessionModel>> _getTeacherNotes(StudentModel student) async {
     try {
-      final classes = await _classRepository.getClassesByStudentId(student.studentId!);
+      final classes =
+          await _classRepository.getClassesByStudentId(student.studentId!);
       final List<SessionModel> notesList = [];
 
       for (final classModel in classes) {
-        final sessions = await _sessionRepository.getSessionsByClassId(classModel.classId!);
+        final sessions =
+            await _sessionRepository.getSessionsByClassId(classModel.classId!);
         for (final session in sessions) {
-          if (session.teacherNotes != null && session.teacherNotes!.isNotEmpty) {
+          if (session.teacherNotes != null &&
+              session.teacherNotes!.isNotEmpty) {
             notesList.add(session);
           }
         }
@@ -392,7 +459,7 @@ class _LaporanBelajarOrangtuaState extends State<LaporanBelajarOrangtua> {
       future: _getAverageScore(student),
       builder: (context, snapshot) {
         final averageScore = snapshot.data ?? 0;
-        
+
         return Container(
           padding: const EdgeInsets.all(16),
           decoration: _cardDecoration(),
@@ -443,7 +510,8 @@ class _LaporanBelajarOrangtuaState extends State<LaporanBelajarOrangtua> {
                     const SizedBox(height: 4),
                     Row(
                       children: [
-                        _buildInfoBadge('$averageScore', 'Rata-rata', Colors.blue),
+                        _buildInfoBadge(
+                            '$averageScore', 'Rata-rata', Colors.blue),
                       ],
                     ),
                   ],
@@ -458,14 +526,16 @@ class _LaporanBelajarOrangtuaState extends State<LaporanBelajarOrangtua> {
 
   Future<int> _getAverageScore(StudentModel student) async {
     try {
-      final classes = await _classRepository.getClassesByStudentId(student.studentId!);
+      final classes =
+          await _classRepository.getClassesByStudentId(student.studentId!);
       if (classes.isEmpty) return 0;
 
       int totalScore = 0;
       int classCount = 0;
 
       for (final classModel in classes) {
-        final sessions = await _sessionRepository.getSessionsByClassId(classModel.classId!);
+        final sessions =
+            await _sessionRepository.getSessionsByClassId(classModel.classId!);
         int totalSessions = sessions.length;
         int attendedSessions = 0;
 
@@ -664,7 +734,8 @@ class _LaporanBelajarOrangtuaState extends State<LaporanBelajarOrangtua> {
             final index = entry.key;
             final perf = entry.value;
             return Padding(
-              padding: EdgeInsets.only(bottom: index < performanceList.length - 1 ? 12 : 0),
+              padding: EdgeInsets.only(
+                  bottom: index < performanceList.length - 1 ? 12 : 0),
               child: _buildPerformaItem(
                 perf['subject'],
                 perf['grade'],
@@ -811,11 +882,11 @@ class _LaporanBelajarOrangtuaState extends State<LaporanBelajarOrangtua> {
               (a) => a.studentId == _selectedStudent!.studentId,
               orElse: () => Attendance(studentId: '', status: 'absent'),
             );
-            
+
             Color statusColor;
             IconData statusIcon;
             String statusText;
-            
+
             switch (attendance.status) {
               case 'present':
                 statusColor = Colors.green;
@@ -887,7 +958,8 @@ class _LaporanBelajarOrangtuaState extends State<LaporanBelajarOrangtua> {
                               ),
                               const Spacer(),
                               Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 8, vertical: 4),
                                 decoration: BoxDecoration(
                                   color: statusColor.withOpacity(0.1),
                                   borderRadius: BorderRadius.circular(12),
@@ -895,7 +967,8 @@ class _LaporanBelajarOrangtuaState extends State<LaporanBelajarOrangtua> {
                                 child: Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    Icon(statusIcon, size: 14, color: statusColor),
+                                    Icon(statusIcon,
+                                        size: 14, color: statusColor),
                                     const SizedBox(width: 4),
                                     Text(
                                       statusText,
@@ -913,7 +986,8 @@ class _LaporanBelajarOrangtuaState extends State<LaporanBelajarOrangtua> {
                           const SizedBox(height: 8),
                           Row(
                             children: [
-                              Icon(Icons.book, size: 14, color: Colors.grey.shade600),
+                              Icon(Icons.book,
+                                  size: 14, color: Colors.grey.shade600),
                               const SizedBox(width: 4),
                               Expanded(
                                 child: Text(
@@ -931,7 +1005,8 @@ class _LaporanBelajarOrangtuaState extends State<LaporanBelajarOrangtua> {
                           const SizedBox(height: 4),
                           Row(
                             children: [
-                              Icon(Icons.calendar_today, size: 14, color: Colors.grey.shade600),
+                              Icon(Icons.calendar_today,
+                                  size: 14, color: Colors.grey.shade600),
                               const SizedBox(width: 4),
                               Text(
                                 '${session.date.day} ${_getMonthName(session.date.month)} ${session.date.year}',

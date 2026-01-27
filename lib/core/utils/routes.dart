@@ -21,7 +21,7 @@ import '../../features/teacher/pages/teacher_verification.dart';
 // Import Student
 import '../../features/student/pages/student_home.dart';
 import '../../features/student/pages/student_classes.dart';
-import '../../features/student/pages/quiz_list_page.dart';
+import '../../features/student/pages/quiz_list.dart';
 import '../../features/student/pages/student_profile.dart';
 import '../../features/student/pages/student_settings.dart';
 
@@ -105,8 +105,7 @@ class AppRoutes {
         return MaterialPageRoute(builder: (_) => const HalamanBeranda());
 
       case pengajarQuiz:
-        return MaterialPageRoute(
-            builder: (_) => TeacherQuizManagement());
+        return MaterialPageRoute(builder: (_) => TeacherQuizManagement());
 
       case pengajarKelas:
         return MaterialPageRoute(builder: (_) => const PengajarKelas());
@@ -147,12 +146,8 @@ class AppRoutes {
         return MaterialPageRoute(builder: (_) => const StudentSettings());
 
       case muridQuiz:
-        // TODO: Ambil quiz dari repository, sementara tampilkan dummy
         return MaterialPageRoute(
-          builder: (_) => QuizListPage(
-            quizzes: const [], // Ganti dengan data dari repository
-            onStartQuiz: (quiz) {},
-          ),
+          builder: (_) => const StudentQuizListPage(),
         );
 
       // ========== ROUTES ORANG TUA ==========
