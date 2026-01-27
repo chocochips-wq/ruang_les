@@ -444,9 +444,11 @@ class _BerandaOrangtuaState extends State<BerandaOrangtua> {
             ? ((attendedSessions / totalSessions) * 100).round()
             : 0;
 
-        // Calculate average (simplified - you might want to get actual grades from a separate collection)
-        final averageScore =
-            75 + (attendancePercentage ~/ 10); // Simplified calculation
+        // Calculate average - if no sessions, show 0 (no data yet)
+        final averageScore = totalSessions > 0
+            ? (attendancePercentage * 0.8)
+                .round() // Based on attendance only if no grades
+            : 0; // No data for new accounts
         final completedTasks = (totalSessions * 0.8).round(); // Simplified
 
         progressList.add({

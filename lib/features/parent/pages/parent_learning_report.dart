@@ -553,7 +553,9 @@ class _LaporanBelajarOrangtuaState extends State<LaporanBelajarOrangtua> {
             ? ((attendedSessions / totalSessions) * 100).round()
             : 0;
 
-        totalScore += 75 + (attendancePercentage ~/ 10);
+        // Score based on attendance percentage (no hardcoded 75)
+        totalScore +=
+            totalSessions > 0 ? (attendancePercentage * 0.8).round() : 0;
         classCount++;
       }
 

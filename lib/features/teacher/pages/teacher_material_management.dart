@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import '../../../core/utils/colors.dart';
 import '../../general/services/file_upload_service.dart';
 
@@ -840,12 +842,28 @@ class _TeacherMaterialManagementState extends State<TeacherMaterialManagement> {
 
   Future<void> _pilihFile() async {
     try {
-      // Show loading dialog with progress
+      // Pick file first (no loading dialog yet)
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['pdf', 'doc', 'docx', 'ppt', 'pptx'],
+        allowMultiple: false,
+        withData: true, // Required for web
+      );
+
+      // User cancelled
+      if (result == null || result.files.isEmpty) {
+        return;
+      }
+
+      final pickedFile = result.files.single;
+
+      // Now show loading dialog for upload
+      if (!mounted) return;
       showDialog(
         context: context,
         barrierDismissible: false,
         builder: (_) => StatefulBuilder(
-          builder: (context, setState) => AlertDialog(
+          builder: (context, setDialogState) => AlertDialog(
             shape:
                 RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
             content: Column(
@@ -859,7 +877,7 @@ class _TeacherMaterialManagementState extends State<TeacherMaterialManagement> {
                 Text(
                   _uploadProgress > 0
                       ? 'Uploading ${(_uploadProgress * 100).toInt()}%'
-                      : 'Memilih file...',
+                      : 'Mengunggah file...',
                   style: const TextStyle(fontSize: 14),
                 ),
               ],
@@ -868,8 +886,9 @@ class _TeacherMaterialManagementState extends State<TeacherMaterialManagement> {
         ),
       );
 
-      // Pick and upload document
-      final downloadUrl = await _uploadService.pickAndUploadDocument(
+      // Upload the picked file
+      final downloadUrl = await _uploadPickedFile(
+        pickedFile,
         folder: 'materials/documents',
         onProgress: (progress) {
           if (mounted) {
@@ -884,8 +903,8 @@ class _TeacherMaterialManagementState extends State<TeacherMaterialManagement> {
       if (downloadUrl != null) {
         setState(() {
           _uploadedFileUrl = downloadUrl;
-          _selectedFileName = 'Dokumen berhasil diupload';
-          _uploadedFileType = _uploadService.getFileExtension(downloadUrl);
+          _selectedFileName = pickedFile.name;
+          _uploadedFileType = _uploadService.getFileExtension(pickedFile.name);
           _uploadProgress = 0.0;
         });
 
@@ -898,7 +917,6 @@ class _TeacherMaterialManagementState extends State<TeacherMaterialManagement> {
           );
         }
       } else {
-        // User cancelled
         setState(() {
           _uploadProgress = 0.0;
         });
@@ -916,6 +934,72 @@ class _TeacherMaterialManagementState extends State<TeacherMaterialManagement> {
       setState(() {
         _uploadProgress = 0.0;
       });
+    }
+  }
+
+  /// Upload a picked file to Firebase Storage
+  Future<String?> _uploadPickedFile(
+    PlatformFile pickedFile, {
+    required String folder,
+    Function(double)? onProgress,
+  }) async {
+    try {
+      // Validate file size
+      const maxFileSizeBytes = 10 * 1024 * 1024; // 10MB
+      final fileSize = pickedFile.size;
+      if (fileSize > maxFileSizeBytes) {
+        throw Exception('File terlalu besar. Maksimal 10 MB');
+      }
+
+      // Generate unique filename
+      final timestamp = DateTime.now().millisecondsSinceEpoch;
+      final fileName = '${timestamp}_${pickedFile.name}';
+      final filePath = '$folder/$fileName';
+
+      // Upload to Firebase Storage
+      final ref = FirebaseStorage.instance.ref().child(filePath);
+      UploadTask uploadTask;
+
+      // Use bytes for upload (works on both web and mobile when withData: true)
+      final bytes = pickedFile.bytes;
+      if (bytes == null) {
+        throw Exception('Tidak dapat membaca file. Coba lagi.');
+      }
+      uploadTask = ref.putData(
+        bytes,
+        SettableMetadata(
+          contentType: _getContentType(pickedFile.extension ?? ''),
+        ),
+      );
+
+      // Track progress
+      uploadTask.snapshotEvents.listen((snapshot) {
+        final progress = snapshot.bytesTransferred / snapshot.totalBytes;
+        onProgress?.call(progress);
+      });
+
+      // Wait for completion
+      final snapshot = await uploadTask;
+      final downloadUrl = await snapshot.ref.getDownloadURL();
+
+      return downloadUrl;
+    } catch (e) {
+      throw Exception('Failed to upload file: $e');
+    }
+  }
+
+  String _getContentType(String extension) {
+    switch (extension.toLowerCase()) {
+      case 'pdf':
+        return 'application/pdf';
+      case 'doc':
+      case 'docx':
+        return 'application/msword';
+      case 'ppt':
+      case 'pptx':
+        return 'application/vnd.ms-powerpoint';
+      default:
+        return 'application/octet-stream';
     }
   }
 }
