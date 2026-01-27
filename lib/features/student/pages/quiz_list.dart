@@ -274,8 +274,7 @@ class _StudentQuizListPageState extends State<StudentQuizListPage> {
                     context,
                     MaterialPageRoute(
                       builder: (context) => QuizPlayPage(
-                        quizId: quiz.quizId ?? 'demo',
-                        quizTitle: quiz.title,
+                        quiz: quiz,
                       ),
                     ),
                   );

@@ -38,7 +38,8 @@ class QuizModel {
       'score': score,
       'isCompleted': isCompleted,
       'createdAt': Timestamp.fromDate(createdAt),
-      'completedAt': completedAt != null ? Timestamp.fromDate(completedAt!) : null,
+      'completedAt':
+          completedAt != null ? Timestamp.fromDate(completedAt!) : null,
     };
   }
 
@@ -100,7 +101,7 @@ class QuizQuestion {
   final List<String> options;
   final int correctOptionIndex;
   final int points;
-  final int? selectedOptionIndex;
+  int? selectedOptionIndex;
 
   QuizQuestion({
     required this.id,

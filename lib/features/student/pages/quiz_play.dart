@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import '../../../core/utils/colors.dart';
+import '../../../core/models/quiz_model.dart';
+import '../../../data/repositories/quiz_repository.dart';
 
 class QuizPlayPage extends StatefulWidget {
-  final String quizId;
-  final String quizTitle;
+  final QuizModel quiz;
 
   const QuizPlayPage({
     super.key,
-    required this.quizId,
-    required this.quizTitle,
+    required this.quiz,
   });
 
   @override
@@ -20,49 +20,67 @@ class _QuizPlayPageState extends State<QuizPlayPage> {
   int _score = 0;
   int? _selectedAnswer;
   bool _quizCompleted = false;
+  bool _isSubmitting = false; // Add loading state for submission
 
-  // Dummy quiz questions
-  final List<Map<String, dynamic>> _questions = [
-    {
-      'question': 'Berapa hasil dari 7 + 5?',
-      'options': ['10', '11', '12', '13'],
-      'correctAnswer': 2, // index 2 = "12"
-    },
-    {
-      'question': 'Apa ibu kota Indonesia?',
-      'options': ['Bandung', 'Surabaya', 'Jakarta', 'Yogyakarta'],
-      'correctAnswer': 2,
-    },
-    {
-      'question': 'Planet terbesar di tata surya adalah?',
-      'options': ['Mars', 'Jupiter', 'Saturnus', 'Bumi'],
-      'correctAnswer': 1,
-    },
-  ];
+  final QuizRepository _quizRepository = QuizRepository();
 
   void _selectAnswer(int index) {
+    if (_quizCompleted) return;
     setState(() {
       _selectedAnswer = index;
     });
   }
 
-  void _nextQuestion() {
+  Future<void> _nextQuestion() async {
     if (_selectedAnswer == null) return;
 
-    // Check if answer is correct
-    if (_selectedAnswer == _questions[_currentQuestionIndex]['correctAnswer']) {
-      _score++;
+    final currentQuestion = widget.quiz.questions[_currentQuestionIndex];
+
+    // Check if answer is correct and update LOCAL score
+    // Note: You might want to store individual answers for review later
+    if (_selectedAnswer == currentQuestion.correctOptionIndex) {
+      _score += currentQuestion.points;
     }
 
-    if (_currentQuestionIndex < _questions.length - 1) {
+    // Save selected option index to the question object (in memory)
+    currentQuestion.selectedOptionIndex = _selectedAnswer;
+
+    if (_currentQuestionIndex < widget.quiz.questions.length - 1) {
       setState(() {
         _currentQuestionIndex++;
         _selectedAnswer = null;
       });
     } else {
+      // Quiz Finished
+      await _submitQuizResult();
+    }
+  }
+
+  Future<void> _submitQuizResult() async {
+    setState(() {
+      _isSubmitting = true;
+    });
+
+    try {
+      // Calculate final score based on total points possible
+      // Current logic: _score is sum of points of correct answers.
+
+      await _quizRepository.submitQuiz(
+          widget.quiz.quizId ?? '', _score, widget.quiz.questions);
+
       setState(() {
         _quizCompleted = true;
+        _isSubmitting = false;
       });
+    } catch (e) {
+      setState(() {
+        _isSubmitting = false;
+      });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Gagal mengirim hasil kuis: $e')),
+        );
+      }
     }
   }
 
@@ -72,7 +90,15 @@ class _QuizPlayPageState extends State<QuizPlayPage> {
       return _buildCompletionScreen();
     }
 
-    final currentQuestion = _questions[_currentQuestionIndex];
+    // Prepare content
+    if (widget.quiz.questions.isEmpty) {
+      return Scaffold(
+        appBar: AppBar(title: Text(widget.quiz.title)),
+        body: const Center(child: Text("Kuis ini tidak memiliki pertanyaan.")),
+      );
+    }
+
+    final currentQuestion = widget.quiz.questions[_currentQuestionIndex];
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -80,7 +106,7 @@ class _QuizPlayPageState extends State<QuizPlayPage> {
         backgroundColor: AppColors.primary,
         elevation: 0,
         title: Text(
-          widget.quizTitle,
+          widget.quiz.title,
           style: const TextStyle(color: Colors.white),
         ),
         leading: IconButton(
@@ -92,7 +118,7 @@ class _QuizPlayPageState extends State<QuizPlayPage> {
             padding: const EdgeInsets.only(right: 16.0),
             child: Center(
               child: Text(
-                '${_currentQuestionIndex + 1}/${_questions.length}',
+                '${_currentQuestionIndex + 1}/${widget.quiz.questions.length}',
                 style: const TextStyle(
                   color: Colors.white,
                   fontSize: 16,
@@ -103,155 +129,112 @@ class _QuizPlayPageState extends State<QuizPlayPage> {
           ),
         ],
       ),
-      body: Column(
-        children: [
-          // Progress bar
-          LinearProgressIndicator(
-            value: (_currentQuestionIndex + 1) / _questions.length,
-            backgroundColor: Colors.grey.shade200,
-            valueColor: const AlwaysStoppedAnimation<Color>(AppColors.primary),
-            minHeight: 6,
-          ),
+      body: _isSubmitting
+          ? const Center(child: CircularProgressIndicator())
+          : Column(
+              children: [
+                // Progress bar
+                LinearProgressIndicator(
+                  value: (_currentQuestionIndex + 1) /
+                      widget.quiz.questions.length,
+                  backgroundColor: Colors.grey.shade200,
+                  valueColor:
+                      const AlwaysStoppedAnimation<Color>(AppColors.primary),
+                  minHeight: 6,
+                ),
 
-          Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  // Score display
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          AppColors.primary.withOpacity(0.1),
-                          AppColors.primary.withOpacity(0.05),
-                        ],
-                      ),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Row(
-                          children: [
-                            const Icon(Icons.star, color: AppColors.primary),
-                            const SizedBox(width: 8),
-                            Text(
-                              'Skor: $_score',
-                              style: const TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: AppColors.primary,
-                              ),
-                            ),
-                          ],
-                        ),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 6,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Colors.orange.shade100,
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: const Text(
-                            'DEMO',
-                            style: TextStyle(
-                              fontSize: 11,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.orange,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 32),
-
-                  // Question
-                  Container(
+                Expanded(
+                  child: SingleChildScrollView(
                     padding: const EdgeInsets.all(20),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(16),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.grey.shade200,
-                          blurRadius: 10,
-                          offset: const Offset(0, 4),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        // Score info (Hidden during play or shown? Usually hidden to reduce pressure, but let's keep it simple)
+                        // For now, let's just show current question
+
+                        // Question
+                        Container(
+                          padding: const EdgeInsets.all(20),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(16),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.grey.shade200,
+                                blurRadius: 10,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          child: Text(
+                            currentQuestion.question,
+                            style: const TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.textDark,
+                              height: 1.4,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 24),
+
+                        // Options
+                        ...List.generate(
+                          currentQuestion.options.length,
+                          (index) => _buildOptionCard(
+                            currentQuestion.options[index],
+                            index,
+                          ),
                         ),
                       ],
                     ),
-                    child: Text(
-                      currentQuestion['question'],
-                      style: const TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.textDark,
-                        height: 1.4,
+                  ),
+                ),
+
+                // Next button
+                Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.grey.shade300,
+                        blurRadius: 10,
+                        offset: const Offset(0, -2),
+                      ),
+                    ],
+                  ),
+                  child: SafeArea(
+                    child: SizedBox(
+                      width: double.infinity,
+                      height: 50,
+                      child: ElevatedButton(
+                        onPressed:
+                            _selectedAnswer != null ? _nextQuestion : null,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primary,
+                          disabledBackgroundColor: Colors.grey.shade300,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        child: Text(
+                          _currentQuestionIndex <
+                                  widget.quiz.questions.length - 1
+                              ? 'Lanjut'
+                              : 'Selesai',
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
                       ),
                     ),
                   ),
-                  const SizedBox(height: 24),
-
-                  // Options
-                  ...List.generate(
-                    currentQuestion['options'].length,
-                    (index) => _buildOptionCard(
-                      currentQuestion['options'][index],
-                      index,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-
-          // Next button
-          Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.grey.shade300,
-                  blurRadius: 10,
-                  offset: const Offset(0, -2),
                 ),
               ],
             ),
-            child: SafeArea(
-              child: SizedBox(
-                width: double.infinity,
-                height: 50,
-                child: ElevatedButton(
-                  onPressed: _selectedAnswer != null ? _nextQuestion : null,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    disabledBackgroundColor: Colors.grey.shade300,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  child: Text(
-                    _currentQuestionIndex < _questions.length - 1
-                        ? 'Lanjut'
-                        : 'Selesai',
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
     );
   }
 
@@ -311,7 +294,11 @@ class _QuizPlayPageState extends State<QuizPlayPage> {
   }
 
   Widget _buildCompletionScreen() {
-    final percentage = (_score / _questions.length * 100).round();
+    final totalPoints = widget.quiz.totalPoints > 0
+        ? widget.quiz.totalPoints
+        : widget.quiz.questions.length * 10; // Fallback
+    final percentage =
+        (totalPoints > 0) ? (_score / totalPoints * 100).round() : 0;
     final isPassed = percentage >= 60;
 
     return Scaffold(
@@ -400,38 +387,20 @@ class _QuizPlayPageState extends State<QuizPlayPage> {
                     ),
                     const SizedBox(height: 16),
                     Text(
-                      'Kamu menjawab $_score dari ${_questions.length} pertanyaan dengan benar',
+                      'Poin Kamu: $_score / $totalPoints',
+                      style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.grey.shade800),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Kamu menjawab dengan benar.',
                       style: TextStyle(
                         fontSize: 15,
                         color: Colors.grey.shade600,
                       ),
                       textAlign: TextAlign.center,
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 32),
-
-              // Demo notice
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.blue.shade50,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.blue.shade200),
-                ),
-                child: Row(
-                  children: [
-                    Icon(Icons.info_outline, color: Colors.blue.shade700),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Text(
-                        'Ini adalah demo quiz. Fitur lengkap sedang dalam pengembangan!',
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: Colors.blue.shade700,
-                        ),
-                      ),
                     ),
                   ],
                 ),
