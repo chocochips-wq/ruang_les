@@ -3,6 +3,7 @@ import '../../../data/repositories/parent_repository.dart';
 import '../../../data/repositories/student_repository.dart';
 import '../../../data/repositories/payment_repository.dart';
 import '../../../data/repositories/class_repository.dart';
+import '../../../data/repositories/user_repository.dart';
 import '../../../core/models/parent_model.dart';
 import '../../../core/models/student_model.dart';
 import '../../../core/models/payment_model.dart';
@@ -13,6 +14,7 @@ class ParentProvider with ChangeNotifier {
   final StudentRepository _studentRepository;
   final PaymentRepository _paymentRepository;
   final ClassRepository _classRepository;
+  final UserRepository _userRepository;
 
   ParentModel? _currentParent;
   List<StudentModel> _children = [];
@@ -26,6 +28,7 @@ class ParentProvider with ChangeNotifier {
     this._studentRepository,
     this._paymentRepository,
     this._classRepository,
+    this._userRepository, // Added to constructor
   );
 
   // Getters
@@ -56,7 +59,6 @@ class ParentProvider with ChangeNotifier {
 
       // 3. Load payments
       await _loadPayments(parent.parentId!);
-
     } catch (e) {
       _error = 'Gagal memuat data: $e';
     } finally {
@@ -69,12 +71,13 @@ class ParentProvider with ChangeNotifier {
   Future<void> _loadChildren(String parentId) async {
     try {
       _children = await _studentRepository.getStudentsByParentId(parentId);
-      
+
       // Load classes for each child
       _childrenClasses = [];
       for (final child in _children) {
         if (child.studentId != null) {
-          final classes = await _classRepository.getClassesByStudentId(child.studentId!);
+          final classes =
+              await _classRepository.getClassesByStudentId(child.studentId!);
           _childrenClasses.addAll(classes);
         }
       }
@@ -100,7 +103,7 @@ class ParentProvider with ChangeNotifier {
 
       // Add to Firestore
       final studentId = await _studentRepository.createStudent(student);
-      
+
       // Update parent's studentIds
       if (_currentParent?.parentId != null) {
         final updatedParent = _currentParent!.copyWith(
@@ -126,6 +129,75 @@ class ParentProvider with ChangeNotifier {
     }
   }
 
+  // Link existing student account by email
+  Future<bool> linkStudentByEmail(String email) async {
+    try {
+      _isLoading = true;
+      _error = null;
+      notifyListeners();
+
+      // 1. Find user by email
+      final user = await _userRepository.getUserByEmail(email);
+      if (user == null) {
+        _error = 'Email tidak ditemukan';
+        return false;
+      }
+
+      // 2. Verify role is student
+      if (user.role != 'student') {
+        _error = 'Email tersebut bukan akun siswa';
+        return false;
+      }
+
+      // 3. Get student profile
+      final student = await _studentRepository.getStudentByUserId(user.userId!);
+      if (student == null) {
+        _error = 'Data profil siswa tidak ditemukan';
+        return false;
+      }
+
+      // 4. Check if already linked to this parent
+      if (_children.any((c) => c.studentId == student.studentId)) {
+        _error = 'Akun ini sudah ditautkan';
+        return false;
+      }
+
+      // 5. Update student with parentId
+      if (_currentParent?.parentId == null) {
+        _error = 'Data orang tua belum dimuat';
+        return false;
+      }
+
+      final updatedStudent =
+          student.copyWith(parentId: _currentParent!.parentId);
+      if (student.studentId != null) {
+        await _studentRepository.updateStudent(
+            student.studentId!, updatedStudent);
+      }
+
+      // 6. Update parent with studentId
+      final updatedParent = _currentParent!.copyWith(
+        studentIds: [..._currentParent!.studentIds, student.studentId!],
+      );
+      await _parentRepository.updateParent(
+        _currentParent!.parentId!,
+        updatedParent,
+      );
+      _currentParent = updatedParent;
+
+      // 7. Reload children list
+      await _loadChildren(_currentParent!.parentId!);
+
+      return true;
+    } catch (e) {
+      _error = 'Gagal menautkan akun: $e';
+      return false;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
   // Update child info
   Future<bool> updateChild(StudentModel student) async {
     try {
@@ -138,9 +210,10 @@ class ParentProvider with ChangeNotifier {
       notifyListeners();
 
       await _studentRepository.updateStudent(student.studentId!, student);
-      
+
       // Update in local list
-      final index = _children.indexWhere((c) => c.studentId == student.studentId);
+      final index =
+          _children.indexWhere((c) => c.studentId == student.studentId);
       if (index != -1) {
         _children[index] = student;
       }
@@ -162,7 +235,7 @@ class ParentProvider with ChangeNotifier {
       notifyListeners();
 
       await _paymentRepository.updatePaymentStatus(paymentId, 'paid');
-      
+
       // Update local list
       final index = _payments.indexWhere((p) => p.paymentId == paymentId);
       if (index != -1) {
@@ -214,7 +287,8 @@ class ParentProvider with ChangeNotifier {
   List<PaymentModel> getOverduePayments() {
     final now = DateTime.now();
     return _payments
-        .where((payment) => payment.status == 'pending' && payment.dueDate.isBefore(now))
+        .where((payment) =>
+            payment.status == 'pending' && payment.dueDate.isBefore(now))
         .toList();
   }
 
@@ -222,12 +296,12 @@ class ParentProvider with ChangeNotifier {
   List<PaymentModel> getUpcomingPayments() {
     final now = DateTime.now();
     final weekFromNow = now.add(const Duration(days: 7));
-    
+
     return _payments
-        .where((payment) => 
-          payment.status == 'pending' && 
-          payment.dueDate.isAfter(now) && 
-          payment.dueDate.isBefore(weekFromNow))
+        .where((payment) =>
+            payment.status == 'pending' &&
+            payment.dueDate.isAfter(now) &&
+            payment.dueDate.isBefore(weekFromNow))
         .toList();
   }
 

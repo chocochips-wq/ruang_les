@@ -112,6 +112,7 @@ void main() async {
             context.read<StudentRepository>(),
             context.read<PaymentRepository>(),
             context.read<ClassRepository>(),
+            context.read<UserRepository>(),
           ),
           update: (context, auth, parentProvider) {
             if (auth.isAuthenticated && auth.user?.role == 'parent') {

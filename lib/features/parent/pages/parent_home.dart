@@ -12,6 +12,8 @@ import '../../../core/models/class_model.dart';
 import '../../../core/models/session_model.dart';
 import '../widgets/parent_drawer.dart';
 import '../widgets/parent_bottom_nav.dart';
+import 'package:provider/provider.dart';
+import '../providers/parent_provider.dart';
 
 class BerandaOrangtua extends StatefulWidget {
   const BerandaOrangtua({super.key});
@@ -760,8 +762,12 @@ class _BerandaOrangtuaState extends State<BerandaOrangtua> {
 
   void _showAddChildDialog(BuildContext context) {
     final formKey = GlobalKey<FormState>();
+    final linkFormKey = GlobalKey<FormState>();
     String fullName = '';
     String nickname = '';
+    String linkEmail = '';
+    int selectedTabIndex = 0;
+    bool isLinking = false;
 
     // Default values
     String selectedLevel = 'SD';
@@ -789,122 +795,248 @@ class _BerandaOrangtuaState extends State<BerandaOrangtua> {
 
           return AlertDialog(
             title: const Text('Tambah Anak'),
-            content: SingleChildScrollView(
-              child: Form(
-                key: formKey,
+            content: SizedBox(
+              width: double.maxFinite,
+              child: SingleChildScrollView(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    TextFormField(
-                      decoration: InputDecoration(
-                        labelText: 'Nama Lengkap',
-                        border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8)),
-                      ),
-                      onChanged: (v) => fullName = v,
-                      validator: (v) =>
-                          v?.isEmpty ?? true ? 'Nama harus diisi' : null,
-                    ),
-                    const SizedBox(height: 12),
-                    TextFormField(
-                      decoration: InputDecoration(
-                        labelText: 'Nama Panggilan',
-                        border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8)),
-                      ),
-                      onChanged: (v) => nickname = v,
-                    ),
-                    const SizedBox(height: 12),
+                    // Tab buttons
                     Row(
                       children: [
                         Expanded(
-                          flex: 2,
-                          child: DropdownButtonFormField<String>(
-                            value: selectedLevel,
-                            items: ['TK', 'SD', 'SMP']
-                                .map((g) =>
-                                    DropdownMenuItem(value: g, child: Text(g)))
-                                .toList(),
-                            onChanged: (v) {
-                              if (v != null) {
-                                setState(() {
-                                  selectedLevel = v;
-                                  if (v == 'SMP') {
-                                    // If moving to SMP, default to 7 if current is not in 7-9 range
-                                    int current =
-                                        int.tryParse(selectedClassNumber) ?? 1;
-                                    if (current < 7) selectedClassNumber = '7';
-                                  } else if (v == 'SD') {
-                                    // If moving to SD, default to 1 if current is > 6
-                                    int current =
-                                        int.tryParse(selectedClassNumber) ?? 7;
-                                    if (current > 6) selectedClassNumber = '1';
-                                  }
-                                });
-                              }
-                            },
-                            decoration: InputDecoration(
-                              labelText: 'Jenjang',
-                              border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(8)),
+                          child: GestureDetector(
+                            onTap: () => setState(() => selectedTabIndex = 0),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(vertical: 10),
+                              decoration: BoxDecoration(
+                                border: Border(
+                                  bottom: BorderSide(
+                                    color: selectedTabIndex == 0
+                                        ? AppColors.primary
+                                        : Colors.grey[300]!,
+                                    width: selectedTabIndex == 0 ? 2 : 1,
+                                  ),
+                                ),
+                              ),
+                              child: Text(
+                                'Buat Profil',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  color: selectedTabIndex == 0
+                                      ? AppColors.primary
+                                      : Colors.grey,
+                                  fontWeight: selectedTabIndex == 0
+                                      ? FontWeight.bold
+                                      : FontWeight.normal,
+                                ),
+                              ),
                             ),
                           ),
                         ),
-                        const SizedBox(width: 12),
                         Expanded(
-                          flex: 1,
-                          child: DropdownButtonFormField<String>(
-                            value: selectedClassNumber,
-                            items: ['1', '2', '3', '4', '5', '6', '7', '8', '9']
-                                .map((g) {
-                              // Determine if this item should be enabled based on level
-                              // BUT user requested bidirectional: selecting 7-9 switches to SMP
-                              return DropdownMenuItem(value: g, child: Text(g));
-                            }).toList(),
-                            onChanged: selectedLevel == 'TK'
-                                ? null
-                                : (v) {
-                                    if (v != null) {
-                                      setState(() {
-                                        selectedClassNumber = v;
-                                        int n = int.parse(v);
-                                        // Auto-switch Level based on Class Number
-                                        if (n >= 7 && n <= 9) {
-                                          selectedLevel = 'SMP';
-                                        } else if (n >= 1 && n <= 6) {
-                                          // If current level is not SD (e.g. was SMP), switch to SD
-                                          // Note: This logic assumes SD is 1-6.
-                                          // If we support other levels in future we might need more checks
-                                          selectedLevel = 'SD';
-                                        }
-                                      });
-                                    }
-                                  },
-                            decoration: InputDecoration(
-                              labelText: 'Kelas',
-                              border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(8)),
+                          child: GestureDetector(
+                            onTap: () => setState(() => selectedTabIndex = 1),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(vertical: 10),
+                              decoration: BoxDecoration(
+                                border: Border(
+                                  bottom: BorderSide(
+                                    color: selectedTabIndex == 1
+                                        ? AppColors.primary
+                                        : Colors.grey[300]!,
+                                    width: selectedTabIndex == 1 ? 2 : 1,
+                                  ),
+                                ),
+                              ),
+                              child: Text(
+                                'Tautkan Akun',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  color: selectedTabIndex == 1
+                                      ? AppColors.primary
+                                      : Colors.grey,
+                                  fontWeight: selectedTabIndex == 1
+                                      ? FontWeight.bold
+                                      : FontWeight.normal,
+                                ),
+                              ),
                             ),
                           ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 12),
-                    DropdownButtonFormField<String>(
-                      decoration: InputDecoration(
-                        labelText: 'Jenis Kelas (Opsional)',
-                        border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8)),
+                    const SizedBox(height: 16),
+
+                    // Tab content
+                    if (selectedTabIndex == 0) ...[
+                      // Create new profile tab
+                      Form(
+                        key: formKey,
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            TextFormField(
+                              decoration: InputDecoration(
+                                labelText: 'Nama Lengkap',
+                                border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(8)),
+                              ),
+                              onChanged: (v) => fullName = v,
+                              validator: (v) => v?.isEmpty ?? true
+                                  ? 'Nama harus diisi'
+                                  : null,
+                            ),
+                            const SizedBox(height: 12),
+                            TextFormField(
+                              decoration: InputDecoration(
+                                labelText: 'Nama Panggilan',
+                                border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(8)),
+                              ),
+                              onChanged: (v) => nickname = v,
+                            ),
+                            const SizedBox(height: 12),
+                            Row(
+                              children: [
+                                Expanded(
+                                  flex: 2,
+                                  child: DropdownButtonFormField<String>(
+                                    value: selectedLevel,
+                                    items: ['TK', 'SD', 'SMP']
+                                        .map((g) => DropdownMenuItem(
+                                            value: g, child: Text(g)))
+                                        .toList(),
+                                    onChanged: (v) {
+                                      if (v != null) {
+                                        setState(() {
+                                          selectedLevel = v;
+                                          if (v == 'SMP') {
+                                            int current = int.tryParse(
+                                                    selectedClassNumber) ??
+                                                1;
+                                            if (current < 7)
+                                              selectedClassNumber = '7';
+                                          } else if (v == 'SD') {
+                                            int current = int.tryParse(
+                                                    selectedClassNumber) ??
+                                                7;
+                                            if (current > 6)
+                                              selectedClassNumber = '1';
+                                          }
+                                        });
+                                      }
+                                    },
+                                    decoration: InputDecoration(
+                                      labelText: 'Jenjang',
+                                      border: OutlineInputBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(8)),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  flex: 1,
+                                  child: DropdownButtonFormField<String>(
+                                    value: selectedClassNumber,
+                                    items: [
+                                      '1',
+                                      '2',
+                                      '3',
+                                      '4',
+                                      '5',
+                                      '6',
+                                      '7',
+                                      '8',
+                                      '9'
+                                    ].map((g) {
+                                      return DropdownMenuItem(
+                                          value: g, child: Text(g));
+                                    }).toList(),
+                                    onChanged: selectedLevel == 'TK'
+                                        ? null
+                                        : (v) {
+                                            if (v != null) {
+                                              setState(() {
+                                                selectedClassNumber = v;
+                                                int n = int.parse(v);
+                                                if (n >= 7 && n <= 9) {
+                                                  selectedLevel = 'SMP';
+                                                } else if (n >= 1 && n <= 6) {
+                                                  selectedLevel = 'SD';
+                                                }
+                                              });
+                                            }
+                                          },
+                                    decoration: InputDecoration(
+                                      labelText: 'Kelas',
+                                      border: OutlineInputBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(8)),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 12),
+                            DropdownButtonFormField<String>(
+                              decoration: InputDecoration(
+                                labelText: 'Jenis Kelas (Opsional)',
+                                border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(8)),
+                              ),
+                              items: const [
+                                DropdownMenuItem(
+                                    value: 'P', child: Text('Privat (P)')),
+                                DropdownMenuItem(
+                                    value: 'SP',
+                                    child: Text('Semi Privat (SP)')),
+                                DropdownMenuItem(
+                                    value: 'R', child: Text('Reguler (R)')),
+                              ],
+                              onChanged: (v) =>
+                                  setState(() => selectedClassId = v),
+                            ),
+                          ],
+                        ),
                       ),
-                      items: const [
-                        DropdownMenuItem(value: 'P', child: Text('Privat (P)')),
-                        DropdownMenuItem(
-                            value: 'SP', child: Text('Semi Privat (SP)')),
-                        DropdownMenuItem(
-                            value: 'R', child: Text('Reguler (R)')),
-                      ],
-                      onChanged: (v) => setState(() => selectedClassId = v),
-                    ),
+                    ] else ...[
+                      // Link existing account tab
+                      Form(
+                        key: linkFormKey,
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'Masukkan email akun siswa yang sudah terdaftar untuk menautkannya ke akun Anda.',
+                              style:
+                                  TextStyle(fontSize: 13, color: Colors.grey),
+                            ),
+                            const SizedBox(height: 16),
+                            TextFormField(
+                              decoration: InputDecoration(
+                                labelText: 'Email Akun Siswa',
+                                hintText: 'contoh@email.com',
+                                prefixIcon: const Icon(Icons.email_outlined),
+                                border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(8)),
+                              ),
+                              keyboardType: TextInputType.emailAddress,
+                              onChanged: (v) => linkEmail = v,
+                              validator: (v) {
+                                if (v?.isEmpty ?? true)
+                                  return 'Email harus diisi';
+                                if (!v!.contains('@'))
+                                  return 'Email tidak valid';
+                                return null;
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ],
                 ),
               ),
@@ -914,24 +1046,70 @@ class _BerandaOrangtuaState extends State<BerandaOrangtua> {
                 onPressed: () => Navigator.pop(context),
                 child: const Text('Batal'),
               ),
-              ElevatedButton(
-                onPressed: () {
-                  if (formKey.currentState!.validate()) {
-                    final fullGrade = selectedLevel == 'TK'
-                        ? 'TK'
-                        : '$selectedLevel - Kelas $selectedClassNumber';
+              if (selectedTabIndex == 0)
+                ElevatedButton(
+                  onPressed: () {
+                    if (formKey.currentState!.validate()) {
+                      final fullGrade = selectedLevel == 'TK'
+                          ? 'TK'
+                          : '$selectedLevel - Kelas $selectedClassNumber';
 
-                    _createChildAccount(
-                      fullName: fullName,
-                      nickname: nickname,
-                      gradeLevel: fullGrade,
-                      classType: selectedClassId, // Now stores P, SP, or R
-                    );
-                    Navigator.pop(context);
-                  }
-                },
-                child: const Text('Simpan'),
-              ),
+                      _createChildAccount(
+                        fullName: fullName,
+                        nickname: nickname,
+                        gradeLevel: fullGrade,
+                        classType: selectedClassId,
+                      );
+                      Navigator.pop(context);
+                    }
+                  },
+                  child: const Text('Simpan'),
+                )
+              else
+                ElevatedButton(
+                  onPressed: isLinking
+                      ? null
+                      : () async {
+                          if (linkFormKey.currentState!.validate()) {
+                            setState(() => isLinking = true);
+                            final parentProvider =
+                                context.read<ParentProvider>();
+                            final success = await parentProvider
+                                .linkStudentByEmail(linkEmail);
+                            setState(() => isLinking = false);
+
+                            if (success) {
+                              if (context.mounted) {
+                                Navigator.pop(context);
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content:
+                                        Text('Akun siswa berhasil ditautkan!'),
+                                    backgroundColor: Colors.green,
+                                  ),
+                                );
+                              }
+                            } else {
+                              if (context.mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(parentProvider.error ??
+                                        'Gagal menautkan akun'),
+                                    backgroundColor: Colors.red,
+                                  ),
+                                );
+                              }
+                            }
+                          }
+                        },
+                  child: isLinking
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Text('Tautkan'),
+                ),
             ],
           );
         },
