@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:provider/provider.dart';
+import '../providers/teacher_provider.dart';
 import '../../../core/utils/colors.dart';
 import '../../../data/repositories/payment_repository.dart';
-import '../../../data/repositories/class_repository.dart';
-import '../../../core/models/class_model.dart';
 import '../../../core/models/payment_model.dart';
 import '../../../core/models/student_model.dart';
 import '../widgets/teacher_app_bar.dart';
@@ -20,7 +20,7 @@ class PengajarPembayaran extends StatefulWidget {
 class _PengajarPembayaranState extends State<PengajarPembayaran> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final PaymentRepository _paymentRepository = PaymentRepository();
-  final ClassRepository _classRepository = ClassRepository();
+
   String? _teacherId;
   String? _selectedFilter = 'all'; // all, pending, paid, overdue
   int _selectedMenuIndex = 6; // Index for Pembayaran in drawer
@@ -308,11 +308,9 @@ class _PengajarPembayaranState extends State<PengajarPembayaran> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 // Select Class
-                StreamBuilder<List<ClassModel>>(
-                  stream:
-                      _classRepository.streamClassesByTeacherId(_teacherId!),
-                  builder: (context, snapshot) {
-                    final classes = snapshot.data ?? [];
+                Consumer<TeacherProvider>(
+                  builder: (context, teacherProvider, child) {
+                    final classes = teacherProvider.classes;
                     return DropdownButtonFormField<String>(
                       hint: const Text('Pilih Kelas'),
                       items: classes

@@ -137,7 +137,7 @@ class _StudentSettingsState extends State<StudentSettings> {
           ),
         ),
       ),
-      bottomNavigationBar: const FooterMurid(selectedIndex: 4),
+      bottomNavigationBar: const FooterMurid(selectedIndex: 2),
     );
   }
 

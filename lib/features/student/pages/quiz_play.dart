@@ -20,40 +20,28 @@ class _QuizPlayPageState extends State<QuizPlayPage> {
   int _score = 0;
   int? _selectedAnswer;
   bool _quizCompleted = false;
-  bool _isSubmitting = false; // Add loading state for submission
+  bool _isSubmitting = false;
 
   final QuizRepository _quizRepository = QuizRepository();
 
+  @override
+  void initState() {
+    super.initState();
+    if (widget.quiz.isCompleted) {
+      _score = widget.quiz.score;
+      // Start in review mode (show questions, but disable interaction)
+      // _quizCompleted defaults to false, which is what we want for showing questions.
+      // We rely on _isReviewMode getter.
+    }
+  }
+
+  bool get _isReviewMode => widget.quiz.isCompleted;
+
   void _selectAnswer(int index) {
-    if (_quizCompleted) return;
+    if (_quizCompleted || _isReviewMode) return;
     setState(() {
       _selectedAnswer = index;
     });
-  }
-
-  Future<void> _nextQuestion() async {
-    if (_selectedAnswer == null) return;
-
-    final currentQuestion = widget.quiz.questions[_currentQuestionIndex];
-
-    // Check if answer is correct and update LOCAL score
-    // Note: You might want to store individual answers for review later
-    if (_selectedAnswer == currentQuestion.correctOptionIndex) {
-      _score += currentQuestion.points;
-    }
-
-    // Save selected option index to the question object (in memory)
-    currentQuestion.selectedOptionIndex = _selectedAnswer;
-
-    if (_currentQuestionIndex < widget.quiz.questions.length - 1) {
-      setState(() {
-        _currentQuestionIndex++;
-        _selectedAnswer = null;
-      });
-    } else {
-      // Quiz Finished
-      await _submitQuizResult();
-    }
   }
 
   Future<void> _submitQuizResult() async {
@@ -62,9 +50,6 @@ class _QuizPlayPageState extends State<QuizPlayPage> {
     });
 
     try {
-      // Calculate final score based on total points possible
-      // Current logic: _score is sum of points of correct answers.
-
       await _quizRepository.submitQuiz(
           widget.quiz.quizId ?? '', _score, widget.quiz.questions);
 
@@ -84,29 +69,35 @@ class _QuizPlayPageState extends State<QuizPlayPage> {
     }
   }
 
+  void _nextQuestion() {
+    if (_currentQuestionIndex < widget.quiz.questions.length - 1) {
+      setState(() {
+        _currentQuestionIndex++;
+      });
+    } else {
+      setState(() {
+        _quizCompleted = true;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_quizCompleted) {
       return _buildCompletionScreen();
     }
 
-    // Prepare content
-    if (widget.quiz.questions.isEmpty) {
-      return Scaffold(
-        appBar: AppBar(title: Text(widget.quiz.title)),
-        body: const Center(child: Text("Kuis ini tidak memiliki pertanyaan.")),
-      );
-    }
+    // ... (rest of build logic same as before until AppBar)
 
     final currentQuestion = widget.quiz.questions[_currentQuestionIndex];
 
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        backgroundColor: AppColors.primary,
+        backgroundColor: _isReviewMode ? Colors.grey[800] : AppColors.primary,
         elevation: 0,
         title: Text(
-          widget.quiz.title,
+          _isReviewMode ? 'Review Quiz' : widget.quiz.title,
           style: const TextStyle(color: Colors.white),
         ),
         leading: IconButton(
@@ -138,8 +129,8 @@ class _QuizPlayPageState extends State<QuizPlayPage> {
                   value: (_currentQuestionIndex + 1) /
                       widget.quiz.questions.length,
                   backgroundColor: Colors.grey.shade200,
-                  valueColor:
-                      const AlwaysStoppedAnimation<Color>(AppColors.primary),
+                  valueColor: AlwaysStoppedAnimation<Color>(
+                      _isReviewMode ? Colors.grey : AppColors.primary),
                   minHeight: 6,
                 ),
 
@@ -149,8 +140,33 @@ class _QuizPlayPageState extends State<QuizPlayPage> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        // Score info (Hidden during play or shown? Usually hidden to reduce pressure, but let's keep it simple)
-                        // For now, let's just show current question
+                        // Review Mode Indicator
+                        if (_isReviewMode)
+                          Container(
+                            margin: const EdgeInsets.only(bottom: 20),
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: Colors.blue.shade50,
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(color: Colors.blue.shade200),
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(Icons.info_outline,
+                                    color: Colors.blue.shade700),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Text(
+                                    'Mode Review: Jawaban Anda ditandai.',
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      color: Colors.blue.shade700,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
 
                         // Question
                         Container(
@@ -184,6 +200,7 @@ class _QuizPlayPageState extends State<QuizPlayPage> {
                           (index) => _buildOptionCard(
                             currentQuestion.options[index],
                             index,
+                            currentQuestion,
                           ),
                         ),
                       ],
@@ -209,10 +226,15 @@ class _QuizPlayPageState extends State<QuizPlayPage> {
                       width: double.infinity,
                       height: 50,
                       child: ElevatedButton(
-                        onPressed:
-                            _selectedAnswer != null ? _nextQuestion : null,
+                        onPressed: _isReviewMode
+                            ? _nextQuestion
+                            : (_selectedAnswer != null
+                                ? () => _nextQuestion()
+                                : null), // Fix recursive call issue
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.primary,
+                          backgroundColor: _isReviewMode
+                              ? Colors.grey[800]
+                              : AppColors.primary,
                           disabledBackgroundColor: Colors.grey.shade300,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
@@ -222,7 +244,7 @@ class _QuizPlayPageState extends State<QuizPlayPage> {
                           _currentQuestionIndex <
                                   widget.quiz.questions.length - 1
                               ? 'Lanjut'
-                              : 'Selesai',
+                              : (_isReviewMode ? 'Tutup Review' : 'Selesai'),
                           style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
@@ -238,20 +260,59 @@ class _QuizPlayPageState extends State<QuizPlayPage> {
     );
   }
 
-  Widget _buildOptionCard(String option, int index) {
-    final isSelected = _selectedAnswer == index;
+  Widget _buildOptionCard(String option, int index, QuizQuestion question) {
+    // Logic for styling options in Play vs Review mode
+    bool isSelected = false;
+    Color borderColor = Colors.grey.shade300;
+    Color backgroundColor = Colors.white;
+    Color iconColor = Colors.grey.shade200;
+    IconData? iconData;
+
+    if (_isReviewMode) {
+      // Review Mode Logic
+      final correctIndex = question.correctOptionIndex;
+      final userSelectedIndex = question.selectedOptionIndex;
+
+      if (index == correctIndex) {
+        // Correct answer - always green
+        borderColor = Colors.green;
+        backgroundColor = Colors.green.withOpacity(0.1);
+        iconColor = Colors.green;
+        iconData = Icons.check_circle;
+      } else if (index == userSelectedIndex) {
+        // Wrong answer selected by user - red
+        borderColor = Colors.red;
+        backgroundColor = Colors.red.withOpacity(0.1);
+        iconColor = Colors.red;
+        iconData = Icons.cancel;
+      }
+    } else {
+      // Play Mode Logic
+      isSelected = _selectedAnswer == index;
+      if (isSelected) {
+        borderColor = AppColors.primary;
+        backgroundColor = AppColors.primary.withOpacity(0.1);
+        iconColor = AppColors.primary;
+        iconData = Icons.check_circle;
+      }
+    }
 
     return GestureDetector(
-      onTap: () => _selectAnswer(index),
+      onTap: _isReviewMode ? null : () => _selectAnswer(index),
       child: Container(
         margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.primary.withOpacity(0.1) : Colors.white,
+          color: backgroundColor,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: isSelected ? AppColors.primary : Colors.grey.shade300,
-            width: isSelected ? 2 : 1,
+            color: borderColor,
+            width: (_isReviewMode &&
+                        (index == question.correctOptionIndex ||
+                            index == question.selectedOptionIndex)) ||
+                    (_selectedAnswer == index)
+                ? 2
+                : 1,
           ),
         ),
         child: Row(
@@ -261,17 +322,19 @@ class _QuizPlayPageState extends State<QuizPlayPage> {
               height: 32,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: isSelected ? AppColors.primary : Colors.grey.shade200,
+                color: iconColor,
               ),
               child: Center(
-                child: Text(
-                  String.fromCharCode(65 + index), // A, B, C, D
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: isSelected ? Colors.white : Colors.grey.shade600,
-                  ),
-                ),
+                child: iconData != null
+                    ? Icon(iconData, size: 20, color: Colors.white)
+                    : Text(
+                        String.fromCharCode(65 + index), // A, B, C, D
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.grey.shade600,
+                        ),
+                      ),
               ),
             ),
             const SizedBox(width: 16),
@@ -280,13 +343,13 @@ class _QuizPlayPageState extends State<QuizPlayPage> {
                 option,
                 style: TextStyle(
                   fontSize: 16,
-                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                  fontWeight: (iconData != null || isSelected)
+                      ? FontWeight.w600
+                      : FontWeight.normal,
                   color: AppColors.textDark,
                 ),
               ),
             ),
-            if (isSelected)
-              const Icon(Icons.check_circle, color: AppColors.primary),
           ],
         ),
       ),

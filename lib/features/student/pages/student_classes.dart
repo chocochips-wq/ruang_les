@@ -7,12 +7,12 @@ import '../../../core/utils/routes.dart';
 import '../../../data/repositories/student_repository.dart';
 import '../../../data/repositories/class_repository.dart';
 import '../../../data/repositories/session_repository.dart';
-import '../../../data/repositories/user_repository.dart';
+
 import '../../../data/repositories/teacher_repository.dart';
-import '../../../core/models/student_model.dart';
+
 import '../../../core/models/class_model.dart';
 import '../../../core/models/session_model.dart';
-import '../../../core/models/user_model.dart';
+
 import '../widgets/student_drawer.dart';
 import '../widgets/student_bottom_nav.dart';
 
